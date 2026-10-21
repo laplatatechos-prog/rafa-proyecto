@@ -67,8 +67,25 @@ input:focus,textarea:focus{border-color:var(--naranja);outline:none}
     <h2>Entrar</h2>
     <p class="hint">Esta app es solo para cargar ítems, precios y textos. Lo que guardás acá les llega a todos los vendedores.</p>
     <label for="clave">Clave</label>
-    <input id="clave" type="password" autocomplete="current-password">
+    <input id="clave" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
     <button class="big" id="bEntrar">ENTRAR</button>
+    <button class="big ghost" id="bOlvide">¿OLVIDASTE LA CLAVE?</button>
+  </div>
+</section>
+
+<section class="view" id="v-recuperar">
+  <div class="card">
+    <h2>Recuperar la clave</h2>
+    <p class="hint" id="recPaso1">Te mandamos un código de 6 números al mail <b>laplatatechos@gmail.com</b>. Llega de "Supabase Auth" con el asunto "Confirm reauthentication". Si no lo ves, mirá en Spam.</p>
+    <button class="big alt" id="bEnviarCod">MANDAR CÓDIGO AL MAIL</button>
+    <div id="recPaso2" hidden>
+      <label for="recCod">Código que te llegó al mail</label>
+      <input id="recCod" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10">
+      <label for="recNueva">Clave nueva (mínimo 4 letras o números)</label>
+      <input id="recNueva" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button class="big" id="bNuevaClave">GUARDAR CLAVE NUEVA</button>
+    </div>
+    <button class="big ghost" id="bVolver">VOLVER</button>
   </div>
 </section>
 
@@ -154,11 +171,28 @@ let clave=LS.get('clave',''),cat=[],cfg=Object.assign({},DEF),nCat='',nUni='m';
 async function entrar(k){
  try{const ok=await api('/rpc/admin_ok',{method:'POST',body:JSON.stringify({p_key:k})});if(ok!==true){toast('Clave incorrecta');return false}}
  catch(e){toast('Se necesita internet para entrar');return false}
- clave=k;LS.set('clave',k);$('v-login').classList.remove('on');$('app').hidden=false;await cargar();return true;
+ clave=k;LS.set('clave',k);document.querySelectorAll('main > .view').forEach(v=>v.classList.remove('on'));$('app').hidden=false;await cargar();return true;
 }
 $('bEntrar').onclick=()=>{const k=$('clave').value.trim();if(k)entrar(k)};
 $('clave').onkeydown=e=>{if(e.key==='Enter')$('bEntrar').click()};
-$('bSalir').onclick=()=>{clave='';LS.set('clave','');$('app').hidden=true;$('clave').value='';$('v-login').classList.add('on');scrollTo(0,0)};
+const verLogin=()=>{document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-login'))};
+$('bOlvide').onclick=()=>{document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-recuperar'));$('recPaso2').hidden=true;$('bEnviarCod').textContent='MANDAR CÓDIGO AL MAIL'};
+$('bVolver').onclick=verLogin;
+$('bEnviarCod').onclick=async()=>{const b=$('bEnviarCod');b.disabled=true;b.textContent='Mandando…';
+ try{const r=await fetch('https://hvgwikhzxxkhmbjnyohl.supabase.co/functions/v1/recuperar-clave',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));
+  if(!d.ok){toast(d.status===429?'Ya se mandaron muchos códigos. Esperá un rato y probá de nuevo.':'No se pudo mandar el código. Probá en unos minutos.');b.textContent='MANDAR CÓDIGO AL MAIL'}
+  else{toast('Código enviado a laplatatechos@gmail.com');b.textContent='MANDAR OTRO CÓDIGO';$('recPaso2').hidden=false;$('recCod').focus()}}
+ catch(e){toast('Sin internet. Conectate y probá de nuevo.');b.textContent='MANDAR CÓDIGO AL MAIL'}
+ b.disabled=false};
+$('bNuevaClave').onclick=async()=>{const cod=$('recCod').value.trim(),nueva=$('recNueva').value.trim();
+ if(!cod){toast('Escribí el código del mail');return}if(nueva.length<4){toast('La clave nueva tiene que tener al menos 4 letras o números');return}
+ const b=$('bNuevaClave');b.disabled=true;
+ try{const ok=await api('/rpc/admin_reset_with_code',{method:'POST',body:JSON.stringify({p_code:cod,p_new:nueva})});
+  if(ok===true){toast('Clave cambiada. Anotala: '+nueva);$('recCod').value='';$('recNueva').value='';await entrar(nueva)}
+  else toast('Código incorrecto o vencido (dura 15 minutos). Pedí uno nuevo.')}
+ catch(e){toast('Sin internet. Conectate y probá de nuevo.')}
+ b.disabled=false};
+$('bSalir').onclick=()=>{clave='';LS.set('clave','');$('app').hidden=true;$('clave').value='';verLogin();scrollTo(0,0)};
 
 document.querySelectorAll('.menu button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.menu button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('#app .view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));if(b.dataset.v==='nuevo')pintarNuevo();scrollTo(0,0)});
 
