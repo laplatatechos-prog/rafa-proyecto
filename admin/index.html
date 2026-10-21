@@ -79,6 +79,7 @@ input:focus,textarea:focus{border-color:var(--naranja);outline:none}
     <p class="hint" id="recPaso1">Te mandamos un código de 6 números al mail <b>laplatatechos@gmail.com</b>. Llega de "Supabase Auth" con el asunto "Confirm reauthentication". Si no lo ves, mirá en Spam.</p>
     <button class="big alt" id="bEnviarCod">MANDAR CÓDIGO AL MAIL</button>
     <div id="recPaso2" hidden>
+      <div class="aviso" style="margin-top:14px">Ya te mandamos el código. Abrí el mail, copiá los 6 números y volvé a esta app: <b>no pidas otro código</b>, porque el nuevo anula al anterior.</div>
       <label for="recCod">Código que te llegó al mail</label>
       <input id="recCod" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10">
       <label for="recNueva">Clave nueva (mínimo 4 letras o números)</label>
@@ -176,19 +177,26 @@ async function entrar(k){
 $('bEntrar').onclick=()=>{const k=$('clave').value.trim();if(k)entrar(k)};
 $('clave').onkeydown=e=>{if(e.key==='Enter')$('bEntrar').click()};
 const verLogin=()=>{document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-login'))};
-$('bOlvide').onclick=()=>{document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-recuperar'));$('recPaso2').hidden=true;$('bEnviarCod').textContent='MANDAR CÓDIGO AL MAIL'};
-$('bVolver').onclick=verLogin;
-$('bEnviarCod').onclick=async()=>{const b=$('bEnviarCod');b.disabled=true;b.textContent='Mandando…';
+// Android puede cerrar la app al ir al mail: guardamos que hay un código pendiente para volver directo a esta pantalla.
+const REC_MS=15*60*1000;
+const recPendiente=()=>{const t=LS.get('rec',0);return t&&Date.now()-t<REC_MS};
+function verRecuperar(){document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-recuperar'));const p=recPendiente();$('recPaso2').hidden=!p;$('bEnviarCod').textContent=p?'MANDAR OTRO CÓDIGO':'MANDAR CÓDIGO AL MAIL';$('bEnviarCod').className=p?'big ghost':'big alt';$('recNueva').value=LS.get('recNueva','');$('recCod').value=LS.get('recCod','')}
+$('bOlvide').onclick=verRecuperar;
+$('bVolver').onclick=()=>{LS.set('rec',0);verLogin()};
+$('recNueva').oninput=()=>LS.set('recNueva',$('recNueva').value);
+$('recCod').oninput=()=>LS.set('recCod',$('recCod').value);
+$('bEnviarCod').onclick=()=>{if(recPendiente())preguntar('¿Mandar otro código? El que ya te llegó deja de servir.',enviarCodigo,'SÍ, MANDAR OTRO');else enviarCodigo()};
+async function enviarCodigo(){const b=$('bEnviarCod');b.disabled=true;b.textContent='Mandando…';
  try{const r=await fetch('https://hvgwikhzxxkhmbjnyohl.supabase.co/functions/v1/recuperar-clave',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));
   if(!d.ok){toast(d.status===429?'Ya se mandaron muchos códigos. Esperá un rato y probá de nuevo.':'No se pudo mandar el código. Probá en unos minutos.');b.textContent='MANDAR CÓDIGO AL MAIL'}
-  else{toast('Código enviado a laplatatechos@gmail.com');b.textContent='MANDAR OTRO CÓDIGO';$('recPaso2').hidden=false;$('recCod').focus()}}
- catch(e){toast('Sin internet. Conectate y probá de nuevo.');b.textContent='MANDAR CÓDIGO AL MAIL'}
- b.disabled=false};
+  else{LS.set('rec',Date.now());LS.set('recCod','');toast('Código enviado a laplatatechos@gmail.com');verRecuperar()}}
+ catch(e){toast('Sin internet. Conectate y probá de nuevo.');b.textContent=recPendiente()?'MANDAR OTRO CÓDIGO':'MANDAR CÓDIGO AL MAIL'}
+ b.disabled=false}
 $('bNuevaClave').onclick=async()=>{const cod=$('recCod').value.trim(),nueva=$('recNueva').value.trim();
  if(!cod){toast('Escribí el código del mail');return}if(nueva.length<4){toast('La clave nueva tiene que tener al menos 4 letras o números');return}
  const b=$('bNuevaClave');b.disabled=true;
  try{const ok=await api('/rpc/admin_reset_with_code',{method:'POST',body:JSON.stringify({p_code:cod,p_new:nueva})});
-  if(ok===true){toast('Clave cambiada. Anotala: '+nueva);$('recCod').value='';$('recNueva').value='';await entrar(nueva)}
+  if(ok===true){LS.set('rec',0);LS.set('recNueva','');LS.set('recCod','');toast('Clave cambiada. Anotala: '+nueva);$('recCod').value='';$('recNueva').value='';await entrar(nueva)}
   else toast('Código incorrecto o vencido (dura 15 minutos). Pedí uno nuevo.')}
  catch(e){toast('Sin internet. Conectate y probá de nuevo.')}
  b.disabled=false};
@@ -276,10 +284,11 @@ $('bTextos').onclick=async()=>{
 };
 
 /* ---------- Confirmación ---------- */
-function preguntar(t,si){$('cTxt').textContent=t;$('confirm').classList.add('on');$('cSi').onclick=()=>{$('confirm').classList.remove('on');si()};$('cNo').onclick=()=>$('confirm').classList.remove('on')}
+function preguntar(t,si,txtSi='SÍ, BORRAR'){$('cSi').textContent=txtSi;$('cTxt').textContent=t;$('confirm').classList.add('on');$('cSi').onclick=()=>{$('confirm').classList.remove('on');si()};$('cNo').onclick=()=>$('confirm').classList.remove('on')}
 
 /* ---------- Inicio ---------- */
-if(clave)entrar(clave).then(ok=>{if(!ok)$('v-login').classList.add('on')});else $('v-login').classList.add('on');
+if(recPendiente())verRecuperar();
+else if(clave)entrar(clave).then(ok=>{if(!ok)$('v-login').classList.add('on')});else $('v-login').classList.add('on');
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
