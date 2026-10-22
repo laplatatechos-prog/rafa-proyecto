@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d2b4e">
-<title>TPL Cargar datos</title>
+<title>Admin TPL</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -82,13 +82,25 @@ input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:n
 .est{color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:12px;flex:none;letter-spacing:.3px}
 .obra-m{font-size:13px;color:var(--suave);margin-top:4px;line-height:1.45}
 .obra-l{display:block;font-size:14px;color:var(--azul2);margin-top:6px;text-decoration:none;font-weight:600}
+.obra-g{display:inline-block;margin-top:9px;font-size:13px;font-weight:700;color:var(--azul2);background:var(--azul3);padding:7px 11px;border-radius:10px;text-decoration:none}
 .dia-t{font-size:13px;font-weight:800;color:var(--azul2);margin:18px 4px 8px;text-transform:uppercase;letter-spacing:1.2px}
-.confirm.scroll{overflow:auto;align-items:flex-start}
-.confirm.scroll .box{margin:10px auto 30px}
+.obtn{display:block;width:100%;border:0;border-radius:13px;padding:16px;font-size:16px;font-weight:800;letter-spacing:.4px;color:#fff;background:linear-gradient(135deg,var(--naranja),var(--naranja2));margin-top:10px;box-shadow:0 6px 16px rgba(242,106,27,.3);font-family:inherit;text-align:center;text-decoration:none}
+.obtn.ghost{background:#fff;color:var(--azul2);border:1.5px solid var(--linea);box-shadow:none}
+.obtn.rojo{background:#fff;color:#c0392b;border:1.5px solid #f1c6c0;box-shadow:none}
+.obtn:disabled{opacity:.5}
+.ofondo{position:fixed;inset:0;background:rgba(13,43,78,.6);backdrop-filter:blur(3px);display:none;z-index:35;overflow:auto;padding:14px}
+.ofondo.on{display:block}
+.obox{background:#fff;border-radius:20px;max-width:520px;margin:10px auto 30px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.obox h3{margin:0 0 6px;color:var(--azul);font-size:18px}
+.obox label{display:block;margin:14px 0 6px}
+.ofila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ochips{display:flex;flex-wrap:wrap;gap:8px}
+.ochip{border:1.5px solid var(--linea);background:#fff;border-radius:22px;padding:10px 15px;font-size:15px;font-weight:700;color:var(--texto);font-family:inherit}
+.ochip.on{background:var(--azul);border-color:var(--azul);color:#fff}
 </style>
 </head>
 <body>
-<header><div class="row"><b>TPL · CARGAR</b><span id="estado"></span></div></header>
+<header><div class="row"><b>ADMIN TPL</b><span id="estado"></span></div></header>
 <main>
 
 <section class="view" id="v-login">
@@ -172,37 +184,42 @@ input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:n
     <button class="big alt" id="bTextos">GUARDAR TEXTOS</button>
   </section>
 
-  <section class="view" id="v-obras">
-    <button class="big alt" id="bObraNueva" style="margin:0 0 14px">+ NUEVA OBRA</button>
-    <div class="card">
-      <div class="cal-top"><button id="calPrev" aria-label="Mes anterior">‹</button><b id="calMes"></b><button id="calNext" aria-label="Mes siguiente">›</button></div>
-      <div id="cal"></div>
-      <div class="cal-ref" id="calRef"></div>
-    </div>
-    <p class="hint" style="margin:0 4px">Tocá un día para ver sus obras. Tocá una obra para cambiarla de fecha, de cuadrilla o de estado. Los vendedores la ven al instante, sin poder tocarla.</p>
-    <div id="calDia"></div>
-  </section>
+<section class="view" id="v-obras">
+  <button class="obtn" id="bObraNueva" style="margin:0 0 14px">+ NUEVA OBRA</button>
+  <div class="card">
+    <div class="cal-top"><button id="calPrev" aria-label="Mes anterior">‹</button><b id="calMes"></b><button id="calNext" aria-label="Mes siguiente">›</button></div>
+    <div id="cal"></div>
+    <div class="cal-ref" id="calRef"></div>
+    <p class="hint" id="calInfo" style="margin:10px 0 0"></p>
+    <a class="obtn ghost" id="bSuscribir" target="_blank" rel="noopener">📅 VER LAS OBRAS EN GOOGLE CALENDAR</a>
+  </div>
+  <div id="calDia"></div>
+</section>
 
   <a class="linkapp" href="../">Abrir la app de presupuestos →</a>
   <button class="big ghost" id="bSalir" style="margin-bottom:30px">Salir</button>
 </div>
 </main>
 
-<div class="confirm scroll" id="mObra"><div class="box">
-  <h2 id="oTit">Nueva obra</h2>
-  <label for="oPres">Traer los datos de un presupuesto</label>
-  <select id="oPres"></select>
-  <label for="oFecha">Fecha de inicio</label><input id="oFecha" type="date">
-  <label for="oDias">Días de trabajo (no cuenta domingos)</label><input id="oDias" type="number" inputmode="numeric" min="1" max="60">
+<div class="ofondo" id="mObra"><div class="obox">
+  <h3 id="oTit">Nueva obra</h3>
+  <label for="oPres">Traer los datos de un presupuesto</label><select id="oPres"></select>
+  <div class="ofila">
+    <div><label for="oFecha">Día</label><input id="oFecha" type="date"></div>
+    <div><label for="oDias">Días de trabajo</label><input id="oDias" type="number" inputmode="numeric" min="1" max="60"></div>
+    <div><label for="oHora">Desde (hora)</label><input id="oHora" type="time" step="900"></div>
+    <div><label for="oHoraFin">Hasta (hora)</label><input id="oHoraFin" type="time" step="900"></div>
+  </div>
+  <p class="hint" style="margin:6px 0 0">Los domingos no se cuentan. Sin hora, queda como todo el día.</p>
   <label for="oCli">Cliente</label><input id="oCli">
   <label for="oTel">Teléfono</label><input id="oTel" type="tel">
   <label for="oDir">Dirección</label><input id="oDir">
-  <label for="oCua">Cuadrilla</label><div class="chips" id="oCuaCh"></div><input id="oCua" placeholder="Nombre de la cuadrilla" style="margin-top:8px">
-  <label>Estado</label><div class="chips" id="oEst"></div>
+  <label for="oCua">Cuadrilla</label><div class="ochips" id="oCuaCh"></div><input id="oCua" placeholder="Nombre de la cuadrilla" style="margin-top:8px">
+  <label>Estado</label><div class="ochips" id="oEst"></div>
   <label for="oNotas">Notas</label><textarea id="oNotas" style="min-height:80px"></textarea>
-  <button class="big alt" id="bObraOk">GUARDAR OBRA</button>
-  <button class="big ghost" id="bObraDel">BORRAR OBRA</button>
-  <button class="big ghost" id="bObraNo">CANCELAR</button>
+  <button class="obtn" id="bObraOk">GUARDAR OBRA</button>
+  <button class="obtn rojo" id="bObraDel">BORRAR OBRA</button>
+  <button class="obtn ghost" id="bObraNo">CANCELAR</button>
 </div></div>
 <div class="confirm" id="confirm"><div class="box"><p id="cTxt"></p><button class="big" id="cSi" style="background:#b33">SÍ, BORRAR</button><button class="big ghost" id="cNo">NO</button></div></div>
 <div class="toast" id="toast"></div>
@@ -214,7 +231,7 @@ const LS={get(k,d){try{const v=localStorage.getItem('tplc_'+k);return v?JSON.par
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2800)}
-async function api(path,opt={}){const r=await fetch(SB+path,Object.assign({cache:'no-store'},opt,{headers:{apikey:KEY,'Content-Type':'application/json'}}));if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();return t?JSON.parse(t):null}
+async function api(path,opt={}){const r=await fetch(SB+path,Object.assign({cache:'no-store'},opt,{headers:Object.assign({apikey:KEY,'Content-Type':'application/json'},opt.headers||{})}));if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();return t?JSON.parse(t):null}
 const rpc=(fn,args)=>api('/rpc/'+fn,{method:'POST',body:JSON.stringify(Object.assign({p_key:clave},args))});
 function sinRed(e){toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
 
@@ -342,18 +359,21 @@ $('bTextos').onclick=async()=>{
  $('bTextos').disabled=false;
 };
 
-/* ---------- Calendario de obras (igual en las dos apps) ---------- */
+/* ---------- Calendario de obras (igual en las dos apps; cada app define OB) ---------- */
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const ESTADOS={senada:['Señada','#f26a1b'],curso:['En curso','#16406f'],terminada:['Terminada','#14804a']};
+const ICS='https://hvgwikhzxxkhmbjnyohl.supabase.co/functions/v1/obras-ics';
 const pad2=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
 const deYmd=s=>{const [y,m,d]=String(s).slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
 const hoyYmd=()=>ymd(new Date());
-// Una obra ocupa sus días de trabajo desde la fecha de inicio, salteando los domingos
+const hhmm=h=>h?String(h).slice(0,5):'';
+// Una obra ocupa sus días de trabajo desde el día de inicio, salteando los domingos
 function diasDe(o){const out=[],d=deYmd(o.fecha),n=Math.min(60,Math.max(1,Number(o.dias)||1));out.push(ymd(d));while(out.length<n){d.setDate(d.getDate()+1);if(d.getDay()!==0)out.push(ymd(d))}return out}
-function indiceObras(list){const ix={};list.forEach(o=>{const ds=diasDe(o);ds.forEach((f,i)=>(ix[f]=ix[f]||[]).push({o,n:i+1,de:ds.length}))});return ix}
+function indiceObras(list){const ix={};list.forEach(o=>{const ds=diasDe(o);ds.forEach((f,i)=>(ix[f]=ix[f]||[]).push({o,n:i+1,de:ds.length}))});Object.values(ix).forEach(l=>l.sort((a,b)=>hhmm(a.o.hora||'99').localeCompare(hhmm(b.o.hora||'99'))));return ix}
 function fechaLarga(s){const d=deYmd(s);return ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()]+' '+d.getDate()+' de '+MESES[d.getMonth()].toLowerCase()}
 const colorEst=o=>(ESTADOS[o.estado]||ESTADOS.senada)[1];
+const horario=o=>o.hora?hhmm(o.hora)+(o.hora_fin?' a '+hhmm(o.hora_fin):'')+' hs':'Todo el día';
 function calMes(mes,ix,sel){
  const y=mes.getFullYear(),m=mes.getMonth(),ini=(new Date(y,m,1).getDay()+6)%7,tot=new Date(y,m+1,0).getDate(),hoy=hoyYmd();
  let h='<div class="cal-g">'+['L','M','M','J','V','S','D'].map(x=>`<div class="cal-w">${x}</div>`).join('')+'<div></div>'.repeat(ini);
@@ -361,38 +381,52 @@ function calMes(mes,ix,sel){
   h+=`<button class="cal-d${f===hoy?' hoy':''}${f===sel?' sel':''}${(ini+d)%7===0?' dom':''}" data-f="${f}"><span>${d}</span>${l.slice(0,3).map(x=>`<i style="background:${colorEst(x.o)}">${esc((x.o.cliente||'').split(' ')[0])}</i>`).join('')}${l.length>3?`<em>+${l.length-3}</em>`:''}</button>`}
  return h+'</div>'}
 const refEstados=()=>Object.values(ESTADOS).map(e=>`<span><i style="background:${e[1]}"></i>${e[0]}</span>`).join('');
-function tarjetaObra(x){const o=x.o,e=ESTADOS[o.estado]||ESTADOS.senada;
+// Link para cargar la obra en Google Calendar con un toque
+function linkGoogle(o){const ds=diasDe(o),a=ds[0].replace(/-/g,''),z=ds[ds.length-1];
+ let dates;if(o.hora){const fin=o.hora_fin||hhmm(o.hora).replace(/^(\d\d)/,h=>pad2(Math.min(23,Number(h)+2)));dates=a+'T'+hhmm(o.hora).replace(':','')+'00/'+z.replace(/-/g,'')+'T'+hhmm(fin).replace(':','')+'00'}
+ else{const n=deYmd(z);n.setDate(n.getDate()+1);dates=a+'/'+ymd(n).replace(/-/g,'')}
+ const det=[o.cuadrilla&&'Cuadrilla: '+o.cuadrilla,o.tel&&'Tel: '+o.tel,o.pres_num&&'Presupuesto N° '+o.pres_num,ds.length>1&&ds.length+' días de trabajo (sin domingos)',o.notas,o.cargo&&'Cargó: '+o.cargo].filter(Boolean).join('\n');
+ return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Obra TPL: '+(o.cliente||''))+'&dates='+dates+'&ctz=America/Argentina/Buenos_Aires&location='+encodeURIComponent(o.dir||'')+'&details='+encodeURIComponent(det)}
+function tarjetaObra(x,rango){const o=x.o,e=ESTADOS[o.estado]||ESTADOS.senada,ds=diasDe(o);
  return `<div class="obra" data-id="${esc(o.id)}" style="border-left-color:${e[1]}"><div class="obra-t"><b>${esc(o.cliente||'Sin nombre')}</b><span class="est" style="background:${e[1]}">${e[0]}</span></div>`
- +`<div class="obra-m">👷 ${esc(o.cuadrilla||'Sin cuadrilla')}${x.de>1?` · día ${x.n} de ${x.de}`:''}${o.pres_num?` · Presupuesto N° ${esc(o.pres_num)}`:''}</div>`
+ +(rango?`<div class="obra-m"><b style="color:var(--azul)">📅 ${fechaLarga(o.fecha)}${ds.length>1?` al ${fechaLarga(ds[ds.length-1])} (${ds.length} días)`:''}</b></div>`:'')
+ +`<div class="obra-m">🕘 ${horario(o)}${!rango&&x.de>1?` · día ${x.n} de ${x.de}`:''}</div>`
+ +`<div class="obra-m">👷 ${esc(o.cuadrilla||'Sin cuadrilla')}${o.pres_num?` · Presupuesto N° ${esc(o.pres_num)}`:''}</div>`
  +(o.dir?`<a class="obra-l" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.dir)}" target="_blank" rel="noopener">📍 ${esc(o.dir)}</a>`:'')
  +(o.tel?`<a class="obra-l" href="tel:${esc(String(o.tel).replace(/[^0-9+]/g,''))}">📞 ${esc(o.tel)}</a>`:'')
- +(o.notas?`<div class="obra-m">📝 ${esc(o.notas)}</div>`:'')+'</div>'}
-// Día elegido + próximas obras sin terminar
+ +(o.notas?`<div class="obra-m">📝 ${esc(o.notas)}</div>`:'')
+ +(o.cargo?`<div class="obra-m">Cargó: ${esc(o.cargo)}</div>`:'')
+ +`<a class="obra-g" href="${linkGoogle(o)}" target="_blank" rel="noopener">＋ Agregar a mi Google Calendar</a></div>`}
 function listaDia(list,ix,sel){const l=ix[sel]||[],hoy=hoyYmd();
  const prox=list.filter(o=>o.estado!=='terminada'&&diasDe(o).slice(-1)[0]>=hoy).slice(0,15);
- return `<div class="dia-t">${fechaLarga(sel)}</div>`+(l.length?l.map(tarjetaObra).join(''):'<div class="card hint">No hay obras este día.</div>')
- +`<div class="dia-t">Próximas obras</div>`+(prox.length?prox.map(o=>{const ds=diasDe(o);return tarjetaObra({o,n:1,de:1}).replace('<div class="obra-m">',`<div class="obra-m"><b style="color:var(--azul)">📅 ${fechaLarga(o.fecha)}${ds.length>1?` al ${fechaLarga(ds.slice(-1)[0])} (${ds.length} días)`:''}</b><br>`)}).join(''):'<div class="card hint">No hay obras pendientes.</div>')}
+ return `<div class="dia-t">${fechaLarga(sel)}</div>`+(l.length?l.map(x=>tarjetaObra(x)).join(''):'<div class="card hint">No hay obras este día.</div>')
+ +'<button class="obtn ghost" id="bObraDia">+ OBRA PARA ESTE DÍA</button>'
+ +`<div class="dia-t">Próximas obras</div>`+(prox.length?prox.map(o=>tarjetaObra({o,n:1,de:1},true)).join(''):'<div class="card hint">No hay obras pendientes.</div>')}
 
-/* ---------- Obras (solo esta app las carga) ---------- */
-let obras=[],mesCal=new Date(new Date().getFullYear(),new Date().getMonth(),1),diaSel=hoyYmd(),oEd=null,presList=null;
-async function cargarObras(){try{obras=(await api('/obras?select=*&order=fecha'))||[]}catch(e){toast('No se pudieron traer las obras')}pintarCal()}
+let obras=LS.get('obras',[]),mesCal=new Date(new Date().getFullYear(),new Date().getMonth(),1),diaSel=hoyYmd(),oEd=null,presList=null;
+async function cargarObras(){pintarCal();
+ try{obras=(await api('/obras?select=*&order=fecha,hora'))||[];LS.set('obras',obras);LS.set('obrasAt',new Date().toISOString());$('calInfo').textContent='Actualizado recién. Todos ven las mismas obras.'}
+ catch(e){const t=LS.get('obrasAt',null);$('calInfo').textContent='Sin internet: mostrando lo último que se bajó'+(t?' ('+new Date(t).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+')':'')+'.'}
+ pintarCal()}
 function pintarCal(){
  const ix=indiceObras(obras);
  $('calMes').textContent=MESES[mesCal.getMonth()]+' '+mesCal.getFullYear();
  $('cal').innerHTML=calMes(mesCal,ix,diaSel);$('calRef').innerHTML=refEstados();
  $('cal').querySelectorAll('.cal-d').forEach(b=>b.onclick=()=>{diaSel=b.dataset.f;pintarCal()});
- $('calDia').innerHTML=listaDia(obras,ix,diaSel)+'<button class="big ghost" id="bObraDia">+ OBRA PARA ESTE DÍA</button>';
+ $('calDia').innerHTML=listaDia(obras,ix,diaSel);
  $('calDia').querySelectorAll('.obra').forEach(el=>el.onclick=e=>{if(!e.target.closest('a'))abrirObra(obras.find(o=>o.id===el.dataset.id))});
  $('bObraDia').onclick=()=>abrirObra(null,diaSel);
 }
 const irMes=n=>{mesCal=new Date(mesCal.getFullYear(),mesCal.getMonth()+n,1);pintarCal()};
 $('calPrev').onclick=()=>irMes(-1);$('calNext').onclick=()=>irMes(1);
 $('bObraNueva').onclick=()=>abrirObra(null,diaSel);
+$('bSuscribir').href='https://calendar.google.com/calendar/render?cid='+encodeURIComponent(ICS.replace('https://','webcal://'));
 const cuadrillas=()=>[...new Set(obras.map(o=>(o.cuadrilla||'').trim()).filter(Boolean))].sort();
+const OCAMPOS=[['oFecha','fecha'],['oDias','dias'],['oHora','hora'],['oHoraFin','hora_fin'],['oCli','cliente'],['oTel','tel'],['oDir','dir'],['oCua','cuadrilla'],['oNotas','notas']];
 async function abrirObra(o,fecha){
- oEd=o?Object.assign({},o):{id:uid(),fecha:fecha||hoyYmd(),dias:1,cliente:'',tel:'',dir:'',cuadrilla:cuadrillas()[0]||'',estado:'senada',notas:'',pres_id:null,pres_num:null,total:null};
- $('oTit').textContent=o?'Cambiar obra':'Nueva obra';$('bObraDel').hidden=!o;
- [['oFecha','fecha'],['oDias','dias'],['oCli','cliente'],['oTel','tel'],['oDir','dir'],['oCua','cuadrilla'],['oNotas','notas']].forEach(([id,k])=>$(id).value=oEd[k]??'');
+ oEd=o?Object.assign({},o):{id:uid(),fecha:fecha||hoyYmd(),dias:1,hora:'',hora_fin:'',cliente:'',tel:'',dir:'',cuadrilla:'',estado:'senada',notas:'',pres_id:null,pres_num:null,total:null};
+ $('oTit').textContent=o?'Cambiar obra':'Nueva obra';$('bObraDel').hidden=!o||!OB.puedeBorrar;
+ OCAMPOS.forEach(([id,k])=>$(id).value=k.startsWith('hora')?hhmm(oEd[k]):(oEd[k]??''));
  pintarCuaEst();$('mObra').classList.add('on');$('mObra').scrollTop=0;
  if(!presList){$('oPres').innerHTML='<option>Cargando presupuestos…</option>';try{presList=await api('/presupuestos?select=id,num,vend,cli,total,data&order=updated_at.desc&limit=200')}catch(e){presList=null}}
  $('oPres').innerHTML='<option value="">No, la cargo a mano</option>'+(presList||[]).map((p,i)=>`<option value="${i}" ${p.id===oEd.pres_id?'selected':''}>${esc(p.cli||'Sin nombre')} · N° ${esc(p.num||'')} · $ ${Math.round(Number(p.total)||0).toLocaleString('es-AR')}</option>`).join('');
@@ -401,34 +435,43 @@ $('oPres').onchange=()=>{const p=(presList||[])[$('oPres').value];if(!p){Object.
  const d=p.data||{};Object.assign(oEd,{pres_id:p.id,pres_num:p.num,total:p.total});$('oCli').value=p.cli||d.cli||'';$('oTel').value=d.tel||'';$('oDir').value=d.dir||''};
 function pintarCuaEst(){
  const c0=$('oCua').value.trim();
- $('oCuaCh').innerHTML=cuadrillas().map(c=>`<button class="chip ${c===c0?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
- $('oCuaCh').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('oCua').value=b.dataset.c;pintarCuaEst()});
- $('oEst').innerHTML=Object.entries(ESTADOS).map(([k,e])=>`<button class="chip ${k===oEd.estado?'on':''}" data-e="${k}">${e[0]}</button>`).join('');
- $('oEst').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{oEd.estado=b.dataset.e;pintarCuaEst()});
+ $('oCuaCh').innerHTML=cuadrillas().map(c=>`<button class="ochip ${c===c0?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+ $('oCuaCh').querySelectorAll('.ochip').forEach(b=>b.onclick=()=>{$('oCua').value=b.dataset.c;pintarCuaEst()});
+ $('oEst').innerHTML=Object.entries(ESTADOS).map(([k,e])=>`<button class="ochip ${k===oEd.estado?'on':''}" data-e="${k}">${e[0]}</button>`).join('');
+ $('oEst').querySelectorAll('.ochip').forEach(b=>b.onclick=()=>{oEd.estado=b.dataset.e;pintarCuaEst()});
 }
 $('oCua').oninput=pintarCuaEst;
 $('bObraNo').onclick=()=>$('mObra').classList.remove('on');
 $('bObraOk').onclick=()=>{
- const o=Object.assign(oEd,{fecha:$('oFecha').value,dias:Math.min(60,Math.max(1,parseInt($('oDias').value)||1)),cliente:$('oCli').value.trim(),tel:$('oTel').value.trim(),dir:$('oDir').value.trim(),cuadrilla:$('oCua').value.trim(),notas:$('oNotas').value.trim()});
- if(!o.fecha){toast('Falta la fecha');return}
+ const o=oEd;OCAMPOS.forEach(([id,k])=>o[k]=$(id).value.trim());
+ o.dias=Math.min(60,Math.max(1,parseInt(o.dias)||1));o.hora=o.hora||null;o.hora_fin=o.hora?(o.hora_fin||null):null;
+ if(!o.fecha){toast('Falta el día');return}
  if(!o.cliente){toast('Falta el cliente');$('oCli').focus();return}
+ if(o.hora_fin&&o.hora_fin<=o.hora){toast('La hora de fin tiene que ser después de la de inicio');return}
  // Aviso si la misma cuadrilla ya tiene otra obra esos días
  const mios=new Set(diasDe(o)),cua=o.cuadrilla.toLowerCase();
  const choque=cua&&o.estado!=='terminada'&&obras.find(x=>x.id!==o.id&&x.estado!=='terminada'&&(x.cuadrilla||'').trim().toLowerCase()===cua&&diasDe(x).some(f=>mios.has(f)));
- if(choque){$('mObra').classList.remove('on');preguntar(`La cuadrilla "${o.cuadrilla}" ya tiene la obra de ${choque.cliente} esos días. ¿Guardar igual?`,()=>guardarObra(o),'SÍ, GUARDAR IGUAL',()=>$('mObra').classList.add('on'))}
+ if(choque){$('mObra').classList.remove('on');OB.siNo(`La cuadrilla "${o.cuadrilla}" ya tiene la obra de ${choque.cliente} esos días. ¿Guardar igual?`,()=>guardarObra(o),()=>$('mObra').classList.add('on'))}
  else guardarObra(o);
 };
 async function guardarObra(o){
+ o.cargo=o.cargo||OB.quien();
+ const row={};['id','fecha','dias','hora','hora_fin','cliente','tel','dir','cuadrilla','estado','pres_id','pres_num','total','notas','cargo'].forEach(k=>row[k]=o[k]??null);
+ row.updated_by=OB.quien();row.updated_at=new Date().toISOString();
  $('bObraOk').disabled=true;
- try{const ok=await rpc('admin_upsert_obra',{p_obra:o});if(ok!==true)throw new Error('clave');
-  const i=obras.findIndex(x=>x.id===o.id),c=Object.assign({},o);if(i>=0)obras[i]=c;else obras.push(c);obras.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+ try{const ok=await api('/rpc/guardar_obra',{method:'POST',body:JSON.stringify({p_obra:row})});if(ok!==true)throw new Error('no guardó');
+  const i=obras.findIndex(x=>x.id===o.id),c=Object.assign({},row);if(i>=0)obras[i]=c;else obras.push(c);
+  obras.sort((a,b)=>(a.fecha+(a.hora||'')).localeCompare(b.fecha+(b.hora||'')));LS.set('obras',obras);
   $('mObra').classList.remove('on');diaSel=o.fecha;const d=deYmd(o.fecha);mesCal=new Date(d.getFullYear(),d.getMonth(),1);pintarCal();toast('Obra guardada: '+o.cliente)}
- catch(e){$('mObra').classList.add('on');if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('mObra').classList.remove('on');$('bSalir').click()}else sinRed(e)}
+ catch(e){$('mObra').classList.add('on');toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
  $('bObraOk').disabled=false}
 $('bObraDel').onclick=()=>{const o=oEd;$('mObra').classList.remove('on');
- preguntar(`¿Borrar la obra de ${o.cliente}? Desaparece del calendario de todos.`,async()=>{
-  try{const ok=await rpc('admin_delete_obra',{p_id:o.id});if(ok!==true)throw new Error('clave');obras=obras.filter(x=>x.id!==o.id);pintarCal();toast('Obra borrada')}
-  catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}},'SÍ, BORRAR',()=>$('mObra').classList.add('on'))};
+ OB.siNo(`¿Borrar la obra de ${o.cliente}? Desaparece del calendario de todos.`,async()=>{
+  try{await OB.borrar(o);obras=obras.filter(x=>x.id!==o.id);LS.set('obras',obras);pintarCal();toast('Obra borrada')}
+  catch(e){toast(e.message==='clave'?'La clave cambió. Volvé a entrar.':'No se pudo borrar. Probá de nuevo.')}},()=>$('mObra').classList.add('on'))};
+const OB={puedeBorrar:true,quien:()=>'Rafael',
+ siNo:(t,si,no)=>preguntar(t,si,'SÍ',no),
+ borrar:async o=>{const ok=await rpc('admin_delete_obra',{p_id:o.id});if(ok!==true)throw new Error('clave')}};
 
 /* ---------- Confirmación ---------- */
 function preguntar(t,si,txtSi='SÍ, BORRAR',no){$('cSi').textContent=txtSi;$('cTxt').textContent=t;$('confirm').classList.add('on');$('cSi').onclick=()=>{$('confirm').classList.remove('on');si()};$('cNo').onclick=()=>{$('confirm').classList.remove('on');if(no)no()}}

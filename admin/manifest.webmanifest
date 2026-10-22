@@ -1,7 +1,7 @@
 {
-  "name": "TPL Cargar datos",
-  "short_name": "TPL Cargar",
-  "description": "Carga de ítems, precios y textos para la app de presupuestos TPL",
+  "name": "Admin TPL",
+  "short_name": "Admin TPL",
+  "description": "Precios, ítems y calendario de obras de TPL (solo administrador)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -10,7 +10,18 @@
   "theme_color": "#0d2b4e",
   "lang": "es-AR",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
-  ]
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "id": "/rafa-proyecto/admin/"
 }
