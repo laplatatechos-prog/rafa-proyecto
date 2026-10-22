@@ -321,7 +321,8 @@ async function sync(){
  try{
   const [rows,conf]=await Promise.all([api('/catalogo?select=id,cat,nom,uni,pre,updated_by,updated_at&order=cat,nom'),api('/config?select=data&id=eq.1')]);
   cat=rows.map(r=>({id:r.id,cat:r.cat,nom:r.nom,uni:r.uni,pre:Number(r.pre)||0,by:r.updated_by,at:r.updated_at}));saveCat();
-  if(conf&&conf[0]){SHARED.forEach(k=>{if(k in conf[0].data)cfg[k]=conf[0].data[k]});saveCfg()}
+  // Sin textos guardados en la nube, cada teléfono usa los de fábrica (no los viejos que tenga guardados)
+  const nube=conf&&conf[0]?conf[0].data:{};SHARED.forEach(k=>{cfg[k]=k in nube?nube[k]:DEF_CFG[k]});saveCfg();
   LS.set('lastSync',Date.now());setOnline(true);
   renderHeader();renderChips();renderPieces();if($('v-cat').classList.contains('on')&&!document.activeElement.closest?.('#catList'))renderCat();liveSoon();
  }catch(e){setOnline(false)}
