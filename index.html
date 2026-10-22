@@ -86,6 +86,29 @@ nav.tabs button.on{color:#fff;background:var(--azul);box-shadow:0 4px 12px rgba(
 .modal .box{background:#fff;border-radius:20px;max-width:520px;margin:30px auto;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--azul);color:#fff;padding:11px 18px;border-radius:22px;font-size:14px;display:none;z-index:30;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(13,43,78,.35);border-bottom:3px solid var(--naranja)}
 @media(max-width:420px){.cat-row{grid-template-columns:1fr 58px 92px 28px}}
+/* Calendario de obras */
+.cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-top b{font-size:19px;color:var(--azul)}
+.cal-top button{border:0;background:var(--azul3);color:var(--azul2);font-size:24px;font-weight:800;width:50px;height:44px;border-radius:12px}
+.cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal-w{text-align:center;font-size:11px;font-weight:800;color:var(--suave);padding:4px 0}
+.cal-d{min-height:66px;min-width:0;border:1.5px solid var(--linea);background:#fff;border-radius:9px;padding:3px 2px;display:flex;flex-direction:column;gap:2px;align-items:stretch;justify-content:flex-start;overflow:hidden;font-family:inherit}
+.cal-d span{font-size:13px;font-weight:700;color:var(--texto);text-align:left;padding-left:3px}
+.cal-d i{display:block;font-style:normal;font-size:9px;font-weight:700;color:#fff;border-radius:4px;padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.cal-d em{font-style:normal;font-size:9px;color:var(--suave);font-weight:800}
+.cal-d.dom{background:#eef2f7}
+.cal-d.hoy{border-color:var(--naranja)}
+.cal-d.hoy span{color:var(--naranja)}
+.cal-d.sel{border-color:var(--azul);box-shadow:0 0 0 2px var(--azul)}
+.cal-ref{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--suave);margin-top:12px;font-weight:600}
+.cal-ref i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.obra{background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--sombra);border-left:5px solid var(--azul2)}
+.obra-t{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.obra-t b{font-size:16px}
+.est{color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:12px;flex:none;letter-spacing:.3px}
+.obra-m{font-size:13px;color:var(--suave);margin-top:4px;line-height:1.45}
+.obra-l{display:block;font-size:14px;color:var(--azul2);margin-top:6px;text-decoration:none;font-weight:600}
+.dia-t{font-size:13px;font-weight:800;color:var(--azul2);margin:18px 4px 8px;text-transform:uppercase;letter-spacing:1.2px}
 </style>
 </head>
 <body>
@@ -170,6 +193,16 @@ nav.tabs button.on{color:#fff;background:var(--azul);box-shadow:0 4px 12px rgba(
   </div>
 </section>
 
+<!-- OBRAS (solo lectura) -->
+<section class="view" id="v-obras">
+  <div class="card">
+    <div class="cal-top"><button id="calPrev" aria-label="Mes anterior">‹</button><b id="calMes"></b><button id="calNext" aria-label="Mes siguiente">›</button></div>
+    <div id="cal"></div>
+    <div class="cal-ref" id="calRef"></div>
+    <p class="hint" id="calInfo" style="margin:10px 0 0"></p>
+  </div>
+  <div id="calDia"></div>
+</section>
 <!-- AJUSTES -->
 <section class="view" id="v-aj">
   <div class="card">
@@ -218,6 +251,7 @@ nav.tabs button.on{color:#fff;background:var(--azul);box-shadow:0 4px 12px rgba(
   <button class="on" data-v="pres"><span>📝</span>Presupuesto</button>
   <button data-v="cat" id="tabCat" hidden><span>➕</span>Cargar</button>
   <button data-v="hist"><span>📂</span>Guardados</button>
+  <button data-v="obras"><span>📅</span>Obras</button>
   <button data-v="aj"><span>⚙️</span>Ajustes</button>
 </nav>
 
@@ -303,7 +337,7 @@ function nextNum(){const n=(LS.get('seq',0)||0)+1;LS.set('seq',n);const ini=(cfg
 
 /* ---------- Header y pestañas ---------- */
 function renderHeader(){$('tabCat').hidden=!isAdmin();$('hBrand').textContent=cfg.emp||'TPL';$('hWho').innerHTML=`<span class="dot ${online===true?'on':online===false?'off':''}"></span>${cfg.vend?esc(cfg.vend):'Sin vendedor'}${isAdmin()?' · admin':''}<br>${new Date().toLocaleDateString('es-AR')}`}
-document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));({hist:renderHist,cat:()=>{renderCat();sync()},aj:renderCfg,pres:()=>{renderPieces();liveSoon()}})[b.dataset.v]?.();scrollTo(0,0)});
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));({hist:renderHist,cat:()=>{renderCat();sync()},aj:renderCfg,obras:cargarObras,pres:()=>{renderPieces();liveSoon()}})[b.dataset.v]?.();scrollTo(0,0)});
 
 /* ---------- Presupuesto ---------- */
 function renderPres(){$('cNombre').value=cur.cli;$('cTel').value=cur.tel;$('cDir').value=cur.dir;$('obs').value=cur.obs;renderFixed();renderChips();renderPieces();renderItems()}
@@ -481,6 +515,53 @@ sync();
 addEventListener('online',sync);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});
 setInterval(()=>{if(document.visibilityState==='visible')sync()},60000);
+/* ---------- Calendario de obras (igual en las dos apps) ---------- */
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const ESTADOS={senada:['Señada','#f26a1b'],curso:['En curso','#16406f'],terminada:['Terminada','#14804a']};
+const pad2=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const deYmd=s=>{const [y,m,d]=String(s).slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
+const hoyYmd=()=>ymd(new Date());
+// Una obra ocupa sus días de trabajo desde la fecha de inicio, salteando los domingos
+function diasDe(o){const out=[],d=deYmd(o.fecha),n=Math.min(60,Math.max(1,Number(o.dias)||1));out.push(ymd(d));while(out.length<n){d.setDate(d.getDate()+1);if(d.getDay()!==0)out.push(ymd(d))}return out}
+function indiceObras(list){const ix={};list.forEach(o=>{const ds=diasDe(o);ds.forEach((f,i)=>(ix[f]=ix[f]||[]).push({o,n:i+1,de:ds.length}))});return ix}
+function fechaLarga(s){const d=deYmd(s);return ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()]+' '+d.getDate()+' de '+MESES[d.getMonth()].toLowerCase()}
+const colorEst=o=>(ESTADOS[o.estado]||ESTADOS.senada)[1];
+function calMes(mes,ix,sel){
+ const y=mes.getFullYear(),m=mes.getMonth(),ini=(new Date(y,m,1).getDay()+6)%7,tot=new Date(y,m+1,0).getDate(),hoy=hoyYmd();
+ let h='<div class="cal-g">'+['L','M','M','J','V','S','D'].map(x=>`<div class="cal-w">${x}</div>`).join('')+'<div></div>'.repeat(ini);
+ for(let d=1;d<=tot;d++){const f=y+'-'+pad2(m+1)+'-'+pad2(d),l=ix[f]||[];
+  h+=`<button class="cal-d${f===hoy?' hoy':''}${f===sel?' sel':''}${(ini+d)%7===0?' dom':''}" data-f="${f}"><span>${d}</span>${l.slice(0,3).map(x=>`<i style="background:${colorEst(x.o)}">${esc((x.o.cliente||'').split(' ')[0])}</i>`).join('')}${l.length>3?`<em>+${l.length-3}</em>`:''}</button>`}
+ return h+'</div>'}
+const refEstados=()=>Object.values(ESTADOS).map(e=>`<span><i style="background:${e[1]}"></i>${e[0]}</span>`).join('');
+function tarjetaObra(x){const o=x.o,e=ESTADOS[o.estado]||ESTADOS.senada;
+ return `<div class="obra" data-id="${esc(o.id)}" style="border-left-color:${e[1]}"><div class="obra-t"><b>${esc(o.cliente||'Sin nombre')}</b><span class="est" style="background:${e[1]}">${e[0]}</span></div>`
+ +`<div class="obra-m">👷 ${esc(o.cuadrilla||'Sin cuadrilla')}${x.de>1?` · día ${x.n} de ${x.de}`:''}${o.pres_num?` · Presupuesto N° ${esc(o.pres_num)}`:''}</div>`
+ +(o.dir?`<a class="obra-l" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.dir)}" target="_blank" rel="noopener">📍 ${esc(o.dir)}</a>`:'')
+ +(o.tel?`<a class="obra-l" href="tel:${esc(String(o.tel).replace(/[^0-9+]/g,''))}">📞 ${esc(o.tel)}</a>`:'')
+ +(o.notas?`<div class="obra-m">📝 ${esc(o.notas)}</div>`:'')+'</div>'}
+// Día elegido + próximas obras sin terminar
+function listaDia(list,ix,sel){const l=ix[sel]||[],hoy=hoyYmd();
+ const prox=list.filter(o=>o.estado!=='terminada'&&diasDe(o).slice(-1)[0]>=hoy).slice(0,15);
+ return `<div class="dia-t">${fechaLarga(sel)}</div>`+(l.length?l.map(tarjetaObra).join(''):'<div class="card hint">No hay obras este día.</div>')
+ +`<div class="dia-t">Próximas obras</div>`+(prox.length?prox.map(o=>{const ds=diasDe(o);return tarjetaObra({o,n:1,de:1}).replace('<div class="obra-m">',`<div class="obra-m"><b style="color:var(--azul)">📅 ${fechaLarga(o.fecha)}${ds.length>1?` al ${fechaLarga(ds.slice(-1)[0])} (${ds.length} días)`:''}</b><br>`)}).join(''):'<div class="card hint">No hay obras pendientes.</div>')}
+
+/* ---------- Obras: solo lectura, las carga Rafael desde la app de carga ---------- */
+let obras=LS.get('obras',[]),mesCal=new Date(new Date().getFullYear(),new Date().getMonth(),1),diaSel=hoyYmd();
+async function cargarObras(){pintarCal();
+ try{obras=(await api('/obras?select=*&order=fecha'))||[];LS.set('obras',obras);LS.set('obrasAt',new Date().toISOString());$('calInfo').textContent='Actualizado recién. Para reservar una fecha, consultá con Rafael.'}
+ catch(e){const t=LS.get('obrasAt',null);$('calInfo').textContent='Sin internet: mostrando lo último que se bajó'+(t?' ('+new Date(t).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+')':'')+'.'}
+ pintarCal()}
+function pintarCal(){
+ const ix=indiceObras(obras);
+ $('calMes').textContent=MESES[mesCal.getMonth()]+' '+mesCal.getFullYear();
+ $('cal').innerHTML=calMes(mesCal,ix,diaSel);$('calRef').innerHTML=refEstados();
+ $('cal').querySelectorAll('.cal-d').forEach(b=>b.onclick=()=>{diaSel=b.dataset.f;pintarCal()});
+ $('calDia').innerHTML=listaDia(obras,ix,diaSel);
+}
+const irMes=n=>{mesCal=new Date(mesCal.getFullYear(),mesCal.getMonth()+n,1);pintarCal()};
+$('calPrev').onclick=()=>irMes(-1);$('calNext').onclick=()=>irMes(1);
+
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
