@@ -128,10 +128,12 @@ input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:n
       <h2>Datos de la empresa</h2>
       <label for="tEmp">Empresa</label><input id="tEmp">
       <label for="tETel">Teléfono de la empresa</label><input id="tETel" type="tel">
-      <label for="tPct">Descuento de la promoción (%)</label><input id="tPct" type="number" inputmode="numeric">
-      <label for="tDias">Días para aceptar la promo</label><input id="tDias" type="number" inputmode="numeric">
-      <label for="tPromo">Título de la promoción</label><input id="tPromo">
-      <label for="tPromoTxt">Texto debajo de la promoción</label><textarea id="tPromoTxt"></textarea>
+      <label for="tAnt">Anticipo para reservar (%)</label><input id="tAnt" type="number" inputmode="numeric">
+      <label for="tPct">Bonificación si paga con anticipo (%)</label><input id="tPct" type="number" inputmode="numeric">
+      <p class="hint">El precio que cargás es el precio con anticipo. Si paga todo al final, la app le suma la diferencia sola.</p>
+      <label for="tPromo">Título del cuadro de precios</label><input id="tPromo">
+      <label for="tPromoTxt">Leyenda del anticipo</label><textarea id="tPromoTxt"></textarea>
+      <label for="tDias">Validez del presupuesto (días)</label><input id="tDias" type="number" inputmode="numeric">
     </div>
     <div class="card">
       <h2>Textos fijos del presupuesto</h2>
@@ -164,11 +166,11 @@ const rpc=(fn,args)=>api('/rpc/'+fn,{method:'POST',body:JSON.stringify(Object.as
 function sinRed(e){toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
 
 const UNIS=[['m','Metro'],['u','Unidad'],['m²','m²'],['gl','Global']];
-const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,promo:'PRECIO PROMOCIONAL DEL MES',round:true,
- pago:'Efectivo, contado o tarjeta (consultar condiciones con tarjeta).\nSin anticipo: material y mano de obra se pagan al finalizar, contra conformidad.',
+const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',round:true,
+ pago:'Con anticipo: 50% para reservar la fecha de obra y el saldo al finalizar, contra conformidad.\nSin anticipo: pago total al finalizar, contra conformidad, a precio de lista.\nEfectivo, transferencia o tarjeta (consultar condiciones con tarjeta).',
  gar:'Garantía TPL de 24 meses por escrito.',
- det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl trabajo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
- ben:'PAGÁS AL FINALIZAR | Materiales y mano de obra, sin anticipo.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
+ det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
+ ben:'SALDO AL FINALIZAR | Pagás el resto cuando el trabajo está terminado y aprobado.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
  promoTxt:'¡Aprovechá! Precio válido durante el mes en curso.'};
 let clave=LS.get('clave',''),cat=[],cfg=Object.assign({},DEF),nCat='',nUni='m';
 
@@ -277,10 +279,10 @@ $('bNuevo').onclick=async()=>{
 };
 
 /* ---------- Textos ---------- */
-const TX=[['tEmp','emp'],['tETel','etel'],['tPct','pct'],['tDias','dias'],['tPromo','promo'],['tPromoTxt','promoTxt'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
+const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
 function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'')}
 $('bTextos').onclick=async()=>{
- const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;
+ const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;
  $('bTextos').disabled=true;
  try{const ok=await rpc('admin_save_config',{p_data:d});if(ok!==true)throw new Error('clave');cfg=d;toast('Textos guardados para todos los vendedores')}
  catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}
