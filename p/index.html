@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0d2b4e">
+<meta name="theme-color" content="#6d1a2b">
 <title>Tu presupuesto · La Plata Techos</title>
 <meta name="description" content="Elegí cómo pagar, la fecha de obra y firmá desde el celular.">
 <link rel="icon" href="../icon-192.png">
 <style>
-/* Página del cliente: azul de la marca con amarillo para lo que tiene que tocar */
-:root{--azul:#0d2b4e;--azul2:#16406f;--azul3:#e8eef6;--amar:#ffc21a;--amar2:#ffd65c;--amar3:#fff7dc;--linea:#dde5ef;--texto:#13233a;--suave:#5e6f86;--fondo:#f2f5f9;--ok:#14804a;--sombra:0 1px 2px rgba(13,43,78,.06),0 8px 24px rgba(13,43,78,.08)}
+/* Página del cliente: bordó de la memoria técnica, gris de base y amarillo para lo que tiene que tocar */
+:root{--azul:#6d1a2b;--azul2:#8c2a3d;--azul3:#eceef1;--amar:#ffc21a;--amar2:#ffd65c;--amar3:#fff7dc;--linea:#dfe2e6;--texto:#24272c;--suave:#5f6670;--fondo:#f3f4f6;--ok:#14804a;--sombra:0 1px 2px rgba(30,32,36,.06),0 8px 24px rgba(30,32,36,.08)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--fondo);color:var(--texto);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
@@ -18,19 +18,19 @@ body{margin:0;background:var(--fondo);color:var(--texto);font-family:system-ui,-
 .hero .in{max-width:640px;margin:auto;position:relative}
 .marca{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:3px;font-size:20px}
 .marca .logo{width:38px;height:38px;border-radius:10px;background:var(--amar);display:grid;place-items:center}
-.marca small{display:block;font-size:11px;letter-spacing:1.5px;font-weight:700;color:#c8d5e6}
+.marca small{display:block;font-size:11px;letter-spacing:1.5px;font-weight:700;color:#ecd6db}
 .hero h1{font-size:26px;line-height:1.2;margin:20px 0 6px;font-weight:900}
 .hero h1 span{color:var(--amar)}
-.hero p{margin:0;color:#c8d5e6;font-size:14px;line-height:1.5}
+.hero p{margin:0;color:#ecd6db;font-size:14px;line-height:1.5}
 .hero .num{display:inline-block;margin-top:12px;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700}
 .fotos{display:flex;gap:10px;overflow-x:auto;padding:16px;max-width:672px;margin:-2px auto 0;scroll-snap-type:x mandatory;scrollbar-width:none}
 .fotos::-webkit-scrollbar{display:none}
-.foto{flex:none;width:72%;max-width:300px;aspect-ratio:4/3;border-radius:16px;overflow:hidden;scroll-snap-align:start;position:relative;box-shadow:var(--sombra);background:#23406a}
+.foto{flex:none;width:72%;max-width:300px;aspect-ratio:4/3;border-radius:16px;overflow:hidden;scroll-snap-align:start;position:relative;box-shadow:var(--sombra);background:#4a4f57}
 .foto img,.foto svg{width:100%;height:100%;object-fit:cover;display:block}
-.foto b{position:absolute;left:10px;bottom:10px;background:rgba(13,43,78,.82);color:#fff;font-size:12px;padding:5px 10px;border-radius:12px}
+.foto b{position:absolute;left:10px;bottom:10px;background:rgba(109,26,43,.88);color:#fff;font-size:12px;padding:5px 10px;border-radius:12px}
 main{max-width:640px;margin:auto;padding:0 16px 120px}
 .card{background:#fff;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:var(--sombra)}
-.card h2{font-size:13px;letter-spacing:1.6px;text-transform:uppercase;color:var(--azul2);margin:0 0 14px;font-weight:900;display:flex;align-items:center;gap:10px}
+.card h2{font-size:13px;letter-spacing:1.6px;text-transform:uppercase;color:var(--azul);margin:0 0 14px;font-weight:900;display:flex;align-items:center;gap:10px}
 .card h2 i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--amar);color:var(--azul);display:grid;place-items:center;font-size:13px;flex:none}
 .item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--linea);font-size:14px}
 .item:last-child{border-bottom:0}
@@ -49,10 +49,10 @@ main{max-width:640px;margin:auto;padding:0 16px 120px}
 .cuotas{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .cuotas button{flex:1 1 30%;border:1.5px solid var(--linea);background:#fff;border-radius:12px;padding:9px 6px;font-size:13px;font-weight:700;color:var(--azul)}
 .cuotas button small{display:block;font-weight:600;color:var(--suave);font-size:11px;margin-top:2px}
-.cuotas button.on{background:var(--azul);border-color:var(--azul);color:#fff}.cuotas button.on small{color:#c8d5e6}
+.cuotas button.on{background:#3d4249;border-color:#3d4249;color:#fff}.cuotas button.on small{color:#ecd6db}
 label{display:block;font-size:12px;font-weight:800;color:var(--suave);margin:12px 0 5px}
 label:first-of-type{margin-top:0}
-input[type=text],input[type=tel],input[type=email],input[inputmode]{width:100%;border:1.5px solid var(--linea);border-radius:12px;padding:13px;font-size:16px;color:var(--texto);background:#fbfcfe;font-family:inherit}
+input[type=text],input[type=tel],input[type=email],input[inputmode]{width:100%;border:1.5px solid var(--linea);border-radius:12px;padding:13px;font-size:16px;color:var(--texto);background:#fbfbfc;font-family:inherit}
 input:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 4px rgba(255,194,26,.35);background:#fff}
 .err{border-color:#c0392b!important}
 .cal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -62,19 +62,19 @@ input:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 4px rgba(255
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
 .cal .dn{font-size:11px;font-weight:800;color:var(--suave);padding:4px 0}
 .cal button{aspect-ratio:1;border:0;border-radius:11px;font-size:15px;font-weight:700;background:var(--azul3);color:var(--azul)}
-.cal button:disabled{background:transparent;color:#b7c2d0;text-decoration:line-through;font-weight:500}
+.cal button:disabled{background:transparent;color:#bcc1c7;text-decoration:line-through;font-weight:500}
 .cal button.vacio{visibility:hidden}
 .cal button.on{background:var(--amar);color:var(--azul);box-shadow:0 0 0 2px var(--azul2)}
 .ref{display:flex;gap:14px;font-size:12px;color:var(--suave);margin-top:10px;flex-wrap:wrap}
 .ref span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--azul3)}
-.ref span.x::before{background:#fff;border:1px solid #c6d0dc}
+.ref span.x::before{background:#fff;border:1px solid #cdd1d6}
 .ref span.s::before{background:var(--amar)}
 .nota{font-size:13px;color:var(--suave);line-height:1.5;margin-top:10px}
 .nota b{color:var(--azul)}
-.firma{position:relative;border:2px dashed #b7c6d8;border-radius:14px;background:#fff;touch-action:none;height:190px}
+.firma{position:relative;border:2px dashed #bfc4ca;border-radius:14px;background:#fff;touch-action:none;height:190px}
 .firma canvas{width:100%;height:100%;display:block;border-radius:12px}
-.firma .ph{position:absolute;inset:0;display:grid;place-items:center;color:#a7b4c4;font-size:15px;pointer-events:none}
-.firma .linea{position:absolute;left:20px;right:20px;bottom:40px;border-bottom:1.5px solid #d0d9e4;pointer-events:none}
+.firma .ph{position:absolute;inset:0;display:grid;place-items:center;color:#a9aeb5;font-size:15px;pointer-events:none}
+.firma .linea{position:absolute;left:20px;right:20px;bottom:40px;border-bottom:1.5px solid #d7dade;pointer-events:none}
 .mini{border:0;background:none;color:var(--azul2);font-weight:800;font-size:13px;padding:8px 0;text-decoration:underline}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:var(--texto);margin-top:14px;font-weight:600}
 .check input{width:22px;height:22px;flex:none;margin:0;accent-color:var(--azul2)}
@@ -85,7 +85,7 @@ input:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 4px rgba(255
 .barra .res b{display:block;font-size:18px;color:var(--azul);font-variant-numeric:tabular-nums}
 .btn{display:block;border:0;border-radius:14px;padding:15px 18px;font-size:15px;font-weight:900;letter-spacing:.3px;background:var(--amar);color:var(--azul);box-shadow:0 6px 16px rgba(255,194,26,.45);text-align:center;text-decoration:none;font-family:inherit}
 .btn:active{transform:scale(.98)}.btn:disabled{opacity:.55}
-.btn.az{background:var(--azul2);color:#fff;box-shadow:0 6px 16px rgba(22,64,111,.3)}
+.btn.az{background:#3d4249;color:#fff;box-shadow:0 6px 16px rgba(109,26,43,.3)}
 .btn.wa{background:#25d366;color:#fff;box-shadow:0 6px 16px rgba(37,211,102,.35)}
 .full{width:100%;margin-top:10px}
 .estado{text-align:center;padding:30px 18px}
@@ -101,7 +101,7 @@ input:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 4px rgba(255
 </head>
 <body>
 <div class="hero"><div class="in">
-  <div class="marca"><div class="logo"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12 12 4l10 8" fill="none" stroke="#0d2b4e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 11v8h14v-8" fill="none" stroke="#0d2b4e" stroke-width="2.2" stroke-linejoin="round"/></svg></div><div><span id="hEmp">TPL</span><small>LA PLATA TECHOS</small></div></div>
+  <div class="marca"><div class="logo"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12 12 4l10 8" fill="none" stroke="#6d1a2b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 11v8h14v-8" fill="none" stroke="#6d1a2b" stroke-width="2.2" stroke-linejoin="round"/></svg></div><div><span id="hEmp">TPL</span><small>LA PLATA TECHOS</small></div></div>
   <h1 id="hTit">Tu presupuesto, <span>listo para confirmar</span></h1>
   <p id="hSub">Elegí cómo pagar, la fecha de obra y firmá desde el celular. Tarda 2 minutos.</p>
   <span class="num" id="hNum" hidden></span>
@@ -129,9 +129,9 @@ const sumar=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const largo=s=>deYmd(s).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
 
 /* Fotos de obras: se cargan en Admin TPL (clave "fotos": links separados por coma). Mientras, dibujos de muestra. */
-const MUESTRA=[['Canaleta y bajada','#16406f','#2a5d96'],['Techo de chapa','#0d2b4e','#1f4a7c'],['Zinguería a medida','#1b3f68','#33679f'],['Impermeabilización','#123457','#285a8e']];
+const MUESTRA=[['Canaleta y bajada','#4a4f57','#6b7078'],['Techo de chapa','#6d1a2b','#8c2a3d'],['Zinguería a medida','#3d4249','#5f6670'],['Impermeabilización','#5a1423','#7d2033']];
 function dibujo(t,c1,c2,i){const techo=['M0 150 L160 50 L320 150 Z','M0 140 L320 70 L320 150 L0 150 Z','M0 150 L90 60 L230 60 L320 150 Z','M0 120 L320 120 L320 150 L0 150 Z'][i%4];
- return `<svg viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient></defs><rect width="320" height="240" fill="url(#g${i})"/><circle cx="262" cy="52" r="24" fill="#ffc21a" opacity=".9"/><g transform="translate(0,30)"><path d="${techo}" fill="#ffc21a" opacity=".95"/><rect x="40" y="150" width="240" height="60" fill="#e8eef6" opacity=".9"/><rect x="40" y="148" width="240" height="7" fill="#9fb0c6"/><rect x="268" y="150" width="7" height="60" fill="#9fb0c6"/><rect x="70" y="168" width="34" height="28" fill="#0d2b4e" opacity=".55"/><rect x="200" y="168" width="34" height="28" fill="#0d2b4e" opacity=".55"/><rect x="138" y="166" width="40" height="44" fill="#0d2b4e" opacity=".7"/></g></svg><b>${esc(t)}</b>`}
+ return `<svg viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c2}"/><stop offset="1" stop-color="${c1}"/></linearGradient></defs><rect width="320" height="240" fill="url(#g${i})"/><circle cx="262" cy="52" r="24" fill="#ffc21a" opacity=".9"/><g transform="translate(0,30)"><path d="${techo}" fill="#ffc21a" opacity=".95"/><rect x="40" y="150" width="240" height="60" fill="#eceef1" opacity=".9"/><rect x="40" y="148" width="240" height="7" fill="#a9adb4"/><rect x="268" y="150" width="7" height="60" fill="#a9adb4"/><rect x="70" y="168" width="34" height="28" fill="#6d1a2b" opacity=".55"/><rect x="200" y="168" width="34" height="28" fill="#6d1a2b" opacity=".55"/><rect x="138" y="166" width="40" height="44" fill="#6d1a2b" opacity=".7"/></g></svg><b>${esc(t)}</b>`}
 function pintarFotos(cfg){const urls=String(cfg.fotos||'').split(/[\s,]+/).filter(u=>/^https:\/\//.test(u)).slice(0,12);
  $('fotos').innerHTML=urls.length?urls.map((u,i)=>`<div class="foto"><img src="${esc(u)}" alt="Obra ${i+1}" loading="lazy"></div>`).join(''):MUESTRA.map((m,i)=>`<div class="foto">${dibujo(m[0],m[1],m[2],i)}</div>`).join('')}
 
@@ -233,9 +233,9 @@ function pintarCal(){const minD=sumar(hoyAR(),Number(C.minDias??2)),maxD=sumar(h
 
 /* Firma con el dedo: se guarda como imagen PNG */
 let trazos=0;
-function firma(){const cv=$('cv'),box=$('firma'),r=Math.min(2,window.devicePixelRatio||1);cv.width=box.clientWidth*r;cv.height=box.clientHeight*r;const g=cv.getContext('2d');g.scale(r,r);g.lineWidth=2.6;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#0d2b4e';trazos=0;sel.firma=false;
+function firma(){const cv=$('cv'),box=$('firma'),r=Math.min(2,window.devicePixelRatio||1);cv.width=box.clientWidth*r;cv.height=box.clientHeight*r;const g=cv.getContext('2d');g.scale(r,r);g.lineWidth=2.6;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#6d1a2b';trazos=0;sel.firma=false;
  let ab=false,lx=0,ly=0;const pos=e=>{const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top]};
- cv.onpointerdown=e=>{ab=true;cv.setPointerCapture(e.pointerId);[lx,ly]=pos(e);g.beginPath();g.arc(lx,ly,1.2,0,7);g.fillStyle='#0d2b4e';g.fill();$('ph').style.display='none'};
+ cv.onpointerdown=e=>{ab=true;cv.setPointerCapture(e.pointerId);[lx,ly]=pos(e);g.beginPath();g.arc(lx,ly,1.2,0,7);g.fillStyle='#6d1a2b';g.fill();$('ph').style.display='none'};
  cv.onpointermove=e=>{if(!ab)return;const [x,y]=pos(e);g.beginPath();g.moveTo(lx,ly);g.lineTo(x,y);g.stroke();lx=x;ly=y;if(++trazos>15&&!sel.firma){sel.firma=true;barra()}};
  cv.onpointerup=cv.onpointercancel=()=>{ab=false};
  $('bBorrar').onclick=()=>{g.clearRect(0,0,cv.width,cv.height);trazos=0;sel.firma=false;$('ph').style.display='grid';barra()};
