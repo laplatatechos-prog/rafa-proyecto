@@ -189,7 +189,7 @@ input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:n
     <div class="card">
       <h2>Textos fijos del presupuesto</h2>
       <p class="hint">Un renglón por cada punto.</p>
-      <label for="tPago">Formas de pago</label><textarea id="tPago"></textarea>
+      <label for="tPago">Formas de pago: notas extra</label><p class="hint">Anticipo, pago al final y tarjeta ya salen solos en el presupuesto con tus % y cuotas. Acá poné solo algo adicional (o dejalo vacío).</p><textarea id="tPago"></textarea>
       <label for="tGar">Garantía</label><textarea id="tGar"></textarea>
       <label for="tDet">Detalles y condiciones</label><textarea id="tDet"></textarea>
       <label for="tBen">Beneficios (TÍTULO | detalle)</label><textarea id="tBen"></textarea>
@@ -249,8 +249,8 @@ const rpc=(fn,args)=>api('/rpc/'+fn,{method:'POST',body:JSON.stringify(Object.as
 function sinRed(e){toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
 
 const UNIS=[['m','Metro'],['u','Unidad'],['m²','m²'],['gl','Global']];
-const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',leyTar:'¿No tenés efectivo? Aprovechá y sumá más trabajos a la obra: lo pagás todo junto en hasta {max} cuotas.',round:true,
- pago:'Con anticipo: 50% para reservar la fecha de obra y el saldo al finalizar, contra conformidad.\nSin anticipo: pago total al finalizar, contra conformidad, a precio de lista.\nEfectivo, transferencia o tarjeta (consultar condiciones con tarjeta).',
+const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,
+ pago:'',
  gar:'Garantía TPL de 24 meses por escrito.',
  det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
  ben:'SALDO AL FINALIZAR | Pagás el resto cuando el trabajo está terminado y aprobado.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
@@ -363,7 +363,7 @@ $('bNuevo').onclick=async()=>{
 
 /* ---------- Textos ---------- */
 const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tLeyTar','leyTar'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
-function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'');const pl=String(cfg.planes||'').split(/[,;]+/).map(x=>x.split('='));for(let i=0;i<4;i++){$('pN'+i).value=pl[i]?.[0]?.trim()||'';$('pR'+i).value=pl[i]?.[1]?.trim()||''}}
+function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'');$('tPago').value=String(cfg.pago||'').split('\n').filter(l=>!/^\s*(con anticipo|sin anticipo|efectivo, transferencia o tarjeta)/i.test(l)).join('\n');const pl=String(cfg.planes||'').split(/[,;]+/).map(x=>x.split('='));for(let i=0;i<4;i++){$('pN'+i).value=pl[i]?.[0]?.trim()||'';$('pR'+i).value=pl[i]?.[1]?.trim()||''}}
 $('bTextos').onclick=async()=>{
  const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;d.planes=[0,1,2,3].map(i=>[parseInt($('pN'+i).value)||0,Number(String($('pR'+i).value).replace(',','.'))||0]).filter(([n])=>n>1).map(([n,r])=>n+'='+r).join(',');
  $('bTextos').disabled=true;

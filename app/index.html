@@ -252,7 +252,7 @@ nav.tabs button.on{color:#fff;background:var(--azul);box-shadow:0 4px 12px rgba(
   </div>
   <div class="card">
     <h2>Textos fijos del PDF (uno por renglón)</h2>
-    <label>Formas de pago</label><textarea id="tPago"></textarea>
+    <label>Formas de pago: notas extra (las opciones de pago se arman solas)</label><textarea id="tPago"></textarea>
     <label style="margin-top:10px">Garantía</label><textarea id="tGar"></textarea>
     <label style="margin-top:10px">Detalles / condiciones</label><textarea id="tDet"></textarea>
     <label style="margin-top:10px">Beneficios (TÍTULO | detalle)</label><textarea id="tBen"></textarea>
@@ -318,8 +318,8 @@ const UPSERT={method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=
 let online=null;
 
 const SHARED=['emp','etel','pct','dias','round','pago','gar','det','ben','anticipo','opTit','leyenda','planes','leyTar'];
-const DEF_CFG={vend:'',vtel:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',leyTar:'¿No tenés efectivo? Aprovechá y sumá más trabajos a la obra: lo pagás todo junto en hasta {max} cuotas.',round:true,pin:'',
- pago:'Con anticipo: 50% para reservar la fecha de obra y el saldo al finalizar, contra conformidad.\nSin anticipo: pago total al finalizar, contra conformidad, a precio de lista.\nEfectivo, transferencia o tarjeta (consultar condiciones con tarjeta).',
+const DEF_CFG={vend:'',vtel:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,pin:'',
+ pago:'',
  gar:'Garantía TPL de 24 meses por escrito.',
  det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
  ben:'SALDO AL FINALIZAR | Pagás el resto cuando el trabajo está terminado y aprobado.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
@@ -374,6 +374,8 @@ const qtyEff=it=>cfg.round&&it.uni==='m'?Math.ceil(it.q-1e-9):it.q;
 function totals(){const fin=cur.items.reduce((s,it)=>s+qtyEff(it)*it.pre,0),p=Math.min(90,Math.max(0,Number(cfg.pct)||0))/100,lista=p?fin/(1-p):fin;return{fin,lista,ahorro:lista-fin,planes:planesTar().map(x=>{const tot=lista*(1+x.r/100);return{n:x.n,tot,cuota:tot/x.n,mas:tot-fin}})}}
 // Planes con tarjeta: "3=25,6=40" = cuotas=recargo % sobre el pago al final
 function planesTar(){return String(cfg.planes||'').split(/[,;\n]+/).map(x=>x.split(/[=:]/).map(v=>Number(String(v).trim()))).filter(([n,r])=>n>1&&n<=48&&r>=0).map(([n,r])=>({n:Math.round(n),r})).sort((a,b)=>a.n-b.n)}
+// Las 3 formas de pago se arman solas desde la config para que nunca contradigan los cuadros de precios
+const formasPago=t=>[`Con ${cfg.anticipo}% de anticipo (mejor precio): en efectivo o transferencia. El anticipo reserva la fecha de obra y el saldo se abona al finalizar, contra conformidad.`,'Pago total al finalizar: a precio de lista, en efectivo o transferencia, contra conformidad. La fecha de obra se asigna según disponibilidad.'].concat(t.planes.length?[`Con tarjeta de crédito: hasta ${t.planes[t.planes.length-1].n} cuotas por Mercado Pago, con el recargo de cada plan sobre el precio de lista. Se abona al finalizar, contra conformidad. La fecha de obra se asigna según disponibilidad.`]:[]);
 const leyTar=t=>String(cfg.leyTar||'').replace(/\{max\}/g,t.planes.length?t.planes[t.planes.length-1].n:'')
 function nextNum(){const n=(LS.get('seq',0)||0)+1;LS.set('seq',n);const ini=(cfg.vend||'X').trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,3);return ini+'-'+String(n).padStart(4,'0')}
 
@@ -407,7 +409,7 @@ function renderItems(){
  $('items').querySelectorAll('.del').forEach(b=>b.onclick=()=>{cur.items.splice(b.dataset.i,1);saveCur();renderItems();renderPieces()});
  renderTotals();
 }
-function renderTotals(){const t=totals();$('totals').innerHTML=`<div class="off">CON ${cfg.anticipo}% DE ANTICIPO</div><div class="final">${fmt(t.fin)}</div><div style="font-size:12px;font-weight:bold">PRECIO BONIFICADO</div><div class="ahorro">Ahorrás ${fmt(t.ahorro)}</div><div class="alt">Pago total al finalizar: <b>${fmt(t.lista)}</b></div>${t.planes.map(x=>`<div class="alt" style="margin-top:4px;padding-top:4px">${x.n} cuotas con tarjeta: <b>${x.n} × ${fmt(x.cuota)}</b> (total ${fmt(x.tot)})</div>`).join('')}<div class="ley">${esc(cfg.leyenda||'')}</div>`}
+function renderTotals(){const t=totals();$('totals').innerHTML=`<div class="off">CON ${cfg.anticipo}% DE ANTICIPO</div><div class="final">${fmt(t.fin)}</div><div style="font-size:12px;font-weight:bold">PRECIO BONIFICADO</div>${t.ahorro>0?`<div class="ahorro">Ahorrás ${fmt(t.ahorro)}</div>`:''}<div class="alt">Pago total al finalizar: <b>${fmt(t.lista)}</b></div>${t.planes.map(x=>`<div class="alt" style="margin-top:4px;padding-top:4px">${x.n} cuotas con tarjeta: <b>${x.n} × ${fmt(x.cuota)}</b> (total ${fmt(x.tot)})</div>`).join('')}<div class="ley">${esc(cfg.leyenda||'')}</div>`}
 [['cNombre','cli'],['cTel','tel'],['cDir','dir'],['obs','obs']].forEach(([id,k])=>$(id).addEventListener('input',()=>{cur[k]=$(id).value;saveCur()}));
 $('search').oninput=renderPieces;
 
@@ -478,7 +480,7 @@ function drawPages(){
   if(pages.length===1){rect(0,0,W,200,C.bordo);txt(cfg.emp||'TPL',M,130,88,'#fff',true);txt('PRESUPUESTO · MEMORIA TÉCNICA',W-M,82,32,'#fff',true,'right');txt(`Vendedor: ${cfg.vend||'—'}${cfg.vtel?' · Tel. '+cfg.vtel:''}`,W-M,124,24,'#fff',false,'right');txt(`N° ${num}  ·  Fecha: ${fecha(cur.fecha)}`,W-M,162,24,'#fff',false,'right');y=250}
   else{rect(0,0,W,46,C.bordo);txt(`${cfg.emp} · Presupuesto N° ${num} · ${cur.cli}`,M,32,20,'#fff');y=110}};
  const ensure=h=>{if(y+h>BOT)newPage()};
- const section=title=>{ensure(130);rect(M,y,CW,54,C.bordo);txt(title,M+20,y+37,26,'#fff',true);y+=88};
+ const section=title=>{ensure(190);rect(M,y,CW,54,C.bordo);txt(title,M+20,y+37,26,'#fff',true);y+=88};
  const bullets=(arr,color=C.bordo)=>{for(const b of arr){const ls=lines(b,CW-50,25);ensure(ls.length*36+16);rect(M+12,y-26,6,ls.length*36,color);ls.forEach((l,i)=>txt(l,M+36,y+i*36,25));y+=ls.length*36+16}};
  const L=s=>String(s||'').split('\n').map(x=>x.trim()).filter(Boolean);
  newPage();
@@ -501,29 +503,28 @@ function drawPages(){
  ensure(60);txt(`TOTAL CON ${cfg.anticipo}% DE ANTICIPO`,xU,y+6,22,C.bordo,true,'right');txt(fmt(t.fin),xS,y+6,30,C.bordo,true,'right');y+=70;
  if(cur.obs.trim()){ensure(90);txt('Observaciones',M,y,22,C.nar,true);y+=40;bullets(L(cur.obs))}
  // Condiciones de pago (siempre): con anticipo bonificado o todo al final
- y+=10;section(`${n++}. PRESUPUESTO`);ensure(470);
+ y+=10;ensure(620);section(`${n++}. PRESUPUESTO`);
  const bh=410,cw=(CW-30)/2,x1=M,x2=M+cw+30;
  txt(cfg.opTit||'ELEGÍ CÓMO PAGAR',W/2,y+30,24,C.bordo,true,'center');y+=56;
  ctx.lineWidth=4;ctx.strokeStyle=C.nar;rect(x1,y,cw,bh-56,C.crema);ctx.strokeRect(x1+2,y+2,cw-4,bh-60);rect(x1,y,cw,58,C.nar);
  const c1=x1+cw/2;txt(`CON ${cfg.anticipo}% DE ANTICIPO`,c1,y+39,24,'#fff',true,'center');
- txt('★ MEJOR PRECIO · EFECTIVO O TRANSFERENCIA',c1,y+92,18,C.nar,true,'center');
- txt(fmt(t.fin),c1,y+160,64,C.nar,true,'center');txt('PRECIO BONIFICADO',c1,y+196,21,C.tx,true,'center');
- txt(`Ahorrás ${fmt(t.ahorro)}`,c1,y+236,23,C.nar,true,'center');
+ txt(t.ahorro>0?'★ MEJOR PRECIO · EFECTIVO O TRANSFERENCIA':'EFECTIVO O TRANSFERENCIA',c1,y+92,18,C.nar,true,'center');
+ txt(fmt(t.fin),c1,y+160,64,C.nar,true,'center');txt(t.ahorro>0?'PRECIO BONIFICADO':'PRECIO DE LISTA',c1,y+196,21,C.tx,true,'center');
+ if(t.ahorro>0)txt(`Ahorrás ${fmt(t.ahorro)}`,c1,y+236,23,C.nar,true,'center');
  txt(`Anticipo: ${fmt(t.fin*cfg.anticipo/100)}`,c1,y+290,21,C.su,false,'center');txt(`Saldo al finalizar: ${fmt(t.fin-t.fin*cfg.anticipo/100)}`,c1,y+322,21,C.su,false,'center');
  ctx.lineWidth=2;ctx.strokeStyle=C.linea;rect(x2,y,cw,bh-56,'#fff');ctx.strokeRect(x2+1,y+1,cw-2,bh-58);rect(x2,y,cw,58,C.gris);
  const c2=x2+cw/2;txt('PAGO TOTAL AL FINALIZAR',c2,y+39,24,C.tx,true,'center');
  txt(fmt(t.lista),c2,y+150,58,C.tx,true,'center');txt('PRECIO DE LISTA',c2,y+196,21,C.su,true,'center');
- lines('Se abona todo junto al terminar la obra, contra conformidad.',cw-60,21).forEach((l,i)=>txt(l,c2,y+260+i*32,21,C.su,false,'center'));
- y+=bh-56+30;
+ lines('Se abona todo junto al terminar la obra, contra conformidad, en efectivo o transferencia.',cw-60,21).forEach((l,i)=>txt(l,c2,y+260+i*32,21,C.su,false,'center'));
+ y+=bh-56+46;bullets(L(cfg.leyenda),C.nar);y+=14;
  if(t.planes.length){const rh=56;ensure(60+rh*t.planes.length);
   rect(M,y,CW,52,C.gris);rect(M,y,10,52,C.bordo);txt('¿PREFERÍS TARJETA? PLANES EN CUOTAS',M+30,y+35,22,C.bordo,true);y+=52;
   t.planes.forEach((x,i)=>{if(i%2)rect(M,y,CW,rh,'#faf8f8');
-   txt(`${x.n} cuotas`,M+30,y+38,25,C.tx,true);txt(`Total ${fmt(x.tot)} · ${fmt(x.mas)} más que en efectivo`,M+190,y+36,19,C.su);
+   txt(`${x.n} cuotas`,M+30,y+38,25,C.tx,true);txt(`Total ${fmt(x.tot)} · ${fmt(x.mas)} más que con anticipo`,M+190,y+36,19,C.su);
    txt(`${x.n} × ${fmt(x.cuota)}`,W-M-24,y+40,32,C.bordo,true,'right');y+=rh;rect(M,y-1,CW,2,C.linea)});
   y+=40;const lt=leyTar(t);if(lt.trim())bullets(L(lt),C.bordo)}
- y+=16;bullets(L(cfg.leyenda),C.nar);
  // Fijos
- y+=10;section(`${n++}. FORMAS DE PAGO`);bullets(L(cfg.pago));
+ y+=10;section(`${n++}. FORMAS DE PAGO`);bullets(formasPago(t).concat(L(cfg.pago).filter(l=>!/^(con anticipo|sin anticipo|efectivo, transferencia o tarjeta)/i.test(l))));
  y+=10;section(`${n++}. GARANTÍA`);bullets(L(cfg.gar));
  y+=10;section(`${n++}. DETALLES Y CONDICIONES`);bullets(L(cfg.det));
  const ben=L(cfg.ben);if(ben.length){y+=10;ensure(80+Math.min(ben.length,2)*96);txt('BENEFICIOS',M,y,28,C.nar,true);rect(M,y+16,CW,3,C.nar);y+=70;
