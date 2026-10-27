@@ -170,12 +170,21 @@ input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:n
       <label for="tAnt">Anticipo para reservar (%)</label><input id="tAnt" type="number" inputmode="numeric">
       <label for="tPct">Bonificación si paga con anticipo (%)</label><input id="tPct" type="number" inputmode="numeric">
       <p class="hint">El precio que cargás es el precio con anticipo. Si paga todo al final, la app le suma la diferencia sola.</p>
-      <label for="tCuo">Cuotas con tarjeta (0 = no mostrar)</label><input id="tCuo" type="number" inputmode="numeric">
-      <label for="tRec">Recargo con tarjeta (%)</label><input id="tRec" type="number" inputmode="decimal">
-      <p class="hint">Se suma al precio de pago al final. Con 25% cobrás neto ese precio usando Mercado Pago en 3 cuotas al instante (te cobra cerca de 18 a 21%).</p>
       <label for="tPromo">Título del cuadro de precios</label><input id="tPromo">
       <label for="tPromoTxt">Leyenda del anticipo</label><textarea id="tPromoTxt"></textarea>
       <label for="tDias">Validez del presupuesto (días)</label><input id="tDias" type="number" inputmode="numeric">
+    </div>
+    <div class="card">
+      <h2>Planes con tarjeta</h2>
+      <p class="hint">Recargo sobre el precio de pago al final. Para cobrar limpio con Mercado Pago al instante: 3 cuotas 23%, 6 cuotas 37%, 12 cuotas 68%, 18 cuotas 99%. Dejá en blanco el plan que no quieras mostrar.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <label>Cuotas</label><label>Recargo %</label>
+        <input id="pN0" type="number" inputmode="numeric"><input id="pR0" type="number" inputmode="decimal">
+        <input id="pN1" type="number" inputmode="numeric"><input id="pR1" type="number" inputmode="decimal">
+        <input id="pN2" type="number" inputmode="numeric"><input id="pR2" type="number" inputmode="decimal">
+        <input id="pN3" type="number" inputmode="numeric"><input id="pR3" type="number" inputmode="decimal">
+      </div>
+      <label for="tLeyTar">Frase debajo de las cuotas ({max} pone el máximo de cuotas)</label><textarea id="tLeyTar"></textarea>
     </div>
     <div class="card">
       <h2>Textos fijos del presupuesto</h2>
@@ -240,7 +249,7 @@ const rpc=(fn,args)=>api('/rpc/'+fn,{method:'POST',body:JSON.stringify(Object.as
 function sinRed(e){toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
 
 const UNIS=[['m','Metro'],['u','Unidad'],['m²','m²'],['gl','Global']];
-const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',cuotas:3,recTar:25,round:true,
+const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',leyTar:'¿No tenés efectivo? Aprovechá y sumá más trabajos a la obra: lo pagás todo junto en hasta {max} cuotas.',round:true,
  pago:'Con anticipo: 50% para reservar la fecha de obra y el saldo al finalizar, contra conformidad.\nSin anticipo: pago total al finalizar, contra conformidad, a precio de lista.\nEfectivo, transferencia o tarjeta (consultar condiciones con tarjeta).',
  gar:'Garantía TPL de 24 meses por escrito.',
  det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
@@ -353,10 +362,10 @@ $('bNuevo').onclick=async()=>{
 };
 
 /* ---------- Textos ---------- */
-const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tCuo','cuotas'],['tRec','recTar'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
-function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'')}
+const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tLeyTar','leyTar'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
+function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'');const pl=String(cfg.planes||'').split(/[,;]+/).map(x=>x.split('='));for(let i=0;i<4;i++){$('pN'+i).value=pl[i]?.[0]?.trim()||'';$('pR'+i).value=pl[i]?.[1]?.trim()||''}}
 $('bTextos').onclick=async()=>{
- const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;d.cuotas=Math.max(0,parseInt(d.cuotas)||0);d.recTar=Math.max(0,Number(String(d.recTar).replace(',','.'))||0);
+ const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;d.planes=[0,1,2,3].map(i=>[parseInt($('pN'+i).value)||0,Number(String($('pR'+i).value).replace(',','.'))||0]).filter(([n])=>n>1).map(([n,r])=>n+'='+r).join(',');
  $('bTextos').disabled=true;
  try{const ok=await rpc('admin_save_config',{p_data:d});if(ok!==true)throw new Error('clave');cfg=d;toast('Textos guardados para todos los vendedores')}
  catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}
