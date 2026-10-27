@@ -317,8 +317,8 @@ async function api(path,opt={}){const r=await fetch(SB+path,Object.assign({cache
 const UPSERT={method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'}};
 let online=null;
 
-const SHARED=['emp','etel','pct','dias','round','pago','gar','det','ben','anticipo','opTit','leyenda','planes','leyTar','punchTit','punchTxt'];
-const DEF_CFG={vend:'',vtel:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',punchTit:'MÁS BARATO QUE EL MATERIAL SOLO',punchTxt:'En los corralones el metro de canaleta, solo el material, sale de $17.000 a $19.000. Nosotros te lo dejamos armado y colocado desde $15.000.',leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,pin:'',
+const SHARED=['emp','etel','pct','dias','round','pago','gar','det','ben','anticipo','opTit','leyenda','planes','leyTar','punchTit','punchTxt','compara','nuestro'];
+const DEF_CFG={vend:'',vtel:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',punchTit:'COMPARÁ EL METRO DE CANALETA',punchTxt:'Los demás te cobran solo la chapa. Nosotros te la dejamos armada e instalada.',compara:'Zinguería N°1 de La Plata=19000,Zinguería N°2 de La Plata=17000,Zinguería N°3 de La Plata=13000',nuestro:15000,leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,pin:'',
  pago:'',
  gar:'Garantía TPL de 24 meses por escrito.',
  det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
@@ -502,7 +502,11 @@ function drawPages(){
   txt(fmt(it.pre),xU,y,24,C.tx,false,'right');txt(fmt(qe*it.pre),xS,y,25,C.tx,true,'right');y+=h;rect(M,y-30,CW,2,C.linea);y+=14}
  ensure(60);txt(`TOTAL CON ${cfg.anticipo}% DE ANTICIPO`,xU,y+6,22,C.bordo,true,'right');txt(fmt(t.fin),xS,y+6,30,C.bordo,true,'right');y+=70;
  // Promo: qué incluye el precio (para que no lo comparen con el metro de material solo)
- if(String(cfg.punchTit||cfg.punchTxt||'').trim()){const pl=lines(cfg.punchTxt||'',CW-80,23),ph=(cfg.punchTit?62:30)+pl.length*34+12;ensure(ph+30);rect(M,y-10,CW,ph,C.bordo);rect(M,y-10,12,ph,C.nar);let yy=y+34;if(cfg.punchTit){txt(cfg.punchTit,M+40,yy,28,'#ffb27f',true);yy+=40}pl.forEach(l=>{txt(l,M+40,yy,23,'#fff');yy+=34});y+=ph+40}
+ const cmp=String(cfg.compara||'').split(',').map(x=>x.split('=')).filter(([a,b])=>a&&a.trim()&&Number(b)>0),nues=Number(cfg.nuestro)||0;
+ if(String(cfg.punchTit||cfg.punchTxt||'').trim()||cmp.length){const pl=lines(cfg.punchTxt||'',CW-80,23),rh=50,tb=cmp.length?(cmp.length+(nues?1:0))*rh+16:0,ph=(cfg.punchTit?62:30)+tb+pl.length*34+12;ensure(ph+30);rect(M,y-10,CW,ph,C.bordo);rect(M,y-10,12,ph,C.nar);let yy=y+34;if(cfg.punchTit){txt(cfg.punchTit,M+40,yy,28,'#ffb27f',true);yy+=40}
+  if(cmp.length){const xL=M+40,xM=M+CW*0.55,xR=W-M-30;cmp.forEach(([a,b])=>{txt(a.trim(),xL,yy+6,23,'#fff');txt('solo material',xM,yy+6,20,'#d9b8bf');txt(fmt(Number(b))+' /m',xR,yy+6,24,'#d9b8bf',true,'right');yy+=rh});
+   if(nues){rect(M+28,yy-30,CW-44,rh+2,C.nar);txt(`${cfg.emp||'TPL'} · MATERIAL ARMADO Y COLOCADO`,xL,yy+8,25,'#fff',true);txt('desde '+fmt(nues)+' /m',xR,yy+8,28,'#fff',true,'right');yy+=rh+6}yy+=16}
+  pl.forEach(l=>{txt(l,M+40,yy,23,'#fff');yy+=34});y+=ph+40}
  if(cur.obs.trim()){ensure(90);txt('Observaciones',M,y,22,C.nar,true);y+=40;bullets(L(cur.obs))}
  // Condiciones de pago (siempre): con anticipo bonificado o todo al final
  y+=10;ensure(620);section(`${n++}. PRESUPUESTO`);
