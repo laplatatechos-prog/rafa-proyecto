@@ -1,0 +1,27 @@
+{
+  "name": "Admin TPL",
+  "short_name": "Admin TPL",
+  "description": "Precios, ítems y calendario de obras de TPL (solo administrador)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f1ec",
+  "theme_color": "#e2580f",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "admin-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "admin-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "id": "/rafa-proyecto/admin/"
+}
