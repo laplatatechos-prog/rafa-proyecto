@@ -93,6 +93,10 @@ input:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 4px rgba(255
 .estado .ico.ok{background:var(--ok);color:#fff}
 .estado h2{display:block;text-align:center;font-size:22px;letter-spacing:0;text-transform:none;color:var(--azul)}
 .estado p{color:var(--suave);font-size:15px;line-height:1.55}
+.pagar{background:var(--amar3);border:2px solid var(--amar);border-radius:14px;padding:12px 14px;text-align:left;margin:12px 0;font-size:14px;line-height:1.6}
+.pagar .fila{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #f1e3b0;padding:6px 0}.pagar .fila:last-of-type{border-bottom:0}
+.pagar .fila b{word-break:break-all}.pagar .cp{border:0;background:var(--azul);color:#fff;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:800;flex:none}
+.btn.mp{background:#009ee3;color:#fff;box-shadow:0 6px 16px rgba(0,158,227,.35)}
 .resumen{text-align:left;background:var(--azul3);border-radius:14px;padding:12px 14px;margin:14px 0;font-size:14px;line-height:1.7}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--azul);color:#fff;padding:12px 18px;border-radius:22px;font-size:14px;display:none;z-index:30;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .cargando{text-align:center;padding:60px 20px;color:var(--suave)}
@@ -140,7 +144,7 @@ function pintarFotos(cfg){const extra=String(cfg.fotos||'').split(/[\s,]+/).filt
 const q=new URLSearchParams(location.search),ID=q.get('id')||'',DEMO=q.get('demo')==='1';
 let P=null,C={},OCUP=new Set(),sel={forma:'anticipo',cuotas:0,fecha:'',firma:false},mes=null;
 const DEMO_P={id:'demo',num:'R-0002',vend:'Rafael',cli:'Juan Pérez',created_at:new Date().toISOString(),data:{cli:'Juan Pérez',tel:'221 555 1234',dir:'Calle 69 506, La Plata',vend:'Rafael',vtel:'221 5599 225',fecha:new Date().toISOString(),obs:'Se retira la canaleta vieja. Incluye prueba de caudal.',items:[{nom:'Canaleta cenefa 40 desarrollo',uni:'m',q:10,pre:25000},{nom:'Babeta 20 desarrollo',uni:'m',q:40,pre:5999},{nom:'Bajada de 2x4',uni:'m',q:6,pre:15000},{nom:'Pintado de canaleta',uni:'gl',q:1,pre:30000}],total:609960}};
-const DEMO_C={alias:'laplatatechos',emp:'TPL',pct:20,anticipo:50,dias:5,round:true,planes:'3=25,6=40,12=70,18=100',gar:'Garantía TPL de 24 meses por escrito.'};
+const DEMO_C={alias:'laplatatechos',cvu:'0000003100041955043982',titular:'Angel Rafael Igoa',mplink:'https://mpago.la/1t17CkV',emp:'TPL',pct:20,anticipo:50,dias:5,round:true,planes:'3=25,6=40,12=70,18=100',gar:'Garantía TPL de 24 meses por escrito.'};
 
 async function cargar(){
  try{
@@ -148,7 +152,7 @@ async function cargar(){
   if(!ID)return estado('🔗','Link incompleto','Pedile a tu vendedor que te mande el link de nuevo.');
   const [rows,conf,ocu,ya]=await Promise.all([api('/presupuestos?select=id,num,vend,cli,created_at,data&id=eq.'+encodeURIComponent(ID)),api('/config?select=data&id=eq.1'),rpc('dias_ocupados').catch(()=>[]),rpc('aceptacion_estado',{p_pres_id:ID}).catch(()=>null)]);
   P=rows&&rows[0];if(!P)return estado('🔍','No encontramos este presupuesto','Puede que el link esté mal copiado. Pedile a tu vendedor que te lo reenvíe.');
-  C=Object.assign({alias:'laplatatechos',pct:20,anticipo:50,dias:5,round:true,planes:'3=25,6=40,12=70,18=100',gar:'Garantía TPL de 24 meses por escrito.'},conf&&conf[0]?conf[0].data:{},P.data.cfgSnap||{});
+  C=Object.assign({alias:'laplatatechos',cvu:'0000003100041955043982',titular:'Angel Rafael Igoa',mplink:'https://mpago.la/1t17CkV',pct:20,anticipo:50,dias:5,round:true,planes:'3=25,6=40,12=70,18=100',gar:'Garantía TPL de 24 meses por escrito.'},conf&&conf[0]?conf[0].data:{},P.data.cfgSnap||{});
   (ocu||[]).forEach(r=>OCUP.add(typeof r==='string'?r:r.dias_ocupados));
   if(ya)return aceptado(ya);
   pantalla();
@@ -271,8 +275,9 @@ function listo(b){const t=cuentas(),m=montoSel();$('barra').hidden=true;scrollTo
  const msg=`Hola, acepté y firmé el presupuesto N° ${P.num||''}.\nForma de pago: ${forma}.\nFecha elegida: ${largo(b.fecha_obra)}.\n${b.nombre} · ${b.dir}`;
  $('app').innerHTML=`<div class="card estado"><div class="ico ok">✓</div><h2>¡Listo, ${esc(b.nombre.split(/\s+/)[0])}!</h2><p>Recibimos tu firma y tus datos.</p>
   <div class="resumen"><b>Pago:</b> ${esc(forma)}<br><b>Fecha:</b> ${esc(largo(b.fecha_obra))}<br><b>Obra:</b> ${esc(b.dir)}</div>
-  ${b.forma==='anticipo'?`<p>${C.alias?`Transferí el anticipo de <b>${fmt(t.sena)}</b> al alias <b>${esc(C.alias)}</b> y mandanos el comprobante.`:`Para reservar la fecha, coordiná el anticipo de <b>${fmt(t.sena)}</b> con tu vendedor.`}</p>`:'<p>Te confirmamos la fecha por WhatsApp.</p>'}
-  <a class="btn wa full" href="${waVend(msg)}">Avisarle al vendedor por WhatsApp</a></div>`}
+  ${b.forma==='anticipo'?(C.alias||C.cvu?`<p>Para reservar la fecha, transferí el anticipo de <b>${fmt(t.sena)}</b> y mandanos el comprobante.</p><div class="pagar">${C.alias?`<div class="fila"><span>Alias<br><b>${esc(C.alias)}</b></span><button class="cp" data-cp="${esc(C.alias)}">Copiar</button></div>`:''}${C.cvu?`<div class="fila"><span>CVU<br><b>${esc(C.cvu)}</b></span><button class="cp" data-cp="${esc(C.cvu)}">Copiar</button></div>`:''}${C.titular?`<div class="fila"><span>Titular<br><b>${esc(C.titular)}</b></span></div>`:''}<div class="fila"><span>Monto<br><b>${fmt(t.sena)}</b></span><button class="cp" data-cp="${Math.round(t.sena)}">Copiar</button></div></div>${/^https:\/\//.test(C.mplink||'')?`<a class="btn mp full" href="${esc(C.mplink)}" target="_blank" rel="noopener">Pagar con Mercado Pago</a>`:''}`:`<p>Para reservar la fecha, coordiná el anticipo de <b>${fmt(t.sena)}</b> con tu vendedor.</p>`):'<p>Te confirmamos la fecha por WhatsApp.</p>'}
+  <a class="btn wa full" href="${waVend(msg+(b.forma==='anticipo'?'\nTe mando el comprobante del anticipo.':''))}">${b.forma==='anticipo'?'Mandar comprobante por WhatsApp':'Avisarle al vendedor por WhatsApp'}</a></div>`;
+ $('app').querySelectorAll('[data-cp]').forEach(x=>x.onclick=()=>{const v=x.dataset.cp;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('Copiado: '+v)).catch(()=>prompt('Copiá:',v))})}
 
 cargar();
 </script>
