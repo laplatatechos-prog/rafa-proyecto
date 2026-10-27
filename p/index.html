@@ -140,7 +140,7 @@ function pintarFotos(cfg){const extra=String(cfg.fotos||'').split(/[\s,]+/).filt
 const q=new URLSearchParams(location.search),ID=q.get('id')||'',DEMO=q.get('demo')==='1';
 let P=null,C={},OCUP=new Set(),sel={forma:'anticipo',cuotas:0,fecha:'',firma:false},mes=null;
 const DEMO_P={id:'demo',num:'R-0002',vend:'Rafael',cli:'Juan Pérez',created_at:new Date().toISOString(),data:{cli:'Juan Pérez',tel:'221 555 1234',dir:'Calle 69 506, La Plata',vend:'Rafael',vtel:'221 5599 225',fecha:new Date().toISOString(),obs:'Se retira la canaleta vieja. Incluye prueba de caudal.',items:[{nom:'Canaleta cenefa 40 desarrollo',uni:'m',q:10,pre:25000},{nom:'Babeta 20 desarrollo',uni:'m',q:40,pre:5999},{nom:'Bajada de 2x4',uni:'m',q:6,pre:15000},{nom:'Pintado de canaleta',uni:'gl',q:1,pre:30000}],total:609960}};
-const DEMO_C={emp:'TPL',pct:20,anticipo:50,dias:5,round:true,planes:'3=25,6=40,12=70,18=100',gar:'Garantía TPL de 24 meses por escrito.'};
+const DEMO_C={alias:'laplatatechos',emp:'TPL',pct:20,anticipo:50,dias:5,round:true,planes:'3=25,6=40,12=70,18=100',gar:'Garantía TPL de 24 meses por escrito.'};
 
 async function cargar(){
  try{
@@ -148,7 +148,7 @@ async function cargar(){
   if(!ID)return estado('🔗','Link incompleto','Pedile a tu vendedor que te mande el link de nuevo.');
   const [rows,conf,ocu,ya]=await Promise.all([api('/presupuestos?select=id,num,vend,cli,created_at,data&id=eq.'+encodeURIComponent(ID)),api('/config?select=data&id=eq.1'),rpc('dias_ocupados').catch(()=>[]),rpc('aceptacion_estado',{p_pres_id:ID}).catch(()=>null)]);
   P=rows&&rows[0];if(!P)return estado('🔍','No encontramos este presupuesto','Puede que el link esté mal copiado. Pedile a tu vendedor que te lo reenvíe.');
-  C=Object.assign({},conf&&conf[0]?conf[0].data:{},P.data.cfgSnap||{});
+  C=Object.assign({alias:'laplatatechos'},conf&&conf[0]?conf[0].data:{},P.data.cfgSnap||{});
   (ocu||[]).forEach(r=>OCUP.add(typeof r==='string'?r:r.dias_ocupados));
   if(ya)return aceptado(ya);
   pantalla();
