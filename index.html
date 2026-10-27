@@ -163,6 +163,8 @@ nav.tabs button.on{color:#fff;background:var(--azul);box-shadow:0 4px 12px rgba(
 
   <div class="card">
     <h2>Descargar / enviar</h2>
+    <button class="btn alt" id="bLink">📲 MANDAR LINK PARA QUE ACEPTE Y FIRME</button>
+    <p class="hint" style="margin:6px 2px 10px">El cliente elige cómo pagar, la fecha y firma desde el celu. Te queda en Obras.</p>
     <div class="row2">
       <button class="btn alt" id="bSharePdf">Enviar PDF</button>
       <button class="btn alt" id="bShareJpg">Enviar JPG</button>
@@ -417,9 +419,17 @@ let liveT;function liveSoon(){clearTimeout(liveT);liveT=setTimeout(renderLive,35
 function renderLive(){if(!$('v-pres').classList.contains('on'))return;const box=$('live');box.innerHTML='';drawPages().forEach(c=>box.appendChild(c))}
 
 function validate(){if(!cfg.vend){openSetup();return false}if(!cur.cli.trim()){toast('Falta el nombre del cliente');$('cNombre').focus();return false}if(!cur.items.length){toast('Agregá al menos una pieza');return false}return true}
-function store(){if(!cur.num)cur.num=nextNum();cur.vend=cfg.vend;cur.vtel=cfg.vtel;cur.total=totals().fin;const copy=JSON.parse(JSON.stringify(cur));const i=hist.findIndex(h=>h.id===cur.id);if(i>=0)hist[i]=copy;else hist.unshift(copy);LS.set('hist',hist);saveCur();renderFixed();
+function store(){if(!cur.num)cur.num=nextNum();cur.vend=cfg.vend;cur.vtel=cfg.vtel;cur.total=totals().fin;cur.cfgSnap={pct:cfg.pct,anticipo:cfg.anticipo,planes:cfg.planes,dias:cfg.dias,round:cfg.round};const copy=JSON.parse(JSON.stringify(cur));const i=hist.findIndex(h=>h.id===cur.id);if(i>=0)hist[i]=copy;else hist.unshift(copy);LS.set('hist',hist);saveCur();renderFixed();
  queue({t:'pres',id:cur.id,row:{id:cur.id,num:cur.num,vend:cur.vend,cli:cur.cli,total:cur.total,data:copy,updated_at:new Date().toISOString()}})}
 $('bSave').onclick=()=>{if(!validate())return;store();toast('Guardado '+cur.num)};
+// Link para que el cliente acepte, elija fecha y firme (página p/). Se sube antes de mandarlo.
+const LINK_CLI=id=>new URL('p/?id='+id,location.href.replace(/[^/]*$/,'')).href;
+const telWa=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length<8)return '';if(d.startsWith('54'))d=d.slice(2);if(d.startsWith('0'))d=d.slice(1);if(d.startsWith('9'))d=d.slice(1);d=d.replace(/^(\d{2,4})15/,'$1');return '549'+d};
+$('bLink').onclick=async()=>{if(!validate())return;store();const b=$('bLink');b.disabled=true;b.textContent='Subiendo…';
+ const ok=await flush();b.disabled=false;b.textContent='📲 MANDAR LINK PARA QUE ACEPTE Y FIRME';
+ if(!ok){toast('Sin internet: el link funciona recién cuando se suba el presupuesto');return}
+ const nom=(cur.cli||'').trim().split(/\s+/)[0],txt=`Hola ${nom}, te paso tu presupuesto N° ${cur.num} de ${cfg.emp||'TPL'}. Desde este link elegís cómo pagar, la fecha de obra y lo firmás desde el celu:\n${LINK_CLI(cur.id)}`;
+ location.href='https://wa.me/'+telWa(cur.tel)+'?text='+encodeURIComponent(txt)};
 $('bNew').onclick=()=>{if(cur.items.length&&!hist.some(h=>h.id===cur.id)&&!confirm('El presupuesto actual no está guardado. ¿Empezar uno nuevo igual?'))return;cur=blank();saveCur();renderPres();scrollTo(0,0)};
 $('bPdf').onclick=()=>exportDoc('pdf',false,$('bPdf'));
 $('bJpg').onclick=()=>exportDoc('jpg',false,$('bJpg'));
@@ -447,11 +457,13 @@ $('bAdd').onclick=()=>{const nom=$('nNom').value.trim(),catn=$('nCat').value.tri
 /* ---------- Guardados ---------- */
 document.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{histMode=b.dataset.h;document.querySelectorAll('[data-h]').forEach(x=>x.classList.toggle('on',x===b));renderHist()});
 let cloudHist=[];
+let firmados=null;
 async function renderHist(){
  const L=$('histList');
  if(histMode==='all'){L.innerHTML='<div class="empty">Cargando…</div>';try{cloudHist=(await api('/presupuestos?select=id,num,vend,cli,total,created_at,data&order=updated_at.desc&limit=200')).map(r=>Object.assign({},r.data,{id:r.id}));setOnline(true)}catch(e){setOnline(false);L.innerHTML='<div class="empty">Se necesita internet para ver los de todos.</div>';return}}
  const list=histMode==='all'?cloudHist:hist;
- L.innerHTML=list.length?list.map((h,i)=>`<div class="hist"><div><b>${esc(h.cli)}</b><small>N° ${esc(h.num)} · ${fecha(h.fecha)} · ${esc(h.vend||'')}</small></div><div style="text-align:right"><b>${fmt(h.total||0)}</b><br><button class="btn small ghost" data-o="${i}">Abrir</button>${histMode==='mine'?`<button class="btn small ghost" data-d="${i}">Borrar</button>`:''}</div></div>`).join(''):'<div class="empty">Todavía no hay presupuestos guardados.</div>';
+ if(!firmados)api('/rpc/aceptados_resumen',{method:'POST',body:'{}'}).then(r=>{firmados={};(r||[]).forEach(a=>firmados[a.pres_id]=a);if(list.some(h=>firmados[h.id]))renderHist()}).catch(()=>{});
+ L.innerHTML=list.length?list.map((h,i)=>`<div class="hist"><div><b>${esc(h.cli)}</b><small>N° ${esc(h.num)} · ${fecha(h.fecha)} · ${esc(h.vend||'')}</small>${firmados&&firmados[h.id]?`<small style="color:#14804a;font-weight:800">✅ Firmó online · obra ${new Date(firmados[h.id].fecha_obra+'T12:00').toLocaleDateString('es-AR')}</small>`:''}</div><div style="text-align:right"><b>${fmt(h.total||0)}</b><br><button class="btn small ghost" data-o="${i}">Abrir</button>${histMode==='mine'?`<button class="btn small ghost" data-d="${i}">Borrar</button>`:''}</div></div>`).join(''):'<div class="empty">Todavía no hay presupuestos guardados.</div>';
  L.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const h=list[b.dataset.o];cur=JSON.parse(JSON.stringify(h));if(histMode==='all'&&h.vend!==cfg.vend){cur.id=uid();cur.num='';cur.fecha=new Date().toISOString();toast('Copia de un presupuesto de '+(h.vend||'otro vendedor'))}saveCur();renderPres();document.querySelector('nav.tabs button[data-v=pres]').click()});
  L.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(confirm('¿Borrar este presupuesto de este teléfono?')){hist.splice(b.dataset.d,1);LS.set('hist',hist);renderHist()}});
 }
@@ -579,7 +591,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 setInterval(()=>{if(document.visibilityState==='visible')sync()},60000);
 /* ---------- Calendario de obras (igual en las dos apps; cada app define OB) ---------- */
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const ESTADOS={senada:['Señada','#f26a1b'],curso:['En curso','#16406f'],terminada:['Terminada','#14804a']};
+const ESTADOS={aceptado:['Aceptó online','#d49b00'],senada:['Señada','#f26a1b'],curso:['En curso','#16406f'],terminada:['Terminada','#14804a']};
 const ICS='https://hvgwikhzxxkhmbjnyohl.supabase.co/functions/v1/obras-ics';
 const pad2=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
