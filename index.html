@@ -317,11 +317,11 @@ async function api(path,opt={}){const r=await fetch(SB+path,Object.assign({cache
 const UPSERT={method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'}};
 let online=null;
 
-const SHARED=['emp','etel','pct','dias','round','pago','gar','det','ben','anticipo','opTit','leyenda','planes','leyTar'];
-const DEF_CFG={vend:'',vtel:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,pin:'',
+const SHARED=['emp','etel','pct','dias','round','pago','gar','det','ben','anticipo','opTit','leyenda','planes','leyTar','punchTit','punchTxt','compara','nuestro','colorPct','colorTpl'];
+const DEF_CFG={vend:'',vtel:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',punchTit:'COMPARÁ EL METRO DE CANALETA',punchTxt:'Ellos te cobran solo el material: sin armar y sin colocar. Nosotros te lo dejamos armado y colocado, por casi el mismo precio o menos.',compara:'Zinguería N°1 de La Plata=19000,Zinguería N°2 de La Plata=17000,Zinguería N°3 de La Plata=13000',nuestro:15000,colorPct:40,colorTpl:30000,leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,pin:'',
  pago:'',
  gar:'Garantía TPL de 24 meses por escrito.',
- det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
+ det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador y mano de obra completa. El color es opcional: $30.000 por todo el trabajo.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
  ben:'SALDO AL FINALIZAR | Pagás el resto cuando el trabajo está terminado y aprobado.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
  promoTxt:'¡Aprovechá! Precio válido durante el mes en curso.'};
 
@@ -501,6 +501,13 @@ function drawPages(){
   txt(`${fmtQ(qe)} ${it.uni}`,xQ,y,25,C.tx,true);ls.forEach((l,i)=>txt(l,xD,y+i*34,25,C.tx,true));if(it.cat)txt(it.cat,xD,y+ls.length*34,20,C.su);
   txt(fmt(it.pre),xU,y,24,C.tx,false,'right');txt(fmt(qe*it.pre),xS,y,25,C.tx,true,'right');y+=h;rect(M,y-30,CW,2,C.linea);y+=14}
  ensure(60);txt(`TOTAL CON ${cfg.anticipo}% DE ANTICIPO`,xU,y+6,22,C.bordo,true,'right');txt(fmt(t.fin),xS,y+6,30,C.bordo,true,'right');y+=70;
+ // Promo: qué incluye el precio (para que no lo comparen con el metro de material solo)
+ const cmp=String(cfg.compara||'').split(',').map(x=>x.split('=')).filter(([a,b])=>a&&a.trim()&&Number(b)>0),nues=Number(cfg.nuestro)||0;
+ if(String(cfg.punchTit||cfg.punchTxt||'').trim()||cmp.length){const pl=lines(cfg.punchTxt||'',CW-80,23),rh=50,colOn=cmp.length&&Number(cfg.colorTpl)>0,tb=cmp.length?(cmp.length+(nues?1:0))*rh+16+(colOn?56:0):0,ph=(cfg.punchTit?62:30)+tb+pl.length*34+12;ensure(ph+30);rect(M,y-10,CW,ph,C.bordo);rect(M,y-10,12,ph,C.nar);let yy=y+34;if(cfg.punchTit){txt(cfg.punchTit,M+40,yy,28,'#ffb27f',true);yy+=40}
+  if(cmp.length){const xL=M+40,xM=M+CW*0.55,xR=W-M-30;cmp.forEach(([a,b])=>{txt(a.trim(),xL,yy+6,23,'#fff');txt('solo material',xM,yy+6,20,'#d9b8bf');txt(fmt(Number(b))+' /m',xR,yy+6,24,'#d9b8bf',true,'right');yy+=rh});
+   if(nues){rect(M+28,yy-30,CW-44,rh+2,C.nar);txt(`${cfg.emp||'TPL'} · MATERIAL ARMADO Y COLOCADO`,xL,yy+8,25,'#fff',true);txt('desde '+fmt(nues)+' /m',xR,yy+8,28,'#fff',true,'right');yy+=rh+6}
+   if(colOn){yy+=8;txt('COLOR',xL,yy+6,23,'#ffb27f',true);txt(`ellos: +${Number(cfg.colorPct)||0}% por metro`,xL+110,yy+6,22,'#d9b8bf');txt(`${cfg.emp||'TPL'}: ${fmt(Number(cfg.colorTpl))} por todo el trabajo`,xR,yy+6,24,'#fff',true,'right');yy+=48}yy+=16}
+  pl.forEach(l=>{txt(l,M+40,yy,23,'#fff');yy+=34});y+=ph+40}
  if(cur.obs.trim()){ensure(90);txt('Observaciones',M,y,22,C.nar,true);y+=40;bullets(L(cur.obs))}
  // Condiciones de pago (siempre): con anticipo bonificado o todo al final
  y+=10;ensure(620);section(`${n++}. PRESUPUESTO`);
@@ -530,7 +537,11 @@ function drawPages(){
  const ben=L(cfg.ben);if(ben.length){y+=10;ensure(80+Math.min(ben.length,2)*96);txt('BENEFICIOS',M,y,28,C.nar,true);rect(M,y+16,CW,3,C.nar);y+=70;
   ben.forEach((b,i)=>{const [ti,de]=b.split('|').map(s=>s.trim());ensure(96);txt(String(i+1).padStart(2,'0'),M,y+8,40,C.nar,true);txt(ti,M+86,y-4,26,C.bordo,true);if(de)txt(de,M+86,y+32,22,C.su);y+=96})}
  // Firma
- y+=30;ensure(150);y+=70;rect(M,y,460,2,C.tx);rect(W-M-460,y,460,2,C.tx);txt('Firma y aclaración del cliente',M,y+34,20,C.su);txt(`${cfg.vend} · ${cfg.emp}`,W-M-460,y+34,20,C.su);
+ y+=30;ensure(330);txt('CONFORMIDAD DEL CLIENTE',M,y,26,C.bordo,true);rect(M,y+16,CW,3,C.bordo);y+=64;
+ txt('Acepto este presupuesto y elijo pagar:',M,y,23,C.tx);y+=46;
+ const ops=[`Con ${cfg.anticipo}% de anticipo`,'Pago total al finalizar'].concat(t.planes.length?['Tarjeta en ____ cuotas']:[]);let xo=M;
+ ctx.lineWidth=2;ctx.strokeStyle=C.tx;ops.forEach(o=>{ctx.strokeRect(xo,y-22,26,26);txt(o,xo+40,y,22,C.tx);ctx.font=font(22);xo+=40+ctx.measureText(o).width+50});y+=110;
+ rect(M,y,460,2,C.tx);rect(W-M-460,y,460,2,C.tx);txt('Firma, aclaración y fecha del cliente',M,y+34,20,C.su);txt(`Por ${cfg.emp}: ${cfg.vend} (vendedor)`,W-M-460,y+34,20,C.su);
  // Pie
  pages.forEach((c,i)=>{ctx=c.getContext('2d');rect(M,H-92,CW,2,C.linea);txt(`${cfg.emp} · Tel. ${cfg.etel}`,M,H-52,21,C.su);txt(`Página ${i+1} de ${pages.length}`,W-M,H-52,21,C.su,false,'right')});
  return pages;

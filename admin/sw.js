@@ -1,4 +1,4 @@
-const CACHE='tpl-cargar-v11';
+const CACHE='tpl-cargar-v12';
 const FILES=['./','index.html','manifest.webmanifest','admin-icon-192.png','admin-icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('tpl-cargar')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
