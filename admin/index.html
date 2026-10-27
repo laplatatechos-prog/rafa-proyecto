@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e2580f">
+<title>Admin TPL</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="admin-icon-192.png">
+<link rel="apple-touch-icon" href="admin-icon-192.png">
+<style>
+/* Azul marino como base, naranja solo para lo que tiene que llamar la atención */
+:root{--azul:#23272e;--azul2:#3b414b;--azul3:#eceae6;--naranja:#f26a1b;--naranja2:#ff8a3d;--crema:#fff3ea;--linea:#e3ded7;--texto:#13233a;--suave:#5e6f86;--ok:#14804a;--fondo:#f5f1ec;--sombra:0 1px 2px rgba(35,39,46,.06),0 6px 20px rgba(35,39,46,.07);font-family:Roboto,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--texto)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);font-size:18px;-webkit-font-smoothing:antialiased}
+/* Admin TPL: naranja y grafito, para no confundirla con la app azul de vendedores */
+header{background:linear-gradient(135deg,#e2580f 0%,var(--naranja2) 100%);color:#fff;padding:18px 16px 16px;position:sticky;top:0;z-index:5;box-shadow:0 4px 18px rgba(35,39,46,.25)}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--azul)}
+header .row{max-width:700px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+header b{font-size:22px;letter-spacing:3px;font-weight:800}
+header span{font-size:13px;background:rgba(0,0,0,.18);padding:6px 12px;border-radius:20px}
+main{max-width:700px;margin:auto;padding:16px}
+.big{display:block;width:100%;border:0;border-radius:14px;padding:19px;font-size:20px;font-weight:700;letter-spacing:.5px;color:#fff;background:var(--azul2);margin-top:12px;box-shadow:0 4px 14px rgba(59,65,75,.25);transition:transform .1s}
+.big:active{transform:scale(.98)}
+.big.alt{background:linear-gradient(135deg,var(--naranja),var(--naranja2));box-shadow:0 6px 18px rgba(242,106,27,.35)}
+.big.ghost{background:#fff;color:var(--azul2);border:2px solid var(--linea);box-shadow:none}
+.big:disabled{opacity:.5}
+.menu{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;background:#fff;padding:6px;border-radius:18px;box-shadow:var(--sombra)}
+.menu button{border:0;background:transparent;color:var(--suave);border-radius:14px;padding:12px 2px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.menu button span{display:block;font-size:24px;margin-bottom:4px}
+.menu button.on{background:var(--azul);color:#fff;box-shadow:0 4px 12px rgba(35,39,46,.3)}
+.card{background:#fff;border:0;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:var(--sombra)}
+h2{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--azul2);margin:0 0 12px;font-weight:800}
+label{display:block;font-size:14px;font-weight:700;color:var(--suave);margin:14px 0 6px}
+input,textarea,select{width:100%;border:2px solid var(--linea);border-radius:12px;padding:14px;font-size:19px;color:var(--texto);background:#fbfcfe;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+textarea{min-height:120px;font-size:17px;line-height:1.45}
+input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:none;box-shadow:0 0 0 4px rgba(242,106,27,.15)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--linea);background:#fff;border-radius:24px;padding:11px 16px;font-size:16px;color:var(--texto);font-weight:600}
+.chip.on{background:var(--azul);border-color:var(--azul);color:#fff}
+.cat-head{font-size:12px;font-weight:800;color:var(--azul2);letter-spacing:2px;margin:22px 4px 10px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.cat-head::after{content:"";flex:1;height:1px;background:var(--linea)}
+.item{background:#fff;border:0;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--sombra);border-left:5px solid var(--azul2)}
+.item.cero{border-left-color:var(--naranja);background:linear-gradient(90deg,var(--crema),#fff 60%)}
+.item .nom{font-weight:700;font-size:18px}
+.item .meta{font-size:13px;color:var(--suave);margin-top:2px}
+.item .row{display:flex;gap:8px;align-items:center;margin-top:12px}
+.item .row .peso{font-size:22px;font-weight:800;color:var(--azul2)}
+.item .row input{font-size:23px;font-weight:800;flex:1;min-width:0;font-variant-numeric:tabular-nums}
+.item .row button{border:0;border-radius:12px;padding:16px 14px;font-size:15px;font-weight:800;letter-spacing:.5px;background:linear-gradient(135deg,var(--naranja),var(--naranja2));color:#fff;flex:none;box-shadow:0 4px 12px rgba(242,106,27,.3)}
+.item .row button.done{background:var(--ok);box-shadow:none}
+.item .acc{display:flex;gap:18px;margin-top:10px}
+.item .acc button{border:0;background:none;color:var(--suave);font-size:14px;padding:4px 0;font-weight:600}
+.item .acc button.del{color:#c0392b}
+.aviso{background:var(--crema);border-left:5px solid var(--naranja);padding:13px 15px;border-radius:12px;font-size:15px;margin-bottom:14px;color:#7a3a10;font-weight:600}
+.hint{font-size:15px;color:var(--suave);line-height:1.55}
+.view{display:none}.view.on{display:block}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--azul);color:#fff;padding:14px 22px;border-radius:24px;font-size:16px;display:none;z-index:30;max-width:92vw;text-align:center;box-shadow:0 8px 24px rgba(35,39,46,.35);border-bottom:3px solid var(--naranja)}
+.confirm{position:fixed;inset:0;background:rgba(35,39,46,.6);display:none;z-index:40;padding:20px;backdrop-filter:blur(3px)}
+.confirm.on{display:flex;align-items:center;justify-content:center}
+.confirm .box{background:#fff;border-radius:20px;padding:22px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.confirm p{font-size:19px;margin:0 0 6px;font-weight:600}
+.linkapp{display:block;text-align:center;color:var(--azul2);font-size:16px;font-weight:700;margin:20px 0 30px;text-decoration:none}
+/* Calendario de obras */
+.cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-top b{font-size:19px;color:var(--azul)}
+.cal-top button{border:0;background:var(--azul3);color:var(--azul2);font-size:24px;font-weight:800;width:50px;height:44px;border-radius:12px}
+.cal-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal-w{text-align:center;font-size:11px;font-weight:800;color:var(--suave);padding:4px 0}
+.cal-d{min-height:66px;min-width:0;border:1.5px solid var(--linea);background:#fff;border-radius:9px;padding:3px 2px;display:flex;flex-direction:column;gap:2px;align-items:stretch;justify-content:flex-start;overflow:hidden;font-family:inherit}
+.cal-d span{font-size:13px;font-weight:700;color:var(--texto);text-align:left;padding-left:3px}
+.cal-d i{display:block;font-style:normal;font-size:9px;font-weight:700;color:#fff;border-radius:4px;padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.cal-d em{font-style:normal;font-size:9px;color:var(--suave);font-weight:800}
+.cal-d.dom{background:#eef2f7}
+.cal-d.hoy{border-color:var(--naranja)}
+.cal-d.hoy span{color:var(--naranja)}
+.cal-d.sel{border-color:var(--azul);box-shadow:0 0 0 2px var(--azul)}
+.cal-ref{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--suave);margin-top:12px;font-weight:600}
+.cal-ref i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.obra{background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--sombra);border-left:5px solid var(--azul2)}
+.obra-t{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.obra-t b{font-size:16px}
+.est{color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:12px;flex:none;letter-spacing:.3px}
+.obra-m{font-size:13px;color:var(--suave);margin-top:4px;line-height:1.45}
+.obra-l{display:block;font-size:14px;color:var(--azul2);margin-top:6px;text-decoration:none;font-weight:600}
+.obra-g{display:inline-block;margin-top:9px;font-size:13px;font-weight:700;color:var(--azul2);background:var(--azul3);padding:7px 11px;border-radius:10px;text-decoration:none}
+.dia-t{font-size:13px;font-weight:800;color:var(--azul2);margin:18px 4px 8px;text-transform:uppercase;letter-spacing:1.2px}
+.obtn{display:block;width:100%;border:0;border-radius:13px;padding:16px;font-size:16px;font-weight:800;letter-spacing:.4px;color:#fff;background:linear-gradient(135deg,var(--naranja),var(--naranja2));margin-top:10px;box-shadow:0 6px 16px rgba(242,106,27,.3);font-family:inherit;text-align:center;text-decoration:none}
+.obtn.ghost{background:#fff;color:var(--azul2);border:1.5px solid var(--linea);box-shadow:none}
+.obtn.rojo{background:#fff;color:#c0392b;border:1.5px solid #f1c6c0;box-shadow:none}
+.obtn:disabled{opacity:.5}
+.ofondo{position:fixed;inset:0;background:rgba(35,39,46,.6);backdrop-filter:blur(3px);display:none;z-index:35;overflow:auto;padding:14px}
+.ofondo.on{display:block}
+.obox{background:#fff;border-radius:20px;max-width:520px;margin:10px auto 30px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.obox h3{margin:0 0 6px;color:var(--azul);font-size:18px}
+.obox label{display:block;margin:14px 0 6px}
+.ofila{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ochips{display:flex;flex-wrap:wrap;gap:8px}
+.ochip{border:1.5px solid var(--linea);background:#fff;border-radius:22px;padding:10px 15px;font-size:15px;font-weight:700;color:var(--texto);font-family:inherit}
+.ochip.on{background:var(--azul);border-color:var(--azul);color:#fff}
+</style>
+</head>
+<body>
+<header><div class="row"><b>🔒 ADMIN TPL</b><span id="estado"></span></div></header>
+<main>
+
+<section class="view" id="v-login">
+  <div class="card">
+    <h2>Entrar</h2>
+    <p class="hint">Esta app es solo para cargar ítems, precios y textos. Lo que guardás acá les llega a todos los vendedores.</p>
+    <label for="clave">Clave</label>
+    <input id="clave" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button class="big" id="bEntrar">ENTRAR</button>
+    <button class="big ghost" id="bOlvide">¿OLVIDASTE LA CLAVE?</button>
+  </div>
+</section>
+
+<section class="view" id="v-recuperar">
+  <div class="card">
+    <h2>Recuperar la clave</h2>
+    <p class="hint" id="recPaso1">Te mandamos un código de 6 números al mail <b>laplatatechos@gmail.com</b>. Llega de "Supabase Auth" con el asunto "Confirm reauthentication". Si no lo ves, mirá en Spam.</p>
+    <button class="big alt" id="bEnviarCod">MANDAR CÓDIGO AL MAIL</button>
+    <div id="recPaso2" hidden>
+      <div class="aviso" style="margin-top:14px">Ya te mandamos el código. Abrí el mail, copiá los 6 números y volvé a esta app: <b>no pidas otro código</b>, porque el nuevo anula al anterior.</div>
+      <label for="recCod">Código que te llegó al mail</label>
+      <input id="recCod" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10">
+      <label for="recNueva">Clave nueva (mínimo 4 letras o números)</label>
+      <input id="recNueva" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <button class="big" id="bNuevaClave">GUARDAR CLAVE NUEVA</button>
+    </div>
+    <button class="big ghost" id="bVolver">VOLVER</button>
+  </div>
+</section>
+
+<div id="app" hidden>
+  <nav class="menu">
+    <button class="on" data-v="precios"><span>💲</span>PRECIOS</button>
+    <button data-v="nuevo"><span>➕</span>NUEVO ÍTEM</button>
+    <button data-v="textos"><span>📄</span>TEXTOS</button>
+    <button data-v="obras"><span>📅</span>OBRAS</button>
+    <button data-v="firmados"><span>✍️</span>FIRMADOS</button>
+  </nav>
+
+  <section class="view on" id="v-precios">
+    <div class="aviso" id="avisoCero" hidden></div>
+    <input id="buscar" placeholder="🔍 Buscar ítem…">
+    <div id="lista"></div>
+  </section>
+
+  <section class="view" id="v-nuevo">
+    <div class="card">
+      <h2>Nuevo ítem</h2>
+      <label>Categoría</label>
+      <div class="chips" id="nCats"></div>
+      <input id="nCatOtra" placeholder="Escribí la categoría nueva" style="margin-top:10px" hidden>
+      <label for="nNom">Nombre del ítem</label>
+      <input id="nNom" placeholder="Ej: Babeta de zinc 30 cm">
+      <label>Se vende por</label>
+      <div class="chips" id="nUnis"></div>
+      <label for="nPre">Precio final $</label>
+      <input id="nPre" type="number" inputmode="numeric" min="0" placeholder="0">
+      <button class="big alt" id="bNuevo">GUARDAR ÍTEM</button>
+    </div>
+  </section>
+
+  <section class="view" id="v-textos">
+    <div class="card">
+      <h2>Datos de la empresa</h2>
+      <label for="tEmp">Empresa</label><input id="tEmp">
+      <label for="tETel">Teléfono de la empresa</label><input id="tETel" type="tel">
+      <label for="tAnt">Anticipo para reservar (%)</label><input id="tAnt" type="number" inputmode="numeric">
+      <label for="tPct">Bonificación si paga con anticipo (%)</label><input id="tPct" type="number" inputmode="numeric">
+      <p class="hint">El precio que cargás es el precio con anticipo. Si paga todo al final, la app le suma la diferencia sola.</p>
+      <label for="tPromo">Título del cuadro de precios</label><input id="tPromo">
+      <label for="tPromoTxt">Leyenda del anticipo</label><textarea id="tPromoTxt"></textarea>
+      <label for="tDias">Validez del presupuesto (días)</label><input id="tDias" type="number" inputmode="numeric">
+    </div>
+    <div class="card">
+      <h2>Cartel de qué incluye el precio</h2>
+      <p class="hint">Sale debajo del total. Dejá los dos vacíos para no mostrarlo.</p>
+      <label for="tPunchTit">Título</label><input id="tPunchTit">
+      <label>Comparación (precio por metro, solo material)</label>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
+        <input id="cN0"><input id="cP0" type="number" inputmode="numeric">
+        <input id="cN1"><input id="cP1" type="number" inputmode="numeric">
+        <input id="cN2"><input id="cP2" type="number" inputmode="numeric">
+      </div>
+      <label for="tNuestro">Nuestro precio por metro, armado y colocado</label><input id="tNuestro" type="number" inputmode="numeric">
+      <label for="tColPct">Color en la competencia (% sobre el metro)</label><input id="tColPct" type="number" inputmode="numeric">
+      <label for="tColTpl">Nuestro color, precio fijo por trabajo (0 = no mostrar)</label><input id="tColTpl" type="number" inputmode="numeric">
+      <label for="tPunchTxt">Frase final</label><textarea id="tPunchTxt"></textarea>
+    </div>
+    <div class="card">
+      <h2>Planes con tarjeta</h2>
+      <p class="hint">Recargo sobre el precio de pago al final. Para cobrar limpio con Mercado Pago al instante: 3 cuotas 23%, 6 cuotas 37%, 12 cuotas 68%, 18 cuotas 99%. Dejá en blanco el plan que no quieras mostrar.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <label>Cuotas</label><label>Recargo %</label>
+        <input id="pN0" type="number" inputmode="numeric"><input id="pR0" type="number" inputmode="decimal">
+        <input id="pN1" type="number" inputmode="numeric"><input id="pR1" type="number" inputmode="decimal">
+        <input id="pN2" type="number" inputmode="numeric"><input id="pR2" type="number" inputmode="decimal">
+        <input id="pN3" type="number" inputmode="numeric"><input id="pR3" type="number" inputmode="decimal">
+      </div>
+      <label for="tLeyTar">Frase debajo de las cuotas ({max} pone el máximo de cuotas)</label><textarea id="tLeyTar"></textarea>
+    </div>
+    <div class="card">
+      <h2>Textos fijos del presupuesto</h2>
+      <p class="hint">Un renglón por cada punto.</p>
+      <label for="tPago">Formas de pago: notas extra</label><p class="hint">Anticipo, pago al final y tarjeta ya salen solos en el presupuesto con tus % y cuotas. Acá poné solo algo adicional (o dejalo vacío).</p><textarea id="tPago"></textarea>
+      <label for="tGar">Garantía</label><textarea id="tGar"></textarea>
+      <label for="tDet">Detalles y condiciones</label><textarea id="tDet"></textarea>
+      <label for="tBen">Beneficios (TÍTULO | detalle)</label><textarea id="tBen"></textarea>
+    </div>
+    <div class="card">
+      <h2>Presupuesto online (link para firmar)</h2>
+      <label for="tAlias">Alias o CBU para transferir el anticipo</label><input id="tAlias" placeholder="Ej: laplatatechos.mp">
+      <p class="hint">Se lo mostramos al cliente cuando elige pagar con anticipo. Vacío = "coordiná el anticipo con tu vendedor".</p>
+      <label for="tCupo">Obras por día (cuántas cuadrillas)</label><input id="tCupo" type="number" inputmode="numeric">
+      <label for="tMinDias">Días mínimos desde hoy para elegir fecha</label><input id="tMinDias" type="number" inputmode="numeric">
+      <label for="tFotos">Fotos de obras (links https, separados por coma)</label><textarea id="tFotos"></textarea>
+    </div>
+    <button class="big alt" id="bTextos">GUARDAR TEXTOS</button>
+  </section>
+
+<section class="view" id="v-firmados">
+  <p class="hint" style="margin:0 0 12px">Presupuestos que los clientes aceptaron y firmaron desde el link. Cada uno ya entró a Obras como "Aceptó online": cuando cobres la seña, pasala a Señada.</p>
+  <div id="firmList"></div>
+</section>
+
+<section class="view" id="v-obras">
+  <button class="obtn" id="bObraNueva" style="margin:0 0 14px">+ NUEVA OBRA</button>
+  <div class="card">
+    <div class="cal-top"><button id="calPrev" aria-label="Mes anterior">‹</button><b id="calMes"></b><button id="calNext" aria-label="Mes siguiente">›</button></div>
+    <div id="cal"></div>
+    <div class="cal-ref" id="calRef"></div>
+    <p class="hint" id="calInfo" style="margin:10px 0 0"></p>
+    <a class="obtn ghost" id="bSuscribir" target="_blank" rel="noopener">📅 VER LAS OBRAS EN GOOGLE CALENDAR</a>
+  </div>
+  <div id="calDia"></div>
+</section>
+
+  <a class="linkapp" href="../">Abrir la app de presupuestos →</a>
+  <button class="big ghost" id="bSalir" style="margin-bottom:30px">Salir</button>
+</div>
+</main>
+
+<div class="ofondo" id="mObra"><div class="obox">
+  <h3 id="oTit">Nueva obra</h3>
+  <label for="oPres">Traer los datos de un presupuesto</label><select id="oPres"></select>
+  <div class="ofila">
+    <div><label for="oFecha">Día</label><input id="oFecha" type="date"></div>
+    <div><label for="oDias">Días de trabajo</label><input id="oDias" type="number" inputmode="numeric" min="1" max="60"></div>
+    <div><label for="oHora">Desde (hora)</label><input id="oHora" type="time" step="900"></div>
+    <div><label for="oHoraFin">Hasta (hora)</label><input id="oHoraFin" type="time" step="900"></div>
+  </div>
+  <p class="hint" style="margin:6px 0 0">Los domingos no se cuentan. Sin hora, queda como todo el día.</p>
+  <label for="oCli">Cliente</label><input id="oCli">
+  <label for="oTel">Teléfono</label><input id="oTel" type="tel">
+  <label for="oDir">Dirección</label><input id="oDir">
+  <label for="oCua">Cuadrilla</label><div class="ochips" id="oCuaCh"></div><input id="oCua" placeholder="Nombre de la cuadrilla" style="margin-top:8px">
+  <label>Estado</label><div class="ochips" id="oEst"></div>
+  <label for="oNotas">Notas</label><textarea id="oNotas" style="min-height:80px"></textarea>
+  <button class="obtn" id="bObraOk">GUARDAR OBRA</button>
+  <button class="obtn rojo" id="bObraDel">BORRAR OBRA</button>
+  <button class="obtn ghost" id="bObraNo">CANCELAR</button>
+</div></div>
+<div class="confirm" id="confirm"><div class="box"><p id="cTxt"></p><button class="big" id="cSi" style="background:#b33">SÍ, BORRAR</button><button class="big ghost" id="cNo">NO</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const SB='https://hvgwikhzxxkhmbjnyohl.supabase.co/rest/v1',KEY='sb_publishable_xUj53gV1c6xo6Y6t52R-Vw_hTS-P29s';
+const LS={get(k,d){try{const v=localStorage.getItem('tplc_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('tplc_'+k,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2800)}
+async function api(path,opt={}){const r=await fetch(SB+path,Object.assign({cache:'no-store'},opt,{headers:Object.assign({apikey:KEY,'Content-Type':'application/json'},opt.headers||{})}));if(!r.ok)throw new Error('HTTP '+r.status);const t=await r.text();return t?JSON.parse(t):null}
+const rpc=(fn,args)=>api('/rpc/'+fn,{method:'POST',body:JSON.stringify(Object.assign({p_key:clave},args))});
+function sinRed(e){toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
+
+const UNIS=[['m','Metro'],['u','Unidad'],['m²','m²'],['gl','Global']];
+const DEF={cupo:1,minDias:2,alias:'',fotos:'',emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',punchTit:'COMPARÁ EL METRO DE CANALETA',punchTxt:'Ellos te cobran solo el material: sin armar y sin colocar. Nosotros te lo dejamos armado y colocado, por casi el mismo precio o menos.',compara:'Zinguería N°1 de La Plata=19000,Zinguería N°2 de La Plata=17000,Zinguería N°3 de La Plata=13000',nuestro:15000,colorPct:40,colorTpl:30000,leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,
+ pago:'',
+ gar:'Garantía TPL de 24 meses por escrito.',
+ det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador y mano de obra completa. El color es opcional: $30.000 por todo el trabajo.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
+ ben:'SALDO AL FINALIZAR | Pagás el resto cuando el trabajo está terminado y aprobado.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
+ promoTxt:'¡Aprovechá! Precio válido durante el mes en curso.'};
+let clave=LS.get('clave',''),cat=[],cfg=Object.assign({},DEF),nCat='',nUni='m';
+
+/* ---------- Entrar ---------- */
+async function entrar(k){
+ try{const ok=await api('/rpc/admin_ok',{method:'POST',body:JSON.stringify({p_key:k})});if(ok!==true){toast('Clave incorrecta');return false}}
+ catch(e){toast('Se necesita internet para entrar');return false}
+ clave=k;LS.set('clave',k);document.querySelectorAll('main > .view').forEach(v=>v.classList.remove('on'));$('app').hidden=false;await cargar();return true;
+}
+$('bEntrar').onclick=()=>{const k=$('clave').value.trim();if(k)entrar(k)};
+$('clave').onkeydown=e=>{if(e.key==='Enter')$('bEntrar').click()};
+const verLogin=()=>{document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-login'))};
+// Android puede cerrar la app al ir al mail: guardamos que hay un código pendiente para volver directo a esta pantalla.
+const REC_MS=15*60*1000;
+const recPendiente=()=>{const t=LS.get('rec',0);return t&&Date.now()-t<REC_MS};
+function verRecuperar(){document.querySelectorAll('main > .view').forEach(v=>v.classList.toggle('on',v.id==='v-recuperar'));const p=recPendiente();$('recPaso2').hidden=!p;$('bEnviarCod').textContent=p?'MANDAR OTRO CÓDIGO':'MANDAR CÓDIGO AL MAIL';$('bEnviarCod').className=p?'big ghost':'big alt';$('recNueva').value=LS.get('recNueva','');$('recCod').value=LS.get('recCod','')}
+$('bOlvide').onclick=verRecuperar;
+$('bVolver').onclick=()=>{LS.set('rec',0);verLogin()};
+$('recNueva').oninput=()=>LS.set('recNueva',$('recNueva').value);
+$('recCod').oninput=()=>LS.set('recCod',$('recCod').value);
+$('bEnviarCod').onclick=()=>{if(recPendiente())preguntar('¿Mandar otro código? El que ya te llegó deja de servir.',enviarCodigo,'SÍ, MANDAR OTRO');else enviarCodigo()};
+async function enviarCodigo(){const b=$('bEnviarCod');b.disabled=true;b.textContent='Mandando…';
+ try{const r=await fetch('https://hvgwikhzxxkhmbjnyohl.supabase.co/functions/v1/recuperar-clave',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:'{}'});const d=await r.json().catch(()=>({}));
+  if(!d.ok){toast(d.status===429?'Ya se mandaron muchos códigos. Esperá un rato y probá de nuevo.':'No se pudo mandar el código. Probá en unos minutos.');b.textContent='MANDAR CÓDIGO AL MAIL'}
+  else{LS.set('rec',Date.now());LS.set('recCod','');toast('Código enviado a laplatatechos@gmail.com');verRecuperar()}}
+ catch(e){toast('Sin internet. Conectate y probá de nuevo.');b.textContent=recPendiente()?'MANDAR OTRO CÓDIGO':'MANDAR CÓDIGO AL MAIL'}
+ b.disabled=false}
+$('bNuevaClave').onclick=async()=>{const cod=$('recCod').value.trim(),nueva=$('recNueva').value.trim();
+ if(!cod){toast('Escribí el código del mail');return}if(nueva.length<4){toast('La clave nueva tiene que tener al menos 4 letras o números');return}
+ const b=$('bNuevaClave');b.disabled=true;
+ try{const ok=await api('/rpc/admin_reset_with_code',{method:'POST',body:JSON.stringify({p_code:cod,p_new:nueva})});
+  if(ok===true){LS.set('rec',0);LS.set('recNueva','');LS.set('recCod','');toast('Clave cambiada. Anotala: '+nueva);$('recCod').value='';$('recNueva').value='';await entrar(nueva)}
+  else toast('Código incorrecto o vencido (dura 15 minutos). Pedí uno nuevo.')}
+ catch(e){toast('Sin internet. Conectate y probá de nuevo.')}
+ b.disabled=false};
+$('bSalir').onclick=()=>{clave='';LS.set('clave','');$('app').hidden=true;$('clave').value='';verLogin();scrollTo(0,0)};
+
+document.querySelectorAll('.menu button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.menu button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('#app .view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));if(b.dataset.v==='nuevo')pintarNuevo();if(b.dataset.v==='obras')cargarObras();if(b.dataset.v==='firmados')cargarFirmados();scrollTo(0,0)});
+
+async function cargar(){
+ $('estado').textContent='Cargando…';
+ try{
+  const [rows,conf]=await Promise.all([api('/catalogo?select=id,cat,nom,uni,pre&order=cat,nom'),api('/config?select=data&id=eq.1')]);
+  cat=rows.map(r=>Object.assign(r,{pre:Number(r.pre)||0}));
+  cfg=Object.assign({},DEF,conf&&conf[0]?conf[0].data:{});
+  $('estado').textContent='Conectado ✓';
+ }catch(e){$('estado').textContent='Sin internet';toast('Sin internet: no se pueden ver los precios')}
+ pintarLista();pintarTextos();pintarNuevo();
+}
+
+/* ---------- Precios ---------- */
+const cats=()=>[...new Set(cat.map(c=>c.cat))];
+const uniTxt=u=>(UNIS.find(x=>x[0]===u)||[u,u])[1].toLowerCase();
+function pintarLista(){
+ const q=$('buscar').value.trim().toLowerCase();
+ const list=cat.filter(c=>!q||(c.nom+' '+c.cat).toLowerCase().includes(q));
+ const ceros=cat.filter(c=>!c.pre).length;
+ $('avisoCero').hidden=!ceros;$('avisoCero').textContent=`Hay ${ceros} ítem(s) sin precio (marcados en naranja). Los vendedores no los pueden usar hasta que les pongas precio.`;
+ $('lista').innerHTML=[...new Set(list.map(c=>c.cat))].map(cn=>`<div class="cat-head">${esc(cn)}</div>`+list.filter(c=>c.cat===cn).map(c=>`
+  <div class="item ${c.pre?'':'cero'}" data-id="${esc(c.id)}">
+   <div class="nom">${esc(c.nom)}</div><div class="meta">Precio por ${uniTxt(c.uni)}</div>
+   <div class="row"><span class="peso">$</span><input type="number" inputmode="numeric" min="0" value="${c.pre||''}" placeholder="Sin precio"><button>GUARDAR</button></div>
+   <div class="acc"><button class="ren">Cambiar nombre</button><button class="del">Borrar</button></div>
+  </div>`).join('')).join('')||'<div class="card hint">No hay ítems. Tocá NUEVO ÍTEM para cargar el primero.</div>';
+ $('lista').querySelectorAll('.item').forEach(el=>{
+  const c=cat.find(x=>x.id===el.dataset.id),inp=el.querySelector('input'),btn=el.querySelector('.row button');
+  inp.oninput=()=>{btn.textContent='GUARDAR';btn.classList.remove('done')};
+  inp.onkeydown=e=>{if(e.key==='Enter')btn.click()};
+  btn.onclick=async()=>{const pre=Number(inp.value)||0;btn.disabled=true;
+   try{const ok=await rpc('admin_upsert_item',{p_id:c.id,p_cat:c.cat,p_nom:c.nom,p_uni:c.uni,p_pre:pre});if(ok!==true)throw new Error('clave');
+    c.pre=pre;btn.textContent='✓ LISTO';btn.classList.add('done');el.classList.toggle('cero',!pre);toast('Precio guardado: '+c.nom);pintarAviso()}
+   catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}
+   btn.disabled=false};
+  el.querySelector('.ren').onclick=async()=>{const n=prompt('Nuevo nombre:',c.nom);if(!n||!n.trim()||n.trim()===c.nom)return;
+   try{const ok=await rpc('admin_upsert_item',{p_id:c.id,p_cat:c.cat,p_nom:n.trim(),p_uni:c.uni,p_pre:c.pre});if(ok!==true)throw 0;c.nom=n.trim();pintarLista();toast('Nombre cambiado')}catch(e){sinRed(e)}};
+  el.querySelector('.del').onclick=()=>preguntar(`¿Borrar "${c.nom}"? Desaparece de todos los teléfonos.`,async()=>{
+   try{await rpc('admin_delete_item',{p_id:c.id});cat=cat.filter(x=>x!==c);pintarLista();toast('Borrado')}catch(e){sinRed(e)}});
+ });
+}
+function pintarAviso(){const ceros=cat.filter(c=>!c.pre).length;$('avisoCero').hidden=!ceros;$('avisoCero').textContent=`Hay ${ceros} ítem(s) sin precio (marcados en naranja). Los vendedores no los pueden usar hasta que les pongas precio.`}
+$('buscar').oninput=pintarLista;
+
+/* ---------- Nuevo ---------- */
+function pintarNuevo(){
+ const cs=cats().length?cats():['Canaletas','Bajadas','Babetas','Piezas de zinc'];
+ if(!nCat)nCat=cs[0];
+ $('nCats').innerHTML=[...cs,'+ Otra'].map(c=>`<button class="chip ${c===nCat||(c==='+ Otra'&&!cs.includes(nCat))?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+ $('nCatOtra').hidden=cs.includes(nCat);
+ $('nCats').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{nCat=b.dataset.c==='+ Otra'?'':b.dataset.c;if(!nCat){$('nCatOtra').hidden=false;$('nCats').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b));$('nCatOtra').focus();return}pintarNuevo()});
+ $('nUnis').innerHTML=UNIS.map(([v,t])=>`<button class="chip ${v===nUni?'on':''}" data-u="${v}">${t}</button>`).join('');
+ $('nUnis').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{nUni=b.dataset.u;pintarNuevo()});
+}
+$('bNuevo').onclick=async()=>{
+ const nom=$('nNom').value.trim(),catn=($('nCatOtra').hidden?nCat:$('nCatOtra').value.trim()),pre=Number($('nPre').value)||0;
+ if(!nom){toast('Falta el nombre del ítem');$('nNom').focus();return}
+ if(!catn){toast('Falta la categoría');$('nCatOtra').focus();return}
+ const existe=cat.find(c=>c.nom.toLowerCase()===nom.toLowerCase()&&c.cat===catn);
+ const c=existe||{id:uid(),cat:catn,nom,uni:nUni,pre};
+ $('bNuevo').disabled=true;
+ try{const ok=await rpc('admin_upsert_item',{p_id:c.id,p_cat:catn,p_nom:nom,p_uni:nUni,p_pre:pre});if(ok!==true)throw new Error('clave');
+  Object.assign(c,{cat:catn,nom,uni:nUni,pre});if(!existe)cat.push(c);cat.sort((a,b)=>(a.cat+a.nom).localeCompare(b.cat+b.nom));
+  nCat=catn;$('nNom').value='';$('nPre').value='';$('nCatOtra').value='';pintarNuevo();pintarLista();
+  toast((existe?'Actualizado: ':'Cargado: ')+nom+(pre?'':' (sin precio)'));$('nNom').focus()}
+ catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}
+ $('bNuevo').disabled=false;
+};
+
+/* ---------- Textos ---------- */
+const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tLeyTar','leyTar'],['tPunchTit','punchTit'],['tPunchTxt','punchTxt'],['tNuestro','nuestro'],['tColPct','colorPct'],['tColTpl','colorTpl'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben'],['tAlias','alias'],['tCupo','cupo'],['tMinDias','minDias'],['tFotos','fotos']];
+function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'');const cm=String(cfg.compara||'').split(',').map(x=>x.split('='));for(let i=0;i<3;i++){$('cN'+i).value=cm[i]?.[0]?.trim()||'';$('cP'+i).value=cm[i]?.[1]?.trim()||''}$('tPago').value=String(cfg.pago||'').split('\n').filter(l=>!/^\s*(con anticipo|sin anticipo|efectivo, transferencia o tarjeta)/i.test(l)).join('\n');const pl=String(cfg.planes||'').split(/[,;]+/).map(x=>x.split('='));for(let i=0;i<4;i++){$('pN'+i).value=pl[i]?.[0]?.trim()||'';$('pR'+i).value=pl[i]?.[1]?.trim()||''}}
+$('bTextos').onclick=async()=>{
+ const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;d.cupo=Math.max(1,parseInt(d.cupo)||1);d.minDias=(v=>isNaN(v)?2:Math.max(0,v))(parseInt(d.minDias));d.compara=[0,1,2].map(i=>[$('cN'+i).value.replace(/[=,]/g,' ').trim(),parseInt($('cP'+i).value)||0]).filter(([n,p])=>n&&p>0).map(([n,p])=>n+'='+p).join(',');d.nuestro=parseInt(d.nuestro)||0;d.colorPct=parseInt(d.colorPct)||0;d.colorTpl=parseInt(d.colorTpl)||0;d.planes=[0,1,2,3].map(i=>[parseInt($('pN'+i).value)||0,Number(String($('pR'+i).value).replace(',','.'))||0]).filter(([n])=>n>1).map(([n,r])=>n+'='+r).join(',');
+ $('bTextos').disabled=true;
+ try{const ok=await rpc('admin_save_config',{p_data:d});if(ok!==true)throw new Error('clave');cfg=d;toast('Textos guardados para todos los vendedores')}
+ catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}
+ $('bTextos').disabled=false;
+};
+
+/* ---------- Firmados online ---------- */
+const FORMA={anticipo:'Anticipo y saldo al final',final:'Todo al finalizar',tarjeta:'Tarjeta en cuotas'};
+async function cargarFirmados(){const L=$('firmList');L.innerHTML='<div class="card hint">Cargando…</div>';
+ try{const r=await rpc('admin_aceptaciones',{});
+  L.innerHTML=r&&r.length?r.map(a=>`<div class="card"><h2>${esc(a.nombre)} · N° ${esc(a.pres_num||'')}</h2>
+   <p style="margin:0 0 6px;font-size:15px"><b>${esc(FORMA[a.forma]||a.forma)}</b>: ${a.forma==='tarjeta'?a.cuotas+' × $ '+Number(a.cuota).toLocaleString('es-AR')+' (total ':''}$ ${Number(a.monto).toLocaleString('es-AR')}${a.forma==='tarjeta'?')':''}${a.forma==='anticipo'?' · seña $ '+Number(a.anticipo).toLocaleString('es-AR'):''}</p>
+   <p class="hint" style="margin:0">Fecha de obra: <b>${new Date(a.fecha_obra+'T12:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</b><br>DNI ${esc(a.dni)} · ${esc(a.dir)}<br>Tel: <a href="https://wa.me/${String(a.tel||'').replace(/\D/g,'')}">${esc(a.tel)}</a>${a.email?' · '+esc(a.email):''}<br>Vendedor: ${esc(a.vend||'')} · firmó el ${new Date(a.created_at).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})}</p>
+   <img src="${a.firma}" alt="Firma" style="width:100%;max-width:360px;border:1px solid #e3e6ea;border-radius:10px;margin-top:10px;background:#fff"></div>`).join(''):'<div class="card hint">Todavía nadie firmó online.</div>'}
+ catch(e){L.innerHTML='<div class="card hint">Se necesita internet para ver los firmados.</div>'}}
+
+/* ---------- Calendario de obras (igual en las dos apps; cada app define OB) ---------- */
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const ESTADOS={aceptado:['Aceptó online','#d49b00'],senada:['Señada','#f26a1b'],curso:['En curso','#16406f'],terminada:['Terminada','#14804a']};
+const ICS='https://hvgwikhzxxkhmbjnyohl.supabase.co/functions/v1/obras-ics';
+const pad2=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const deYmd=s=>{const [y,m,d]=String(s).slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
+const hoyYmd=()=>ymd(new Date());
+const hhmm=h=>h?String(h).slice(0,5):'';
+// Una obra ocupa sus días de trabajo desde el día de inicio, salteando los domingos
+function diasDe(o){const out=[],d=deYmd(o.fecha),n=Math.min(60,Math.max(1,Number(o.dias)||1));out.push(ymd(d));while(out.length<n){d.setDate(d.getDate()+1);if(d.getDay()!==0)out.push(ymd(d))}return out}
+function indiceObras(list){const ix={};list.forEach(o=>{const ds=diasDe(o);ds.forEach((f,i)=>(ix[f]=ix[f]||[]).push({o,n:i+1,de:ds.length}))});Object.values(ix).forEach(l=>l.sort((a,b)=>hhmm(a.o.hora||'99').localeCompare(hhmm(b.o.hora||'99'))));return ix}
+function fechaLarga(s){const d=deYmd(s);return ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()]+' '+d.getDate()+' de '+MESES[d.getMonth()].toLowerCase()}
+const colorEst=o=>(ESTADOS[o.estado]||ESTADOS.senada)[1];
+const horario=o=>o.hora?hhmm(o.hora)+(o.hora_fin?' a '+hhmm(o.hora_fin):'')+' hs':'Todo el día';
+function calMes(mes,ix,sel){
+ const y=mes.getFullYear(),m=mes.getMonth(),ini=(new Date(y,m,1).getDay()+6)%7,tot=new Date(y,m+1,0).getDate(),hoy=hoyYmd();
+ let h='<div class="cal-g">'+['L','M','M','J','V','S','D'].map(x=>`<div class="cal-w">${x}</div>`).join('')+'<div></div>'.repeat(ini);
+ for(let d=1;d<=tot;d++){const f=y+'-'+pad2(m+1)+'-'+pad2(d),l=ix[f]||[];
+  h+=`<button class="cal-d${f===hoy?' hoy':''}${f===sel?' sel':''}${(ini+d)%7===0?' dom':''}" data-f="${f}"><span>${d}</span>${l.slice(0,3).map(x=>`<i style="background:${colorEst(x.o)}">${esc((x.o.cliente||'').split(' ')[0])}</i>`).join('')}${l.length>3?`<em>+${l.length-3}</em>`:''}</button>`}
+ return h+'</div>'}
+const refEstados=()=>Object.values(ESTADOS).map(e=>`<span><i style="background:${e[1]}"></i>${e[0]}</span>`).join('');
+// Link para cargar la obra en Google Calendar con un toque
+function linkGoogle(o){const ds=diasDe(o),a=ds[0].replace(/-/g,''),z=ds[ds.length-1];
+ let dates;if(o.hora){const fin=o.hora_fin||hhmm(o.hora).replace(/^(\d\d)/,h=>pad2(Math.min(23,Number(h)+2)));dates=a+'T'+hhmm(o.hora).replace(':','')+'00/'+z.replace(/-/g,'')+'T'+hhmm(fin).replace(':','')+'00'}
+ else{const n=deYmd(z);n.setDate(n.getDate()+1);dates=a+'/'+ymd(n).replace(/-/g,'')}
+ const det=[o.cuadrilla&&'Cuadrilla: '+o.cuadrilla,o.tel&&'Tel: '+o.tel,o.pres_num&&'Presupuesto N° '+o.pres_num,ds.length>1&&ds.length+' días de trabajo (sin domingos)',o.notas,o.cargo&&'Cargó: '+o.cargo].filter(Boolean).join('\n');
+ return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Obra TPL: '+(o.cliente||''))+'&dates='+dates+'&ctz=America/Argentina/Buenos_Aires&location='+encodeURIComponent(o.dir||'')+'&details='+encodeURIComponent(det)}
+function tarjetaObra(x,rango){const o=x.o,e=ESTADOS[o.estado]||ESTADOS.senada,ds=diasDe(o);
+ return `<div class="obra" data-id="${esc(o.id)}" style="border-left-color:${e[1]}"><div class="obra-t"><b>${esc(o.cliente||'Sin nombre')}</b><span class="est" style="background:${e[1]}">${e[0]}</span></div>`
+ +(rango?`<div class="obra-m"><b style="color:var(--azul)">📅 ${fechaLarga(o.fecha)}${ds.length>1?` al ${fechaLarga(ds[ds.length-1])} (${ds.length} días)`:''}</b></div>`:'')
+ +`<div class="obra-m">🕘 ${horario(o)}${!rango&&x.de>1?` · día ${x.n} de ${x.de}`:''}</div>`
+ +`<div class="obra-m">👷 ${esc(o.cuadrilla||'Sin cuadrilla')}${o.pres_num?` · Presupuesto N° ${esc(o.pres_num)}`:''}</div>`
+ +(o.dir?`<a class="obra-l" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.dir)}" target="_blank" rel="noopener">📍 ${esc(o.dir)}</a>`:'')
+ +(o.tel?`<a class="obra-l" href="tel:${esc(String(o.tel).replace(/[^0-9+]/g,''))}">📞 ${esc(o.tel)}</a>`:'')
+ +(o.notas?`<div class="obra-m">📝 ${esc(o.notas)}</div>`:'')
+ +(o.cargo?`<div class="obra-m">Cargó: ${esc(o.cargo)}</div>`:'')
+ +`<a class="obra-g" href="${linkGoogle(o)}" target="_blank" rel="noopener">＋ Agregar a mi Google Calendar</a></div>`}
+function listaDia(list,ix,sel){const l=ix[sel]||[],hoy=hoyYmd();
+ const prox=list.filter(o=>o.estado!=='terminada'&&diasDe(o).slice(-1)[0]>=hoy).slice(0,15);
+ return `<div class="dia-t">${fechaLarga(sel)}</div>`+(l.length?l.map(x=>tarjetaObra(x)).join(''):'<div class="card hint">No hay obras este día.</div>')
+ +'<button class="obtn ghost" id="bObraDia">+ OBRA PARA ESTE DÍA</button>'
+ +`<div class="dia-t">Próximas obras</div>`+(prox.length?prox.map(o=>tarjetaObra({o,n:1,de:1},true)).join(''):'<div class="card hint">No hay obras pendientes.</div>')}
+
+let obras=LS.get('obras',[]),mesCal=new Date(new Date().getFullYear(),new Date().getMonth(),1),diaSel=hoyYmd(),oEd=null,presList=null;
+async function cargarObras(){pintarCal();
+ try{obras=(await api('/obras?select=*&order=fecha,hora'))||[];LS.set('obras',obras);LS.set('obrasAt',new Date().toISOString());$('calInfo').textContent='Actualizado recién. Todos ven las mismas obras.'}
+ catch(e){const t=LS.get('obrasAt',null);$('calInfo').textContent='Sin internet: mostrando lo último que se bajó'+(t?' ('+new Date(t).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+')':'')+'.'}
+ pintarCal()}
+function pintarCal(){
+ const ix=indiceObras(obras);
+ $('calMes').textContent=MESES[mesCal.getMonth()]+' '+mesCal.getFullYear();
+ $('cal').innerHTML=calMes(mesCal,ix,diaSel);$('calRef').innerHTML=refEstados();
+ $('cal').querySelectorAll('.cal-d').forEach(b=>b.onclick=()=>{diaSel=b.dataset.f;pintarCal()});
+ $('calDia').innerHTML=listaDia(obras,ix,diaSel);
+ $('calDia').querySelectorAll('.obra').forEach(el=>el.onclick=e=>{if(!e.target.closest('a'))abrirObra(obras.find(o=>o.id===el.dataset.id))});
+ $('bObraDia').onclick=()=>abrirObra(null,diaSel);
+}
+const irMes=n=>{mesCal=new Date(mesCal.getFullYear(),mesCal.getMonth()+n,1);pintarCal()};
+$('calPrev').onclick=()=>irMes(-1);$('calNext').onclick=()=>irMes(1);
+$('bObraNueva').onclick=()=>abrirObra(null,diaSel);
+$('bSuscribir').href='https://calendar.google.com/calendar/render?cid='+encodeURIComponent(ICS.replace('https://','webcal://'));
+const cuadrillas=()=>[...new Set(obras.map(o=>(o.cuadrilla||'').trim()).filter(Boolean))].sort();
+const OCAMPOS=[['oFecha','fecha'],['oDias','dias'],['oHora','hora'],['oHoraFin','hora_fin'],['oCli','cliente'],['oTel','tel'],['oDir','dir'],['oCua','cuadrilla'],['oNotas','notas']];
+async function abrirObra(o,fecha){
+ oEd=o?Object.assign({},o):{id:uid(),fecha:fecha||hoyYmd(),dias:1,hora:'',hora_fin:'',cliente:'',tel:'',dir:'',cuadrilla:'',estado:'senada',notas:'',pres_id:null,pres_num:null,total:null};
+ $('oTit').textContent=o?'Cambiar obra':'Nueva obra';$('bObraDel').hidden=!o||!OB.puedeBorrar;
+ OCAMPOS.forEach(([id,k])=>$(id).value=k.startsWith('hora')?hhmm(oEd[k]):(oEd[k]??''));
+ pintarCuaEst();$('mObra').classList.add('on');$('mObra').scrollTop=0;
+ if(!presList){$('oPres').innerHTML='<option>Cargando presupuestos…</option>';try{presList=await api('/presupuestos?select=id,num,vend,cli,total,data&order=updated_at.desc&limit=200')}catch(e){presList=null}}
+ $('oPres').innerHTML='<option value="">No, la cargo a mano</option>'+(presList||[]).map((p,i)=>`<option value="${i}" ${p.id===oEd.pres_id?'selected':''}>${esc(p.cli||'Sin nombre')} · N° ${esc(p.num||'')} · $ ${Math.round(Number(p.total)||0).toLocaleString('es-AR')}</option>`).join('');
+}
+$('oPres').onchange=()=>{const p=(presList||[])[$('oPres').value];if(!p){Object.assign(oEd,{pres_id:null,pres_num:null,total:null});return}
+ const d=p.data||{};Object.assign(oEd,{pres_id:p.id,pres_num:p.num,total:p.total});$('oCli').value=p.cli||d.cli||'';$('oTel').value=d.tel||'';$('oDir').value=d.dir||''};
+function pintarCuaEst(){
+ const c0=$('oCua').value.trim();
+ $('oCuaCh').innerHTML=cuadrillas().map(c=>`<button class="ochip ${c===c0?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+ $('oCuaCh').querySelectorAll('.ochip').forEach(b=>b.onclick=()=>{$('oCua').value=b.dataset.c;pintarCuaEst()});
+ $('oEst').innerHTML=Object.entries(ESTADOS).map(([k,e])=>`<button class="ochip ${k===oEd.estado?'on':''}" data-e="${k}">${e[0]}</button>`).join('');
+ $('oEst').querySelectorAll('.ochip').forEach(b=>b.onclick=()=>{oEd.estado=b.dataset.e;pintarCuaEst()});
+}
+$('oCua').oninput=pintarCuaEst;
+$('bObraNo').onclick=()=>$('mObra').classList.remove('on');
+$('bObraOk').onclick=()=>{
+ const o=oEd;OCAMPOS.forEach(([id,k])=>o[k]=$(id).value.trim());
+ o.dias=Math.min(60,Math.max(1,parseInt(o.dias)||1));o.hora=o.hora||null;o.hora_fin=o.hora?(o.hora_fin||null):null;
+ if(!o.fecha){toast('Falta el día');return}
+ if(!o.cliente){toast('Falta el cliente');$('oCli').focus();return}
+ if(o.hora_fin&&o.hora_fin<=o.hora){toast('La hora de fin tiene que ser después de la de inicio');return}
+ // Aviso si la misma cuadrilla ya tiene otra obra esos días
+ const mios=new Set(diasDe(o)),cua=o.cuadrilla.toLowerCase();
+ const choque=cua&&o.estado!=='terminada'&&obras.find(x=>x.id!==o.id&&x.estado!=='terminada'&&(x.cuadrilla||'').trim().toLowerCase()===cua&&diasDe(x).some(f=>mios.has(f)));
+ if(choque){$('mObra').classList.remove('on');OB.siNo(`La cuadrilla "${o.cuadrilla}" ya tiene la obra de ${choque.cliente} esos días. ¿Guardar igual?`,()=>guardarObra(o),()=>$('mObra').classList.add('on'))}
+ else guardarObra(o);
+};
+async function guardarObra(o){
+ o.cargo=o.cargo||OB.quien();
+ const row={};['id','fecha','dias','hora','hora_fin','cliente','tel','dir','cuadrilla','estado','pres_id','pres_num','total','notas','cargo'].forEach(k=>row[k]=o[k]??null);
+ row.updated_by=OB.quien();row.updated_at=new Date().toISOString();
+ $('bObraOk').disabled=true;
+ try{const ok=await api('/rpc/guardar_obra',{method:'POST',body:JSON.stringify({p_obra:row})});if(ok!==true)throw new Error('no guardó');
+  const i=obras.findIndex(x=>x.id===o.id),c=Object.assign({},row);if(i>=0)obras[i]=c;else obras.push(c);
+  obras.sort((a,b)=>(a.fecha+(a.hora||'')).localeCompare(b.fecha+(b.hora||'')));LS.set('obras',obras);
+  $('mObra').classList.remove('on');diaSel=o.fecha;const d=deYmd(o.fecha);mesCal=new Date(d.getFullYear(),d.getMonth(),1);pintarCal();toast('Obra guardada: '+o.cliente)}
+ catch(e){$('mObra').classList.add('on');toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
+ $('bObraOk').disabled=false}
+$('bObraDel').onclick=()=>{const o=oEd;$('mObra').classList.remove('on');
+ OB.siNo(`¿Borrar la obra de ${o.cliente}? Desaparece del calendario de todos.`,async()=>{
+  try{await OB.borrar(o);obras=obras.filter(x=>x.id!==o.id);LS.set('obras',obras);pintarCal();toast('Obra borrada')}
+  catch(e){toast(e.message==='clave'?'La clave cambió. Volvé a entrar.':'No se pudo borrar. Probá de nuevo.')}},()=>$('mObra').classList.add('on'))};
+const OB={puedeBorrar:true,quien:()=>'Rafael',
+ siNo:(t,si,no)=>preguntar(t,si,'SÍ',no),
+ borrar:async o=>{const ok=await rpc('admin_delete_obra',{p_id:o.id});if(ok!==true)throw new Error('clave')}};
+
+/* ---------- Confirmación ---------- */
+function preguntar(t,si,txtSi='SÍ, BORRAR',no){$('cSi').textContent=txtSi;$('cTxt').textContent=t;$('confirm').classList.add('on');$('cSi').onclick=()=>{$('confirm').classList.remove('on');si()};$('cNo').onclick=()=>{$('confirm').classList.remove('on');if(no)no()}}
+
+/* ---------- Inicio ---------- */
+if(recPendiente())verRecuperar();
+else if(clave)entrar(clave).then(ok=>{if(!ok)$('v-login').classList.add('on')});else $('v-login').classList.add('on');
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
