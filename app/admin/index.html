@@ -185,6 +185,8 @@ input:focus,textarea:focus{border-color:var(--naranja);background:#fff;outline:n
         <input id="cN2"><input id="cP2" type="number" inputmode="numeric">
       </div>
       <label for="tNuestro">Nuestro precio por metro, armado y colocado</label><input id="tNuestro" type="number" inputmode="numeric">
+      <label for="tColPct">Color en la competencia (% sobre el metro)</label><input id="tColPct" type="number" inputmode="numeric">
+      <label for="tColTpl">Nuestro color, precio fijo por trabajo (0 = no mostrar)</label><input id="tColTpl" type="number" inputmode="numeric">
       <label for="tPunchTxt">Frase final</label><textarea id="tPunchTxt"></textarea>
     </div>
     <div class="card">
@@ -262,10 +264,10 @@ const rpc=(fn,args)=>api('/rpc/'+fn,{method:'POST',body:JSON.stringify(Object.as
 function sinRed(e){toast(navigator.onLine?'No se pudo guardar. Probá de nuevo.':'Sin internet. Conectate y probá de nuevo.');console.warn(e)}
 
 const UNIS=[['m','Metro'],['u','Unidad'],['m²','m²'],['gl','Global']];
-const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',punchTit:'COMPARÁ EL METRO DE CANALETA',punchTxt:'Ellos te cobran solo el material: sin armar y sin colocar. Nosotros te lo dejamos armado y colocado, por casi el mismo precio o menos.',compara:'Zinguería N°1 de La Plata=19000,Zinguería N°2 de La Plata=17000,Zinguería N°3 de La Plata=13000',nuestro:15000,leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,
+const DEF={emp:'TPL',etel:'221 5599 225',pct:20,dias:5,anticipo:50,opTit:'ELEGÍ CÓMO PAGAR',leyenda:'Por alta demanda, la fecha de obra se reserva con el 50% de anticipo.',planes:'3=25,6=40,12=70,18=100',punchTit:'COMPARÁ EL METRO DE CANALETA',punchTxt:'Ellos te cobran solo el material: sin armar y sin colocar. Nosotros te lo dejamos armado y colocado, por casi el mismo precio o menos.',compara:'Zinguería N°1 de La Plata=19000,Zinguería N°2 de La Plata=17000,Zinguería N°3 de La Plata=13000',nuestro:15000,colorPct:40,colorTpl:30000,leyTar:'Aprovechá las cuotas: sumá más trabajos a la obra y financiá todo en hasta {max} cuotas.',round:true,
  pago:'',
  gar:'Garantía TPL de 24 meses por escrito.',
- det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador, pintura y mano de obra completa.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
+ det:'Incluye materiales, sunchos, agarraderas, fijaciones, sellador y mano de obra completa. El color es opcional: $30.000 por todo el trabajo.\nTramos continuos de hasta 5 metros sin uniones: menos puntos de filtración.\nPrueba de caudal antes de la entrega: sin filtraciones ni agua acumulada.\nEl saldo se abona al finalizar, con la aprobación estética del cliente.\nLa aceptación de este presupuesto implica la conformidad con el trabajo descripto y la forma de pago.',
  ben:'SALDO AL FINALIZAR | Pagás el resto cuando el trabajo está terminado y aprobado.\nGARANTÍA POR ESCRITO | Respaldo de la instalación.\nAPROBÁS LA ESTÉTICA | Pagás cuando estás conforme con la terminación.\nPRUEBA DE CAUDAL | Pagás después de comprobar el funcionamiento.',
  promoTxt:'¡Aprovechá! Precio válido durante el mes en curso.'};
 let clave=LS.get('clave',''),cat=[],cfg=Object.assign({},DEF),nCat='',nUni='m';
@@ -375,10 +377,10 @@ $('bNuevo').onclick=async()=>{
 };
 
 /* ---------- Textos ---------- */
-const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tLeyTar','leyTar'],['tPunchTit','punchTit'],['tPunchTxt','punchTxt'],['tNuestro','nuestro'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
+const TX=[['tEmp','emp'],['tETel','etel'],['tAnt','anticipo'],['tPct','pct'],['tDias','dias'],['tPromo','opTit'],['tLeyTar','leyTar'],['tPunchTit','punchTit'],['tPunchTxt','punchTxt'],['tNuestro','nuestro'],['tColPct','colorPct'],['tColTpl','colorTpl'],['tPromoTxt','leyenda'],['tPago','pago'],['tGar','gar'],['tDet','det'],['tBen','ben']];
 function pintarTextos(){TX.forEach(([id,k])=>$(id).value=cfg[k]??'');const cm=String(cfg.compara||'').split(',').map(x=>x.split('='));for(let i=0;i<3;i++){$('cN'+i).value=cm[i]?.[0]?.trim()||'';$('cP'+i).value=cm[i]?.[1]?.trim()||''}$('tPago').value=String(cfg.pago||'').split('\n').filter(l=>!/^\s*(con anticipo|sin anticipo|efectivo, transferencia o tarjeta)/i.test(l)).join('\n');const pl=String(cfg.planes||'').split(/[,;]+/).map(x=>x.split('='));for(let i=0;i<4;i++){$('pN'+i).value=pl[i]?.[0]?.trim()||'';$('pR'+i).value=pl[i]?.[1]?.trim()||''}}
 $('bTextos').onclick=async()=>{
- const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;d.compara=[0,1,2].map(i=>[$('cN'+i).value.replace(/[=,]/g,' ').trim(),parseInt($('cP'+i).value)||0]).filter(([n,p])=>n&&p>0).map(([n,p])=>n+'='+p).join(',');d.nuestro=parseInt(d.nuestro)||0;d.planes=[0,1,2,3].map(i=>[parseInt($('pN'+i).value)||0,Number(String($('pR'+i).value).replace(',','.'))||0]).filter(([n])=>n>1).map(([n,r])=>n+'='+r).join(',');
+ const d=Object.assign({},cfg);TX.forEach(([id,k])=>d[k]=$(id).value);d.pct=Number(d.pct)||0;d.dias=Number(d.dias)||0;d.anticipo=Number(d.anticipo)||50;d.compara=[0,1,2].map(i=>[$('cN'+i).value.replace(/[=,]/g,' ').trim(),parseInt($('cP'+i).value)||0]).filter(([n,p])=>n&&p>0).map(([n,p])=>n+'='+p).join(',');d.nuestro=parseInt(d.nuestro)||0;d.colorPct=parseInt(d.colorPct)||0;d.colorTpl=parseInt(d.colorTpl)||0;d.planes=[0,1,2,3].map(i=>[parseInt($('pN'+i).value)||0,Number(String($('pR'+i).value).replace(',','.'))||0]).filter(([n])=>n>1).map(([n,r])=>n+'='+r).join(',');
  $('bTextos').disabled=true;
  try{const ok=await rpc('admin_save_config',{p_data:d});if(ok!==true)throw new Error('clave');cfg=d;toast('Textos guardados para todos los vendedores')}
  catch(e){if(e.message==='clave'){toast('La clave cambió. Volvé a entrar.');$('bSalir').click()}else sinRed(e)}
