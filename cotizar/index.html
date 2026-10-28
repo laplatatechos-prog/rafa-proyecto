@@ -129,6 +129,7 @@ main>*{animation:entra .28s ease-out both}@keyframes entra{from{opacity:0;transf
 .pagar h3{margin:0 0 6px;font-size:14px;color:var(--azul)}.pagar small{display:block;color:var(--suave);font-size:12px;margin-top:8px}
 .pagar .fila{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #f1e3b0;padding:7px 0}.pagar .fila b{word-break:break-all}
 .pagar .cp{border:0;background:var(--azul);color:#fff;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;flex:none}
+.mini{color:var(--azul2);font-weight:800;font-size:13px;padding:8px 0;text-decoration:underline}
 .btn.mp{background:#009ee3;color:#fff;box-shadow:0 6px 16px rgba(0,158,227,.35);margin-top:10px}
 .pie{text-align:center;font-size:12px;color:var(--suave);padding:18px 0 0}
 .cargando{text-align:center;padding:60px 20px;color:var(--suave)}
@@ -154,10 +155,10 @@ async function api(path){const r=await fetch(SB+path,{cache:'no-store',headers:{
 
 /* Precios: salen del catálogo que Rafael carga en Admin TPL. Si no hay conexión, estos de respaldo. */
 const RESPALDO=[{id:'a',cat:'Canaletas',nom:'canaleta 40 d 25c',uni:'m',pre:15000},{id:'c',cat:'Canaletas',nom:'canaleta cenefa 40 d',uni:'m',pre:25000},{id:'b',cat:'Canaletas',nom:'bajada de 2x4xm',uni:'m',pre:15000},{id:'p',cat:'Canaletas',nom:'pintado de canaleta',uni:'gl',pre:30000}];
-const DEF={emp:'TPL',etel:'221 559-9265',pct:20,anticipo:50,planes:'3=25,6=40,12=70,18=100',colorTpl:30000,cotAltPB:3,recTarCot:10,minDias:2,alias:'laplatatechos',cvu:'0000003100041955043982',titular:'Angel Rafael Igoa',mplink:'https://mpago.la/1t17CkV',cotAltPA:6,};
+const DEF={emp:'TPL',etel:'221 559-9265',pct:20,anticipo:50,planes:'3=25,6=40,12=70,18=100',colorTpl:30000,cotAltPB:3,recTarCot:10,minDias:2,alias:'laplatatechos',cvu:'0000003100041955043982',titular:'Angel Rafael Igoa',mplink:'https://mpago.la/pos/1037925365',cotQr:'qr.png',cotAltPA:6,};
 let C={...DEF},CANAL=[],BAJADA=null,PINTADO=0,OCUP=new Set(),mes=null;
 
-const FOTO={americana:'../p/fotos/obra1.jpg',cenefa:'../p/fotos/obra2.jpg',color:'../p/fotos/obra1.jpg'};
+const FOTO={americana:'../p/fotos/obra1.jpg',cenefa:'../p/fotos/obra2.jpg',color:'../p/fotos/obra1.jpg',sinColor:'../p/fotos/obra3.jpg'};
 function tipoCanaleta(it){const n=it.nom.toLowerCase(),des=(n.match(/(\d+)\s*d\b/)||[])[1];
  if(n.includes('cenefa'))return{t:'Canaleta cenefa',d:'Frente recto que tapa el borde del techo. Más prolija a la vista.'+(des?' Desarrollo '+des+'.':''),img:FOTO.cenefa};
  if(n.includes('media')||n.includes('redond'))return{t:'Canaleta media caña',d:'Redonda, clásica.'+(des?' Desarrollo '+des+'.':''),img:''};
@@ -209,7 +210,6 @@ function casa(alta,resalta){const h=alta?150:85,y0=200-h,am='#ffc21a',bj=resalta
  ${alta?`<rect x="90" y="${y0+20}" width="40" height="34" fill="#cfe0ef" stroke="#3d4249"/><rect x="190" y="${y0+20}" width="40" height="34" fill="#cfe0ef" stroke="#3d4249"/><line x1="60" y1="${y0+75}" x2="260" y2="${y0+75}" stroke="#dfe2e6" stroke-width="2"/>`:''}
  <rect x="90" y="${200-48}" width="40" height="30" fill="#cfe0ef" stroke="#3d4249"/><rect x="180" y="${200-62}" width="34" height="62" fill="#8c2a3d"/>
  <text x="160" y="222" text-anchor="middle" font-size="14" font-weight="800" fill="#3d4249" font-family="system-ui,Arial">${alta?'Planta alta · bajada ~'+(Number(C.cotAltPA)||6)+' m':'Planta baja · bajada ~'+(Number(C.cotAltPB)||3)+' m'}</text></svg>`}
-function chapa(){return `<svg viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9ecef"/><stop offset=".45" stop-color="#b9bfc6"/><stop offset=".55" stop-color="#d6dade"/><stop offset="1" stop-color="#9aa1a9"/></linearGradient></defs><rect width="320" height="240" fill="#eceef1"/><path d="M0 70 L320 40 L320 0 L0 0Z" fill="#6d1a2b" opacity=".9"/><rect x="0" y="70" width="320" height="170" fill="#f7f7f5"/><path d="M-10 74 H330 V108 Q330 124 314 124 H6 Q-10 124 -10 108Z" fill="url(#gz)" stroke="#8a9098"/><rect x="236" y="120" width="26" height="120" fill="url(#gz)" stroke="#8a9098"/><text x="24" y="200" font-size="15" font-weight="800" fill="#5f6670" font-family="system-ui,Arial">Chapa galvanizada</text></svg>`}
 function dibBajadas(n){const xs=n<=1?[160]:Array.from({length:Math.min(n,6)},(_,i)=>50+i*(220/(Math.min(n,6)-1)));
  return `<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#eceef1"/><rect x="30" y="40" width="260" height="110" fill="#fff" stroke="#3d4249" stroke-width="2"/><path d="M20 40 L160 8 L300 40 Z" fill="#6d1a2b"/><rect x="18" y="38" width="284" height="9" rx="3" fill="#a9adb4"/>
  ${xs.map(x=>`<rect x="${x-5+20*((x-160)/160)}" y="46" width="11" height="104" fill="#ffc21a" stroke="#8a6a00"/><path d="M${x-8+20*((x-160)/160)} 150 h17 v8 h-17z" fill="#ffc21a" stroke="#8a6a00"/>`).join('')}
@@ -268,7 +268,7 @@ const VISTA={
 
  pintado(){$('app').innerHTML=cab(5,'¿La querés pintada?','El color queda parejo y protege la chapa. Es un precio fijo por todo el trabajo.')+`<div class="ops dos">
   <button type="button" class="op ${sel.pintado==='si'?'on':''}" data-v="si"><div class="img"><img src="${FOTO.color}" alt=""></div><div class="tx"><div class="t">Sí, con color</div><div class="m">+ ${fmt(PINTADO)}</div></div></button>
-  <button type="button" class="op ${sel.pintado==='no'?'on':''}" data-v="no"><div class="img">${chapa()}</div><div class="tx"><div class="t">No, sin pintar</div><div class="m">$ 0</div></div></button></div>
+  <button type="button" class="op ${sel.pintado==='no'?'on':''}" data-v="no"><div class="img"><img src="${FOTO.sinColor}" alt=""></div><div class="tx"><div class="t">No, sin pintar</div><div class="m">$ 0</div></div></button></div>
   ${sel.pintado==='si'?`<div class="caja"><h3>¿De qué color?</h3><div class="colores">${[['Blanco','#fafafa'],['Negro','#1d1f22']].map(([n,c])=>`<button type="button" data-c="${n}" class="${sel.color===n?'on':''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>`:''}`;
   marcar(v=>{sel.pintado=v;if(v==='no')sel.color=''});
   document.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>{sel.color=el.dataset.c;VISTA.pintado();barra()})},
@@ -321,8 +321,14 @@ function mensaje(){const t=cuentas(),m=precioSel(),c=canal();
   '¿Me confirmás el día?'].filter((x,i,a)=>x!==''||a[i-1]!=='').join('\n')}
 function pagoBox(tot){
  const qr=/^https:\/\//.test(C.cotQr||'')||/^qr\.(png|jpe?g)$/.test(C.cotQr||'')?C.cotQr:'',link=/^https:\/\//.test(C.mplink||'')?C.mplink:'';
- if(!qr&&!link)return '';
- return `<div class="pagar"><h3>¿Querés pagar ya y reservar el día?</h3><div class="fila"><span>Monto<br><b>${fmt(tot)}</b></span><button class="cp" data-cp="${Math.round(tot)}">Copiar</button></div>${link?`<a class="btn mp full" href="${esc(link)}" target="_blank" rel="noopener">PAGAR</a>`:''}${qr?`<img src="${esc(qr)}" alt="QR de pago" style="display:block;width:70%;max-width:240px;margin:12px auto 0;border-radius:12px;background:#fff;padding:8px">`:''}<small>Elegís cómo pagar: tarjeta en cuotas, débito, transferencia o dinero en cuenta. Mandanos el comprobante por WhatsApp.</small></div>`}
+ if(!qr&&!link&&!C.alias)return '';
+ return `<div class="pagar"><h3>¿Querés pagar ya y reservar el día?</h3>
+ <div class="fila"><span>Monto<br><b>${fmt(tot)}</b></span><button class="cp" data-cp="${Math.round(tot)}">Copiar</button></div>
+ ${C.alias?`<div class="fila"><span>Transferí al alias<br><b>${esc(C.alias)}</b></span><button class="cp" data-cp="${esc(C.alias)}">Copiar</button></div>`:''}
+ ${link?`<a class="btn mp full" href="${esc(link)}" target="_blank" rel="noopener">PAGAR CON MERCADO PAGO</a><small>Tarjeta de crédito en cuotas, débito o dinero en cuenta. Poné el monto y elegí cómo pagar.</small>`:''}
+ ${qr?`<img src="${esc(qr)}" alt="QR de pago de Mercado Pago" style="display:block;width:62%;max-width:220px;margin:14px auto 0;border-radius:12px">
+ <a class="mini" href="${esc(qr)}" download="QR-La-Plata-Techos.png" style="display:block;text-align:center">Guardar QR</a>`:''}
+ <small>Después mandanos el comprobante por WhatsApp.</small></div>`}
 /* Al mandar el pedido queda anotado en el calendario de obras (y en Google Calendar) como "a confirmar" */
 function anotar(){if(anotar.ok)return;anotar.ok=1;const m=precioSel(),c=canal();
  rpc('guardar_obra',{p_obra:{id:'cot-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),fecha:sel.fecha,dias:1,hora:sel.horario==='Tarde'?'14:00':'09:00',hora_fin:sel.horario==='Tarde'?'18:00':'13:00',
