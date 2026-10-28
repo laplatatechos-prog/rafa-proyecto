@@ -67,17 +67,6 @@ h1{font-size:25px;line-height:1.2;margin:0 0 6px;font-weight:900;color:var(--azu
 .colores button.on{border-color:var(--azul2);background:var(--amar3)}
 .caja{background:#fff;border-radius:18px;padding:16px;box-shadow:var(--sombra);margin-top:14px}
 .caja h3{font-size:12px;letter-spacing:1.5px;color:var(--azul);margin:0 0 10px;font-weight:900;text-transform:uppercase}
-.cuotas{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.cuotas button{border:1.5px solid var(--linea);background:#fff;border-radius:12px;padding:10px 6px;font-size:14px;font-weight:800;color:var(--azul)}
-.cuotas button small{display:block;font-weight:600;color:var(--suave);font-size:11px;margin-top:2px}
-.cuotas button.on{background:var(--gris);border-color:var(--gris);color:#fff}.cuotas button.on small{color:#ecd6db}
-.compara .r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--linea);font-size:14px}
-.compara .r:last-child{border-bottom:0}
-.compara .r b{font-variant-numeric:tabular-nums;white-space:nowrap}
-.compara .r small{display:block;color:var(--suave);font-size:11px}
-.compara .r.tpl{background:var(--amar3);margin:6px -8px 0;padding:10px 8px;border-radius:10px;border:0}
-.compara .r.tpl b{color:var(--azul);font-size:17px}
-.compara p{font-size:12px;color:var(--suave);line-height:1.5;margin:8px 0 0}
 label{display:block;font-size:13px;font-weight:800;color:var(--suave);margin:14px 0 6px}
 label:first-of-type{margin-top:0}
 input,textarea{width:100%;border:1.5px solid var(--linea);border-radius:12px;padding:13px;font-size:16px;color:var(--texto);background:#fff;font-family:inherit}
@@ -115,6 +104,33 @@ input:focus,textarea:focus{outline:none;border-color:var(--azul2);box-shadow:0 0
 .btn.wa{background:#25d366;color:#fff;box-shadow:0 6px 16px rgba(37,211,102,.35);display:flex;align-items:center;justify-content:center;gap:10px}
 .full{width:100%}
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--azul);color:#fff;padding:12px 18px;border-radius:22px;font-size:14px;display:none;z-index:30;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.heroP{background:linear-gradient(150deg,var(--azul),var(--azul2));color:#fff;border-radius:22px;padding:20px 18px 22px;margin-bottom:16px;box-shadow:var(--sombra);position:relative;overflow:hidden}
+.heroP::after{content:"";position:absolute;right:-70px;top:-70px;width:140px;height:140px;border-radius:50%;background:rgba(255,194,26,.16)}.heroP>*{position:relative;z-index:1}
+.heroP h1{color:#fff;margin:10px 0 8px}.portada .heroP h1 span{color:var(--azul);background:var(--amar);padding:0 8px;border-radius:8px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.heroP p{margin:0;color:#ecd6db;font-size:14px;line-height:1.5;position:relative}
+.heroP .chip{display:inline-block;background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:800;padding:5px 11px;border-radius:20px}
+.portada .fotos{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow:visible;margin:0 0 16px;padding:0}
+.portada .foto{width:auto;max-width:none}
+.paso{display:flex;align-items:center;gap:8px}.paso i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--amar);color:var(--azul);display:grid;place-items:center;font-size:12px;letter-spacing:0}
+main>*{animation:entra .28s ease-out both}@keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.op .m{display:inline-block;background:var(--amar3);border-radius:10px;padding:3px 10px}
+.op.on .m{background:var(--amar)}
+.colores button{flex:1 1 40%;padding:14px 6px;font-size:15px}.colores button i{width:44px;height:44px}
+.cal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.cal-h b{font-size:16px}
+.cal-h button{border:0;background:var(--azul3);color:var(--azul2);width:42px;height:42px;border-radius:12px;font-size:22px;font-weight:800}.cal-h button:disabled{opacity:.3}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}.cal .dn{font-size:11px;font-weight:800;color:var(--suave);padding:4px 0}
+.cal button{aspect-ratio:1;border:0;border-radius:11px;font-size:15px;font-weight:700;background:var(--azul3);color:var(--azul)}
+.cal button:disabled{background:transparent;color:#bcc1c7;text-decoration:line-through;font-weight:500}.cal button.vacio{visibility:hidden}
+.cal button.on{background:var(--amar);color:var(--azul);box-shadow:0 0 0 2px var(--azul2)}
+.ref{display:flex;gap:14px;font-size:12px;color:var(--suave);margin-top:10px;flex-wrap:wrap}
+.ref span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--azul3)}
+.ref span.x::before{background:#fff;border:1px solid #cdd1d6}.ref span.s::before{background:var(--amar)}
+.pagar{background:var(--amar3);border:2px solid var(--amar);border-radius:16px;padding:14px;margin-top:14px;font-size:14px;line-height:1.5}
+.pagar h3{margin:0 0 6px;font-size:14px;color:var(--azul)}.pagar small{display:block;color:var(--suave);font-size:12px;margin-top:8px}
+.pagar .fila{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #f1e3b0;padding:7px 0}.pagar .fila b{word-break:break-all}
+.pagar .cp{border:0;background:var(--azul);color:#fff;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;flex:none}
+.mini{color:var(--azul2);font-weight:800;font-size:13px;padding:8px 0;text-decoration:underline}
+.btn.mp{background:#009ee3;color:#fff;box-shadow:0 6px 16px rgba(0,158,227,.35);margin-top:10px}
 .pie{text-align:center;font-size:12px;color:var(--suave);padding:18px 0 0}
 .cargando{text-align:center;padding:60px 20px;color:var(--suave)}
 </style>
@@ -134,16 +150,15 @@ const fmt=x=>'$ '+Math.round(x).toLocaleString('es-AR');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3000)}
 const SB='https://hvgwikhzxxkhmbjnyohl.supabase.co/rest/v1',KEY='sb_publishable_xUj53gV1c6xo6Y6t52R-Vw_hTS-P29s';
+const rpc=(fn,args)=>fetch(SB+'/rpc/'+fn,{method:'POST',keepalive:true,headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify(args||{})}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()});
 async function api(path){const r=await fetch(SB+path,{cache:'no-store',headers:{apikey:KEY}});if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 
 /* Precios: salen del catálogo que Rafael carga en Admin TPL. Si no hay conexión, estos de respaldo. */
 const RESPALDO=[{id:'a',cat:'Canaletas',nom:'canaleta 40 d 25c',uni:'m',pre:15000},{id:'c',cat:'Canaletas',nom:'canaleta cenefa 40 d',uni:'m',pre:25000},{id:'b',cat:'Canaletas',nom:'bajada de 2x4xm',uni:'m',pre:15000},{id:'p',cat:'Canaletas',nom:'pintado de canaleta',uni:'gl',pre:30000}];
-const DEF={emp:'TPL',etel:'221 559-9265',pct:20,anticipo:50,planes:'3=25,6=40,12=70,18=100',colorTpl:30000,cotAltPB:3,cotAltPA:6,
- compara:'Zinguería N°1 de La Plata=19000,Zinguería N°2 de La Plata=17000,Zinguería N°3 de La Plata=13000',nuestro:15000,punchTit:'COMPARÁ EL METRO DE CANALETA',
- punchTxt:'Ellos te cobran solo el material: sin armar y sin colocar. Nosotros te lo dejamos armado y colocado, por casi el mismo precio o menos.'};
-let C={...DEF},CANAL=[],BAJADA=null,PINTADO=0;
+const DEF={emp:'TPL',etel:'221 559-9265',pct:20,anticipo:50,planes:'3=25,6=40,12=70,18=100',colorTpl:30000,cotAltPB:3,recTarCot:10,minDias:2,alias:'laplatatechos',cvu:'0000003100041955043982',titular:'Angel Rafael Igoa',mplink:'https://mpago.la/pos/1037925365',cotQr:'qr.png',cotAltPA:6,};
+let C={...DEF},CANAL=[],BAJADA=null,PINTADO=0,OCUP=new Set(),mes=null;
 
-const FOTO={americana:'../p/fotos/obra3.jpg',cenefa:'../p/fotos/obra2.jpg',color:'../p/fotos/obra1.jpg',sinColor:'../p/fotos/obra3.jpg'};
+const FOTO={americana:'../p/fotos/obra1.jpg',cenefa:'../p/fotos/obra2.jpg',color:'../p/fotos/obra1.jpg',sinColor:'../p/fotos/obra3.jpg'};
 function tipoCanaleta(it){const n=it.nom.toLowerCase(),des=(n.match(/(\d+)\s*d\b/)||[])[1];
  if(n.includes('cenefa'))return{t:'Canaleta cenefa',d:'Frente recto que tapa el borde del techo. Más prolija a la vista.'+(des?' Desarrollo '+des+'.':''),img:FOTO.cenefa};
  if(n.includes('media')||n.includes('redond'))return{t:'Canaleta media caña',d:'Redonda, clásica.'+(des?' Desarrollo '+des+'.':''),img:''};
@@ -151,7 +166,7 @@ function tipoCanaleta(it){const n=it.nom.toLowerCase(),des=(n.match(/(\d+)\s*d\b
 
 async function cargar(){
  let items=RESPALDO,conf={};
- try{const [cat,cf]=await Promise.all([api('/catalogo?select=id,cat,nom,uni,pre&order=nom'),api('/config?select=data&id=eq.1')]);if(cat&&cat.length)items=cat;conf=cf&&cf[0]?cf[0].data:{}}catch(e){}
+ try{const [cat,cf,ocu]=await Promise.all([api('/catalogo?select=id,cat,nom,uni,pre&order=nom'),api('/config?select=data&id=eq.1'),rpc('dias_ocupados').catch(()=>[])]);(ocu||[]).forEach(r=>OCUP.add(typeof r==='string'?r:r.dias_ocupados));if(cat&&cat.length)items=cat;conf=cf&&cf[0]?cf[0].data:{}}catch(e){}
  C=Object.assign({...DEF},conf);
  items=items.map(x=>({...x,pre:Number(x.pre)||0}));
  const low=x=>x.nom.toLowerCase();
@@ -165,18 +180,24 @@ async function cargar(){
 }
 
 /* ---------- Estado y cuentas ---------- */
-const sel={canal:'',metros:10,bajadas:2,planta:'',pintado:'',color:'',pago:'',cuotas:0,nom:'',dir:'',horario:'',com:''};
+const sel={canal:'',metros:10,bajadas:2,planta:'',pintado:'',color:'',pago:'',fecha:'',nom:'',tel:'',dir:'',horario:'',com:''};
 const canal=()=>CANAL.find(x=>x.id===sel.canal)||CANAL[0];
 const altura=()=>sel.planta==='alta'?Number(C.cotAltPA)||6:Number(C.cotAltPB)||3;
-function planes(){return String(C.planes||'').split(/[,;\n]+/).map(x=>x.split(/[=:]/).map(v=>Number(String(v).trim()))).filter(([n,r])=>n>1&&n<=48&&r>=0).map(([n,r])=>({n:Math.round(n),r})).sort((a,b)=>a.n-b.n)}
 function cuentas(){
  const c=canal(),mC=Math.ceil(sel.metros),mB=BAJADA?sel.bajadas*altura():0;
  const lin=[{t:c.t,d:mC+' m × '+fmt(c.pre),v:mC*c.pre}];
  if(BAJADA&&sel.bajadas)lin.push({t:sel.bajadas+(sel.bajadas>1?' bajadas':' bajada'),d:mB+' m'+(sel.planta?' (planta '+sel.planta+')':'')+' × '+fmt(BAJADA.pre),v:mB*BAJADA.pre});
  if(sel.pintado==='si')lin.push({t:'Pintado'+(sel.color?' '+sel.color.toLowerCase():''),d:'Todo el trabajo',v:PINTADO});
  const efectivo=lin.reduce((s,x)=>s+x.v,0),p=Math.min(90,Math.max(0,Number(C.pct)||0))/100,lista=p?efectivo/(1-p):efectivo;
- return{lin,efectivo,lista,ant:Number(C.anticipo)||50,planes:planes().map(x=>{const tot=Math.round(lista*(1+x.r/100));return{n:x.n,tot,cuota:Math.round(tot/x.n)}})}}
-function precioSel(){const t=cuentas();if(sel.pago==='cuotas'){const x=t.planes.find(p=>p.n===sel.cuotas)||t.planes[0];if(x)return{tot:x.tot,txt:x.n+' cuotas de '+fmt(x.cuota)}}return{tot:t.efectivo,txt:'en efectivo o transferencia'}}
+ return{lin,efectivo,lista,ant:Number(C.anticipo)||50,}}
+function precioSel(){const t=cuentas();return{tot:t.efectivo,txt:'precio estimado'}}
+
+/* ---------- Fechas (hora de Argentina) ---------- */
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const deYmd=s=>{const [a,m,d]=s.split('-').map(Number);return new Date(a,m-1,d)};
+const hoyAR=()=>deYmd(new Date().toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'}));
+const sumar=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const largo=s=>deYmd(s).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
 
 /* ---------- Dibujos ---------- */
 function casa(alta,resalta){const h=alta?150:85,y0=200-h,am='#ffc21a',bj=resalta?am:'#a9adb4';
@@ -197,13 +218,13 @@ function dibMetros(){return `<svg viewBox="0 0 320 130"><rect width="320" height
  <path d="M26 74 v-6 M294 74 v-6 M26 71 H294" stroke="#3d4249" stroke-width="2"/><rect x="118" y="62" width="84" height="20" rx="10" fill="#3d4249"/><text x="160" y="77" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="system-ui,Arial">${Math.ceil(sel.metros)} metros</text></svg>`}
 
 /* ---------- Pasos ---------- */
-const PASOS=['portada','canaleta','metros','bajadas','planta','pintado','pago','datos','enviar'];
+const PASOS=['portada','canaleta','metros','bajadas','planta','pintado','fecha','datos','enviar'];
 let paso=0;
 function ir(n){paso=Math.max(0,Math.min(PASOS.length-1,n));const id=PASOS[paso];
  $('bAtras').hidden=paso===0;$('prog').hidden=paso===0;$('progI').style.width=(paso/(PASOS.length-1)*100)+'%';
  VISTA[id]();barra();window.scrollTo(0,0)}
-function cab(n,t,s){return `<div class="paso">${n<PASOS.length-1?`Paso ${n} de ${PASOS.length-2}`:`Último paso`}</div><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}`}
-function listo(){const id=PASOS[paso];return id==='planta'?!!sel.planta:id==='pintado'?!!sel.pintado:id==='pago'?!!sel.pago:true}
+function cab(n,t,s){return `<div class="paso"><i>${n<PASOS.length-1?n:'✓'}</i>${n<PASOS.length-1?`Paso ${n} de ${PASOS.length-2}`:`Último paso`}</div><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}`}
+function listo(){const id=PASOS[paso];return id==='planta'?!!sel.planta:id==='pintado'?!!sel.pintado:id==='fecha'?!!sel.fecha&&!!sel.horario:true}
 function barra(){const id=PASOS[paso],b=$('barra');
  if(id==='portada'||id==='enviar'){b.hidden=true;return}
  b.hidden=false;const m=precioSel();
@@ -219,9 +240,9 @@ function contador(campo,min,max,unidad,extra){
 
 const VISTA={
  portada(){$('app').innerHTML=`<div class="portada">
-  <h1>Cotizá tu canaleta <span>en 1 minuto</span></h1>
-  <p class="sub">Elegí lo que necesitás tocando las opciones y mirá el precio al instante. Al final nos mandás el pedido por WhatsApp y coordinamos la visita.</p>
-  <div class="fotos">${[[FOTO.color,'Canaleta americana con color'],[FOTO.cenefa,'Canaleta cenefa con color'],[FOTO.sinColor,'Canaleta americana sin color']].map(([u,t])=>`<div class="foto"><img src="${u}" alt="${esc(t)}"><b>${esc(t)}</b></div>`).join('')}</div>
+  <div class="heroP"><span class="chip">⚡ Precio al instante</span><h1>Cotizá tu canaleta <span>en 1 minuto</span></h1>
+  <p>Tocá las opciones, mirá el precio y mandanos el pedido por WhatsApp. Coordinamos la visita sin cargo.</p></div>
+  <div class="fotos">${[[FOTO.americana,'Canaleta americana'],[FOTO.cenefa,'Canaleta cenefa']].map(([u,t])=>`<div class="foto"><img src="${u}" alt="${esc(t)}"><b>${esc(t)}</b></div>`).join('')}</div>
   <ul class="puntos"><li><i>✓</i>Material, armado y colocación incluidos</li><li><i>✓</i>Tramos de hasta 5 m sin uniones</li><li><i>✓</i>Prueba de caudal antes de entregar</li><li><i>✓</i>Pagás el saldo cuando estás conforme</li></ul>
   <button class="btn full" id="bEmpezar" style="margin-top:16px">EMPEZAR A COTIZAR</button>
   <div class="pie">${esc(C.emp||'TPL')} · La Plata Techos${C.etel?' · '+esc(C.etel):''}</div></div>`;
@@ -246,41 +267,46 @@ const VISTA={
   marcar(v=>sel.planta=v)},
 
  pintado(){$('app').innerHTML=cab(5,'¿La querés pintada?','El color queda parejo y protege la chapa. Es un precio fijo por todo el trabajo.')+`<div class="ops dos">
-  <button type="button" class="op ${sel.pintado==='si'?'on':''}" data-v="si"><div class="img"><img src="${FOTO.color}" alt=""></div><div class="tx"><div class="t">Sí, pintada</div><div class="m">+ ${fmt(PINTADO)}</div></div></button>
+  <button type="button" class="op ${sel.pintado==='si'?'on':''}" data-v="si"><div class="img"><img src="${FOTO.color}" alt=""></div><div class="tx"><div class="t">Sí, con color</div><div class="m">+ ${fmt(PINTADO)}</div></div></button>
   <button type="button" class="op ${sel.pintado==='no'?'on':''}" data-v="no"><div class="img"><img src="${FOTO.sinColor}" alt=""></div><div class="tx"><div class="t">No, sin pintar</div><div class="m">$ 0</div></div></button></div>
-  ${sel.pintado==='si'?`<div class="caja"><h3>¿De qué color?</h3><div class="colores">${[['Blanco','#fafafa'],['Negro','#1d1f22'],['Marrón','#6b4428'],['Gris','#8a8f96'],['Bordó','#6d1a2b'],['Otro','conic-gradient(#e74c3c,#f1c40f,#2ecc71,#3498db,#9b59b6,#e74c3c)']].map(([n,c])=>`<button type="button" data-c="${n}" class="${sel.color===n?'on':''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>`:''}`;
+  ${sel.pintado==='si'?`<div class="caja"><h3>¿De qué color?</h3><div class="colores">${[['Blanco','#fafafa'],['Negro','#1d1f22']].map(([n,c])=>`<button type="button" data-c="${n}" class="${sel.color===n?'on':''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>`:''}`;
   marcar(v=>{sel.pintado=v;if(v==='no')sel.color=''});
   document.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>{sel.color=el.dataset.c;VISTA.pintado();barra()})},
 
- pago(){const t=cuentas();if(!sel.cuotas&&t.planes.length)sel.cuotas=t.planes[0].n;
-  const comp=String(C.compara||'').split(',').map(x=>x.split('=')).filter(x=>x[0]&&Number(x[1])),nuestro=Number(C.nuestro)||canal().pre;
-  $('app').innerHTML=cab(6,'¿Cómo lo querés pagar?','Efectivo y transferencia salen lo mismo.')+`<div class="ops">
-  <button type="button" class="op sin-img ${sel.pago==='efectivo'?'on':''}" data-v="efectivo"><div class="tx"><span class="tag">★ MEJOR PRECIO</span><div class="t">Efectivo o transferencia</div><div class="m">${fmt(t.efectivo)}</div><div class="d">Reservás la fecha con el ${t.ant}% (${fmt(t.efectivo*t.ant/100)}) y el resto lo pagás al terminar, cuando estás conforme.</div></div></button>
-  ${t.planes.length?`<button type="button" class="op sin-img ${sel.pago==='cuotas'?'on':''}" data-v="cuotas"><div class="tx"><div class="t">En cuotas con tarjeta</div><div class="m">${(()=>{const x=t.planes.find(p=>p.n===sel.cuotas)||t.planes[0];return x.n+' × '+fmt(x.cuota)})()}</div><div class="d">Por Mercado Pago, al finalizar la obra. Elegí el plan:</div>
-   <div class="cuotas">${t.planes.map(x=>`<span role="button" tabindex="0" class="${x.n===sel.cuotas?'on':''}" data-q="${x.n}" style="display:block;border:1.5px solid ${x.n===sel.cuotas?'#3d4249':'#dfe2e6'};background:${x.n===sel.cuotas?'#3d4249':'#fff'};color:${x.n===sel.cuotas?'#fff':'#6d1a2b'};border-radius:12px;padding:10px 6px;font-size:14px;font-weight:800;text-align:center">${x.n} cuotas<small style="display:block;font-weight:600;font-size:11px;margin-top:2px;color:${x.n===sel.cuotas?'#ecd6db':'#5f6670'}">${fmt(x.cuota)} por mes<br>total ${fmt(x.tot)}</small></span>`).join('')}</div></div></button>`:''}</div>
-  ${t.planes.length?`<div class="nota">En efectivo ahorrás <b>${fmt(t.planes[0].tot-t.efectivo)}</b> contra ${t.planes[0].n} cuotas.</div>`:''}
-  ${comp.length?`<div class="caja compara"><h3>${esc(C.punchTit||'COMPARÁ EL METRO DE CANALETA')}</h3>${comp.map(([n,p])=>`<div class="r"><span>${esc(n)}<small>Solo material, sin colocar</small></span><b>${fmt(p)}</b></div>`).join('')}<div class="r tpl"><span><b style="font-size:14px">${esc(C.emp||'TPL')}</b><small>Material, armado y colocado</small></span><b>desde ${fmt(nuestro)}</b></div><p>${esc(C.punchTxt||'')}</p></div>`:''}`;
-  marcar(v=>sel.pago=v);
-  document.querySelectorAll('[data-q]').forEach(el=>el.onclick=e=>{e.stopPropagation();sel.pago='cuotas';sel.cuotas=Number(el.dataset.q);VISTA.pago();barra()})},
+ fecha(){const minD=sumar(hoyAR(),Number(C.minDias??2));if(!mes)mes=new Date(minD.getFullYear(),minD.getMonth(),1);
+  const max=sumar(hoyAR(),90),y=mes.getFullYear(),mo=mes.getMonth(),pri=(new Date(y,mo,1).getDay()+6)%7,ult=new Date(y,mo+1,0).getDate();
+  let cel='';for(let i=0;i<pri;i++)cel+='<button class="vacio" disabled></button>';
+  for(let d=1;d<=ult;d++){const f=new Date(y,mo,d),k=ymd(f),no=f<minD||f>max||f.getDay()===0||OCUP.has(k);cel+=`<button type="button" ${no?'disabled':''} data-f="${k}" class="${sel.fecha===k?'on':''}">${d}</button>`}
+  $('app').innerHTML=cab(6,'¿Qué día te queda bien?','Elegí un día libre. Te lo confirmamos por WhatsApp.')+`<div class="form">
+  <div class="cal-h"><button type="button" id="mAnt" ${new Date(y,mo,1)<=new Date(minD.getFullYear(),minD.getMonth(),1)?'disabled':''}>‹</button><b>${mes.toLocaleDateString('es-AR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase())}</b><button type="button" id="mSig" ${new Date(y,mo+1,1)>max?'disabled':''}>›</button></div>
+  <div class="cal">${['L','M','M','J','V','S','D'].map(x=>`<span class="dn">${x}</span>`).join('')}${cel}</div>
+  <div class="ref"><span>Libre</span><span class="x">Ocupado</span><span class="s">Tu día</span></div>
+  <label style="margin-top:16px">¿En qué horario?</label><div class="chips" style="justify-content:flex-start;margin-top:0">${['Mañana','Tarde'].map(h=>`<button type="button" data-h="${h}" class="${sel.horario===h?'on':''}">${h}</button>`).join('')}</div>
+  ${sel.fecha?`<div class="nota">Elegiste el <b>${largo(sel.fecha)}</b>${sel.horario?' a la <b>'+sel.horario.toLowerCase()+'</b>':''}.</div>`:''}</div>`;
+  $('mAnt').onclick=()=>{mes=new Date(y,mo-1,1);VISTA.fecha()};$('mSig').onclick=()=>{mes=new Date(y,mo+1,1);VISTA.fecha()};
+  document.querySelectorAll('[data-f]').forEach(el=>el.onclick=()=>{sel.fecha=el.dataset.f;VISTA.fecha();barra()});
+  document.querySelectorAll('[data-h]').forEach(el=>el.onclick=()=>{sel.horario=el.dataset.h;VISTA.fecha();barra()})},
 
  datos(){$('app').innerHTML=cab(7,'Tus datos','Para coordinar la visita y confirmar las medidas.')+`<div class="form">
   <label for="fNom">Nombre</label><input id="fNom" autocomplete="name" value="${esc(sel.nom)}" placeholder="Tu nombre">
   <label for="fDir">Dirección o barrio de la obra</label><input id="fDir" autocomplete="street-address" value="${esc(sel.dir)}" placeholder="Ej: 7 y 50, La Plata">
-  <label>¿Cuándo te viene bien la visita?</label><div class="chips" style="justify-content:flex-start;margin-top:0">${['Mañana','Tarde','Sábado','Cualquier día'].map(h=>`<button type="button" data-h="${h}" class="${sel.horario===h?'on':''}">${h}</button>`).join('')}</div>
+  <label for="fTel">Celular</label><input id="fTel" type="tel" autocomplete="tel" value="${esc(sel.tel)}" placeholder="Ej: 221 555 1234">
   <label for="fCom">¿Algo más? (opcional)</label><textarea id="fCom" placeholder="Ej: hay que sacar la canaleta vieja">${esc(sel.com)}</textarea></div>`;
-  ['fNom','fDir','fCom'].forEach(i=>$(i).oninput=e=>{sel[{fNom:'nom',fDir:'dir',fCom:'com'}[i]]=e.target.value;e.target.classList.remove('err')});
-  document.querySelectorAll('[data-h]').forEach(el=>el.onclick=()=>{sel.horario=el.dataset.h;document.querySelectorAll('[data-h]').forEach(x=>x.classList.toggle('on',x===el))})},
+  ['fNom','fTel','fDir','fCom'].forEach(i=>$(i).oninput=e=>{sel[{fNom:'nom',fTel:'tel',fDir:'dir',fCom:'com'}[i]]=e.target.value;e.target.classList.remove('err')});},
 
  enviar(){const t=cuentas(),m=precioSel();
   $('app').innerHTML=cab(8,'¡Listo! Mandanos tu pedido','Tocá el botón verde: se abre WhatsApp con todo armado. Te respondemos y confirmamos la visita.')+`
   <div class="resumen">${t.lin.map(x=>`<div class="r"><span>${esc(x.t)}<small>${esc(x.d)}</small></span><b>${fmt(x.v)}</b></div>`).join('')}</div>
-  <div class="total"><small>${sel.pago==='cuotas'?'Precio en cuotas':'Precio en efectivo o transferencia'}</small><b>${fmt(m.tot)}</b><span>${sel.pago==='cuotas'?esc(m.txt)+' con tarjeta.':'Reservás con el '+t.ant+'% y el resto al terminar.'}</span></div>
+  <div class="total"><small>Precio estimado</small><b>${fmt(m.tot)}</b><span>📅 ${largo(sel.fecha)}, a la ${sel.horario.toLowerCase()}</span></div>
   <a class="btn wa full" id="bWa" style="margin-top:16px" href="${linkWa()}" target="_blank" rel="noopener"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg>ENVIAR POR WHATSAPP</a>
+  ${pagoBox(m.tot)}
   <div class="nota">El precio es estimado con las medidas que cargaste. Lo confirmamos en la visita, sin cargo. ${esc(C.emp||'TPL')} te confirma día y horario por WhatsApp.</div>
-  <button class="btn full" style="margin-top:14px;background:#fff;box-shadow:none;border:1.5px solid #dfe2e6" onclick="ir(1)">Cambiar algo</button>`}
+  <button class="btn full" style="margin-top:14px;background:#fff;box-shadow:none;border:1.5px solid #dfe2e6" onclick="ir(1)">Cambiar algo</button>`;
+  $('bWa').addEventListener('click',anotar);
+  $('app').querySelectorAll('[data-cp]').forEach(x=>x.onclick=()=>{const v=x.dataset.cp;(navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('Copiado: '+v)).catch(()=>toast(v))})}
 };
 
-function validarDatos(){let ok=true;[['fNom','nom'],['fDir','dir']].forEach(([i,k])=>{if(!String(sel[k]).trim()){$(i).classList.add('err');ok=false}});if(!ok)toast('Completá tu nombre y la dirección o barrio');return ok}
+function validarDatos(){let ok=true;[['fNom','nom'],['fTel','tel'],['fDir','dir']].forEach(([i,k])=>{if(!String(sel[k]).trim()){$(i).classList.add('err');ok=false}});if(!ok)toast('Completá tu nombre, celular y dirección');return ok}
 
 /* WhatsApp de destino: clave "cotWa" en config (si no, el teléfono de la empresa) */
 const telWa=t=>{let d=String(t||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('54'))d=d.slice(2);if(d.startsWith('0'))d=d.slice(1);if(d.startsWith('9'))d=d.slice(1);if(d.length===12)d=d.replace(/^(\d{2,4})15/,'$1');return '549'+d};
@@ -289,10 +315,25 @@ function mensaje(){const t=cuentas(),m=precioSel(),c=canal();
   `• ${c.t}: ${Math.ceil(sel.metros)} m`,
   `• Bajadas: ${sel.bajadas}${sel.planta?' (planta '+sel.planta+')':''}`,
   `• Pintado: ${sel.pintado==='si'?'Sí'+(sel.color?', '+sel.color.toLowerCase():''):'No'}`,
-  `• Pago: ${sel.pago==='cuotas'?m.txt+' con tarjeta (total '+fmt(m.tot)+')':'Efectivo o transferencia'}`,'',
+  `📅 ${largo(sel.fecha)}, a la ${sel.horario.toLowerCase()}`,'',
   `💰 Precio estimado: ${fmt(m.tot)}`,'',
-  `👤 ${sel.nom.trim()}`,`📍 ${sel.dir.trim()}`,sel.horario?`🕒 Visita: ${sel.horario}`:'',sel.com.trim()?`📝 ${sel.com.trim()}`:'','',
-  '¿Me confirmás la visita?'].filter((x,i,a)=>x!==''||a[i-1]!=='').join('\n')}
+  `👤 ${sel.nom.trim()}`,`📱 ${sel.tel.trim()}`,`📍 ${sel.dir.trim()}`,sel.com.trim()?`📝 ${sel.com.trim()}`:'','',
+  '¿Me confirmás el día?'].filter((x,i,a)=>x!==''||a[i-1]!=='').join('\n')}
+function pagoBox(tot){
+ const qr=/^https:\/\//.test(C.cotQr||'')||/^qr\.(png|jpe?g)$/.test(C.cotQr||'')?C.cotQr:'',link=/^https:\/\//.test(C.mplink||'')?C.mplink:'';
+ if(!qr&&!link&&!C.alias)return '';
+ return `<div class="pagar"><h3>¿Querés pagar ya y reservar el día?</h3>
+ <div class="fila"><span>Monto<br><b>${fmt(tot)}</b></span><button class="cp" data-cp="${Math.round(tot)}">Copiar</button></div>
+ ${C.alias?`<div class="fila"><span>Transferí al alias<br><b>${esc(C.alias)}</b></span><button class="cp" data-cp="${esc(C.alias)}">Copiar</button></div>`:''}
+ ${link?`<a class="btn mp full" href="${esc(link)}" target="_blank" rel="noopener">PAGAR CON MERCADO PAGO</a><small>Tarjeta de crédito en cuotas, débito o dinero en cuenta. Poné el monto y elegí cómo pagar.</small>`:''}
+ ${qr?`<img src="${esc(qr)}" alt="QR de pago de Mercado Pago" style="display:block;width:62%;max-width:220px;margin:14px auto 0;border-radius:12px">
+ <a class="mini" href="${esc(qr)}" download="QR-La-Plata-Techos.png" style="display:block;text-align:center">Guardar QR</a>`:''}
+ <small>Después mandanos el comprobante por WhatsApp.</small></div>`}
+/* Al mandar el pedido queda anotado en el calendario de obras (y en Google Calendar) como "a confirmar" */
+function anotar(){if(anotar.ok)return;anotar.ok=1;const m=precioSel(),c=canal();
+ rpc('guardar_obra',{p_obra:{id:'cot-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),fecha:sel.fecha,dias:1,hora:sel.horario==='Tarde'?'14:00':'09:00',hora_fin:sel.horario==='Tarde'?'18:00':'13:00',
+  cliente:sel.nom.trim(),tel:sel.tel.trim(),dir:sel.dir.trim(),estado:'aceptado',total:Math.round(m.tot),
+  notas:'COTIZADOR WEB · A CONFIRMAR\n'+c.t+' '+Math.ceil(sel.metros)+' m · '+sel.bajadas+' bajadas (planta '+sel.planta+') · pintado '+(sel.pintado==='si'?sel.color||'sí':'no')+(sel.com.trim()?'\n'+sel.com.trim():''),updated_by:'Cotizador web'}}).catch(()=>{anotar.ok=0})}
 const linkWa=()=>'https://wa.me/'+telWa(C.cotWa||C.etel)+'?text='+encodeURIComponent(mensaje());
 
 cargar();
