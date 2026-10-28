@@ -161,7 +161,7 @@ function planes(){return String(C.planes||'').split(/[,;\n]+/).map(x=>x.split(/[
 function cuentas(){const fin=Number(P.data.total)||P.data.items.reduce((s,it)=>s+qtyEff(it)*it.pre,0),p=Math.min(90,Math.max(0,Number(C.pct)||0))/100,lista=p?fin/(1-p):fin,ant=Number(C.anticipo)||50;
  return{fin,lista,ant,sena:Math.round(fin)*ant/100,planes:planes().map(x=>{const tot=Math.round(lista*(1+x.r/100));return{n:x.n,tot,cuota:Math.round(tot/x.n)}})}}
 const vence=()=>sumar(deYmd(new Date(P.data.fecha||P.created_at).toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'})),Number(C.dias??5));
-const telWa=t=>{let d=String(t||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('54'))d=d.slice(2);if(d.startsWith('0'))d=d.slice(1);if(d.startsWith('9'))d=d.slice(1);d=d.replace(/^(\d{2,4})15/,'$1');return '549'+d};
+const telWa=t=>{let d=String(t||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('54'))d=d.slice(2);if(d.startsWith('0'))d=d.slice(1);if(d.startsWith('9'))d=d.slice(1);if(d.length===12)d=d.replace(/^(\d{2,4})15/,'$1');return '549'+d};
 const waVend=txt=>{const n=telWa(P.data.vtel||C.etel);return 'https://wa.me/'+n+'?text='+encodeURIComponent(txt)};
 
 /* ---------- Pantallas ---------- */

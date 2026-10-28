@@ -424,7 +424,7 @@ function store(){if(!cur.num)cur.num=nextNum();cur.vend=cfg.vend;cur.vtel=cfg.vt
 $('bSave').onclick=()=>{if(!validate())return;store();toast('Guardado '+cur.num)};
 // Link para que el cliente acepte, elija fecha y firme (página p/). Se sube antes de mandarlo.
 const LINK_CLI=id=>new URL('p/?id='+id,location.href.replace(/[^/]*$/,'')).href;
-const telWa=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length<8)return '';if(d.startsWith('54'))d=d.slice(2);if(d.startsWith('0'))d=d.slice(1);if(d.startsWith('9'))d=d.slice(1);d=d.replace(/^(\d{2,4})15/,'$1');return '549'+d};
+const telWa=t=>{let d=String(t||'').replace(/\D/g,'');if(d.length<8)return '';if(d.startsWith('54'))d=d.slice(2);if(d.startsWith('0'))d=d.slice(1);if(d.startsWith('9'))d=d.slice(1);if(d.length===12)d=d.replace(/^(\d{2,4})15/,'$1');return '549'+d};
 $('bLink').onclick=async()=>{if(!validate())return;store();const b=$('bLink');b.disabled=true;b.textContent='Subiendo…';
  const ok=await flush();b.disabled=false;b.textContent='📲 MANDAR LINK PARA QUE ACEPTE Y FIRME';
  if(!ok){toast('Sin internet: el link funciona recién cuando se suba el presupuesto');return}
