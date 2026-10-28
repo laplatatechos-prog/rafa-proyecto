@@ -115,6 +115,18 @@ input:focus,textarea:focus{outline:none;border-color:var(--azul2);box-shadow:0 0
 .btn.wa{background:#25d366;color:#fff;box-shadow:0 6px 16px rgba(37,211,102,.35);display:flex;align-items:center;justify-content:center;gap:10px}
 .full{width:100%}
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--azul);color:#fff;padding:12px 18px;border-radius:22px;font-size:14px;display:none;z-index:30;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.heroP{background:linear-gradient(150deg,var(--azul),var(--azul2));color:#fff;border-radius:22px;padding:20px 18px 22px;margin-bottom:16px;box-shadow:var(--sombra);position:relative;overflow:hidden}
+.heroP::after{content:"";position:absolute;right:-70px;top:-70px;width:140px;height:140px;border-radius:50%;background:rgba(255,194,26,.16)}.heroP>*{position:relative;z-index:1}
+.heroP h1{color:#fff;margin:10px 0 8px}.portada .heroP h1 span{color:var(--azul);background:var(--amar);padding:0 8px;border-radius:8px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.heroP p{margin:0;color:#ecd6db;font-size:14px;line-height:1.5;position:relative}
+.heroP .chip{display:inline-block;background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:800;padding:5px 11px;border-radius:20px}
+.portada .fotos{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow:visible;margin:0 0 16px;padding:0}
+.portada .foto{width:auto;max-width:none}
+.paso{display:flex;align-items:center;gap:8px}.paso i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--amar);color:var(--azul);display:grid;place-items:center;font-size:12px;letter-spacing:0}
+main>*{animation:entra .28s ease-out both}@keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.op .m{display:inline-block;background:var(--amar3);border-radius:10px;padding:3px 10px}
+.op.on .m{background:var(--amar)}
+.colores button{flex:1 1 40%;padding:14px 6px;font-size:15px}.colores button i{width:44px;height:44px}
 .pie{text-align:center;font-size:12px;color:var(--suave);padding:18px 0 0}
 .cargando{text-align:center;padding:60px 20px;color:var(--suave)}
 </style>
@@ -143,7 +155,7 @@ const DEF={emp:'TPL',etel:'221 559-9265',pct:20,anticipo:50,planes:'3=25,6=40,12
  punchTxt:'Ellos te cobran solo el material: sin armar y sin colocar. Nosotros te lo dejamos armado y colocado, por casi el mismo precio o menos.'};
 let C={...DEF},CANAL=[],BAJADA=null,PINTADO=0;
 
-const FOTO={americana:'../p/fotos/obra3.jpg',cenefa:'../p/fotos/obra2.jpg',color:'../p/fotos/obra1.jpg',sinColor:'../p/fotos/obra3.jpg'};
+const FOTO={americana:'../p/fotos/obra1.jpg',cenefa:'../p/fotos/obra2.jpg',color:'../p/fotos/obra1.jpg'};
 function tipoCanaleta(it){const n=it.nom.toLowerCase(),des=(n.match(/(\d+)\s*d\b/)||[])[1];
  if(n.includes('cenefa'))return{t:'Canaleta cenefa',d:'Frente recto que tapa el borde del techo. Más prolija a la vista.'+(des?' Desarrollo '+des+'.':''),img:FOTO.cenefa};
  if(n.includes('media')||n.includes('redond'))return{t:'Canaleta media caña',d:'Redonda, clásica.'+(des?' Desarrollo '+des+'.':''),img:''};
@@ -189,6 +201,7 @@ function casa(alta,resalta){const h=alta?150:85,y0=200-h,am='#ffc21a',bj=resalta
  ${alta?`<rect x="90" y="${y0+20}" width="40" height="34" fill="#cfe0ef" stroke="#3d4249"/><rect x="190" y="${y0+20}" width="40" height="34" fill="#cfe0ef" stroke="#3d4249"/><line x1="60" y1="${y0+75}" x2="260" y2="${y0+75}" stroke="#dfe2e6" stroke-width="2"/>`:''}
  <rect x="90" y="${200-48}" width="40" height="30" fill="#cfe0ef" stroke="#3d4249"/><rect x="180" y="${200-62}" width="34" height="62" fill="#8c2a3d"/>
  <text x="160" y="222" text-anchor="middle" font-size="14" font-weight="800" fill="#3d4249" font-family="system-ui,Arial">${alta?'Planta alta · bajada ~'+(Number(C.cotAltPA)||6)+' m':'Planta baja · bajada ~'+(Number(C.cotAltPB)||3)+' m'}</text></svg>`}
+function chapa(){return `<svg viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9ecef"/><stop offset=".45" stop-color="#b9bfc6"/><stop offset=".55" stop-color="#d6dade"/><stop offset="1" stop-color="#9aa1a9"/></linearGradient></defs><rect width="320" height="240" fill="#eceef1"/><path d="M0 70 L320 40 L320 0 L0 0Z" fill="#6d1a2b" opacity=".9"/><rect x="0" y="70" width="320" height="170" fill="#f7f7f5"/><path d="M-10 74 H330 V108 Q330 124 314 124 H6 Q-10 124 -10 108Z" fill="url(#gz)" stroke="#8a9098"/><rect x="236" y="120" width="26" height="120" fill="url(#gz)" stroke="#8a9098"/><text x="24" y="200" font-size="15" font-weight="800" fill="#5f6670" font-family="system-ui,Arial">Chapa galvanizada</text></svg>`}
 function dibBajadas(n){const xs=n<=1?[160]:Array.from({length:Math.min(n,6)},(_,i)=>50+i*(220/(Math.min(n,6)-1)));
  return `<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#eceef1"/><rect x="30" y="40" width="260" height="110" fill="#fff" stroke="#3d4249" stroke-width="2"/><path d="M20 40 L160 8 L300 40 Z" fill="#6d1a2b"/><rect x="18" y="38" width="284" height="9" rx="3" fill="#a9adb4"/>
  ${xs.map(x=>`<rect x="${x-5+20*((x-160)/160)}" y="46" width="11" height="104" fill="#ffc21a" stroke="#8a6a00"/><path d="M${x-8+20*((x-160)/160)} 150 h17 v8 h-17z" fill="#ffc21a" stroke="#8a6a00"/>`).join('')}
@@ -202,7 +215,7 @@ let paso=0;
 function ir(n){paso=Math.max(0,Math.min(PASOS.length-1,n));const id=PASOS[paso];
  $('bAtras').hidden=paso===0;$('prog').hidden=paso===0;$('progI').style.width=(paso/(PASOS.length-1)*100)+'%';
  VISTA[id]();barra();window.scrollTo(0,0)}
-function cab(n,t,s){return `<div class="paso">${n<PASOS.length-1?`Paso ${n} de ${PASOS.length-2}`:`Último paso`}</div><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}`}
+function cab(n,t,s){return `<div class="paso"><i>${n<PASOS.length-1?n:'✓'}</i>${n<PASOS.length-1?`Paso ${n} de ${PASOS.length-2}`:`Último paso`}</div><h1>${t}</h1>${s?`<p class="sub">${s}</p>`:''}`}
 function listo(){const id=PASOS[paso];return id==='planta'?!!sel.planta:id==='pintado'?!!sel.pintado:id==='pago'?!!sel.pago:true}
 function barra(){const id=PASOS[paso],b=$('barra');
  if(id==='portada'||id==='enviar'){b.hidden=true;return}
@@ -219,9 +232,9 @@ function contador(campo,min,max,unidad,extra){
 
 const VISTA={
  portada(){$('app').innerHTML=`<div class="portada">
-  <h1>Cotizá tu canaleta <span>en 1 minuto</span></h1>
-  <p class="sub">Elegí lo que necesitás tocando las opciones y mirá el precio al instante. Al final nos mandás el pedido por WhatsApp y coordinamos la visita.</p>
-  <div class="fotos">${[[FOTO.color,'Canaleta americana con color'],[FOTO.cenefa,'Canaleta cenefa con color'],[FOTO.sinColor,'Canaleta americana sin color']].map(([u,t])=>`<div class="foto"><img src="${u}" alt="${esc(t)}"><b>${esc(t)}</b></div>`).join('')}</div>
+  <div class="heroP"><span class="chip">⚡ Precio al instante</span><h1>Cotizá tu canaleta <span>en 1 minuto</span></h1>
+  <p>Tocá las opciones, mirá el precio y mandanos el pedido por WhatsApp. Coordinamos la visita sin cargo.</p></div>
+  <div class="fotos">${[[FOTO.americana,'Canaleta americana'],[FOTO.cenefa,'Canaleta cenefa']].map(([u,t])=>`<div class="foto"><img src="${u}" alt="${esc(t)}"><b>${esc(t)}</b></div>`).join('')}</div>
   <ul class="puntos"><li><i>✓</i>Material, armado y colocación incluidos</li><li><i>✓</i>Tramos de hasta 5 m sin uniones</li><li><i>✓</i>Prueba de caudal antes de entregar</li><li><i>✓</i>Pagás el saldo cuando estás conforme</li></ul>
   <button class="btn full" id="bEmpezar" style="margin-top:16px">EMPEZAR A COTIZAR</button>
   <div class="pie">${esc(C.emp||'TPL')} · La Plata Techos${C.etel?' · '+esc(C.etel):''}</div></div>`;
@@ -246,9 +259,9 @@ const VISTA={
   marcar(v=>sel.planta=v)},
 
  pintado(){$('app').innerHTML=cab(5,'¿La querés pintada?','El color queda parejo y protege la chapa. Es un precio fijo por todo el trabajo.')+`<div class="ops dos">
-  <button type="button" class="op ${sel.pintado==='si'?'on':''}" data-v="si"><div class="img"><img src="${FOTO.color}" alt=""></div><div class="tx"><div class="t">Sí, pintada</div><div class="m">+ ${fmt(PINTADO)}</div></div></button>
-  <button type="button" class="op ${sel.pintado==='no'?'on':''}" data-v="no"><div class="img"><img src="${FOTO.sinColor}" alt=""></div><div class="tx"><div class="t">No, sin pintar</div><div class="m">$ 0</div></div></button></div>
-  ${sel.pintado==='si'?`<div class="caja"><h3>¿De qué color?</h3><div class="colores">${[['Blanco','#fafafa'],['Negro','#1d1f22'],['Marrón','#6b4428'],['Gris','#8a8f96'],['Bordó','#6d1a2b'],['Otro','conic-gradient(#e74c3c,#f1c40f,#2ecc71,#3498db,#9b59b6,#e74c3c)']].map(([n,c])=>`<button type="button" data-c="${n}" class="${sel.color===n?'on':''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>`:''}`;
+  <button type="button" class="op ${sel.pintado==='si'?'on':''}" data-v="si"><div class="img"><img src="${FOTO.color}" alt=""></div><div class="tx"><div class="t">Sí, con color</div><div class="m">+ ${fmt(PINTADO)}</div></div></button>
+  <button type="button" class="op ${sel.pintado==='no'?'on':''}" data-v="no"><div class="img">${chapa()}</div><div class="tx"><div class="t">No, sin pintar</div><div class="m">$ 0</div></div></button></div>
+  ${sel.pintado==='si'?`<div class="caja"><h3>¿De qué color?</h3><div class="colores">${[['Blanco','#fafafa'],['Negro','#1d1f22']].map(([n,c])=>`<button type="button" data-c="${n}" class="${sel.color===n?'on':''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>`:''}`;
   marcar(v=>{sel.pintado=v;if(v==='no')sel.color=''});
   document.querySelectorAll('[data-c]').forEach(el=>el.onclick=()=>{sel.color=el.dataset.c;VISTA.pintado();barra()})},
 
