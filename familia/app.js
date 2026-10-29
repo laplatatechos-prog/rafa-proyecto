@@ -4,7 +4,7 @@ const SB_KEY = "sb_publishable_v6n2zkJXpBEUpR0TlULEVA_UwVMlwoa";
 const sb = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
 
 const RUBROS = ["Vivienda","Servicios","Comida","Salud","Chicos","Transporte","Deudas","Proyectos","Gustos","Otros"];
-const TABLAS = ["miembros","movs","pagos","deudas","proyectos","tareas","bienes","eventos","pendientes"];
+const TABLAS = ["miembros","movs","pagos","deudas","proyectos","tareas","bienes","eventos","pendientes","mensajes"];
 const COLS_MIEMBROS = "id,hogar_id,user_id,nombre,apellido,parentesco,nacimiento,foto,rol,tipo,edad,mesada,creado";
 const DIAS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -12,7 +12,7 @@ const COLORS = ["#2a6fdb","#8e44ad","#16a085","#e67e22","#d63384","#7d8c1f","#c2
 const PRIORIDADES = [["Fijos: alquiler, servicios, colegio","Obligatorio","bad"],["Comida y salud","Obligatorio","bad"],["Deudas (cuotas)","Alta","warn"],["Fondo de emergencia","Alta","warn"],["Proyectos","Media",""],["Gustos y salidas","Si sobra","good"]];
 const AJ0 = { adolVenPlata:false, dobleAprob:true, umbral:100000, puntos:true, presupuesto:{} };
 
-const S = { session:null, hogares:[], H:null, hogar:null, codigos:{}, miembros:[], movs:[], pagos:[], deudas:[], proyectos:[], tareas:[], bienes:[], eventos:[], pendientes:[] };
+const S = { session:null, hogares:[], H:null, hogar:null, codigos:{}, miembros:[], movs:[], pagos:[], deudas:[], proyectos:[], tareas:[], bienes:[], eventos:[], pendientes:[], mensajes:[] };
 let cal = null, diaSel = null, chan = null, loaded = false;
 const LS = { get(k){ try { return localStorage.getItem(k) } catch(e) { return null } }, set(k,v){ try { localStorage.setItem(k,v) } catch(e) {} } };
 
@@ -58,6 +58,7 @@ const admins = () => S.miembros.filter(m => m.rol === "admin");
 
 /* ---------- datos ---------- */
 async function cargarTabla(t){
+  if (t === "mensajes") { const { data, error } = await sb.from(t).select("*").eq("hogar_id", S.H).order("creado", { ascending: false }).limit(80); if (!error) S.mensajes = (data || []).reverse(); return }
   const q = t === "miembros" ? sb.from(t).select(COLS_MIEMBROS) : sb.from(t).select("*");
   const { data, error } = await q.eq("hogar_id", S.H);
   if (!error) S[t] = data || [];
@@ -77,7 +78,9 @@ function recargar(t){ pend[t] = 1; clearTimeout(pendT); pendT = setTimeout(async
 function suscribir(){
   if (chan) sb.removeChannel(chan);
   chan = sb.channel("hogar-" + S.H);
-  TABLAS.forEach(t => chan.on("postgres_changes", { event:"*", schema:"public", table:t, filter:"hogar_id=eq." + S.H }, () => recargar(t)));
+  TABLAS.filter(t => t !== "mensajes").forEach(t => chan.on("postgres_changes", { event:"*", schema:"public", table:t, filter:"hogar_id=eq." + S.H }, () => recargar(t)));
+  chan.on("postgres_changes", { event:"INSERT", schema:"public", table:"mensajes", filter:"hogar_id=eq." + S.H }, p => { if (p.new && !S.mensajes.some(m => m.id === p.new.id)) { S.mensajes.push(p.new); if (aqui() === "chat") { render(); bajarChat() } else render() } });
+  chan.on("postgres_changes", { event:"DELETE", schema:"public", table:"mensajes" }, () => recargar("mensajes"));
   chan.on("postgres_changes", { event:"*", schema:"public", table:"hogares", filter:"id=eq." + S.H }, () => recargar("hogares"));
   chan.subscribe();
 }
@@ -132,7 +135,7 @@ const NULLABLE = ["quien","fecha","edad"];
 function sheet(html){ const L = document.getElementById("layer"); L.innerHTML = `<div class="sheet-bg" data-act="close"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`; const f = L.querySelector("input,select"); if (f) setTimeout(() => f.focus(), 50) }
 function ajRepite(){ const r = document.getElementById("f_repite"); if (!r) return; const una = r.value === "false";
   const d = document.getElementById("f_dias_0")?.closest(".fld"), f = document.getElementById("f_fecha")?.closest(".fld"); if (d) d.hidden = una; if (f) f.hidden = !una }
-document.addEventListener("change", e => { if (e.target.id === "f_repite") ajRepite(); if (e.target.id === "pf_foto") cargarFoto(e.target) });
+document.addEventListener("change", e => { if (e.target.id === "f_repite") ajRepite(); if (e.target.id === "pf_foto") cargarFoto(e.target); if (e.target.id === "ch_foto" && e.target.files[0]) achicar(e.target.files[0], d => { chatFoto = d; render(); bajarChat() }) });
 function closeSheet(){ document.getElementById("layer").innerHTML = "" }
 function fieldHTML(f, v){
   const id = "f_" + f.k;
@@ -180,6 +183,10 @@ function back(){ if (ruta.length > 1) ruta.pop(); window.scrollTo(0,0); render()
 function home(){ ruta = ["inicio"]; window.scrollTo(0,0); render() }
 
 const IC = {
+  chat:'<path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z"/>',
+  foto:'<rect x="3" y="6" width="18" height="13.5" rx="2.5"/><circle cx="12" cy="12.8" r="3.6"/><path d="M8.5 6l1.5-2.5h4L15.5 6"/>',
+  google:'<path d="M20.5 12.2c0-.6-.1-1.2-.2-1.7H12v3.3h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.6-3.9 2.6-6.5z"/><path d="M12 21c2.4 0 4.5-.8 5.9-2.2L15 16.5c-.8.5-1.8.9-3 .9-2.3 0-4.3-1.6-5-3.7H4v2.3A9 9 0 0 0 12 21zM7 13.7a5.4 5.4 0 0 1 0-3.4V8H4a9 9 0 0 0 0 8z"/>',
+  whatsapp:'<path d="M4 20l1.2-3.6A8 8 0 1 1 8 19z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/>',
   tareas:'<path d="M5 12.5l4.2 4.2L19 7"/>',
   agenda:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8.5 3v4M15.5 3v4"/>',
   plata:'<rect x="3" y="6.5" width="18" height="12" rx="3"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6.5 6.5l9-3"/>',
@@ -225,6 +232,7 @@ const AYUDA = {
   inicio: ["Esta es la pantalla principal.", "Arriba están tus datos. Abajo, cada botón Entrar te lleva a una parte; adentro, Volver te trae de nuevo acá."],
   resolver: ["Cosas para resolver: un arreglo, un trámite, un problema.", "Están en orden de prioridad: la número 1 es la más importante. Cuando se resuelve, tocá el círculo.", "Cualquiera puede anotar algo para resolver."],
   tareas: ["Acá están las tareas de la casa.", "Cuando terminás una, tocá el círculo y se marca en verde." , "Cada tarea hecha suma puntos."],
+  chat: ["El chat de la familia.", "Escribí abajo o tocá la cámara para mandar una foto de lo que están haciendo. A todos les llega un aviso."],
   agenda: ["El calendario de la familia.", "Tocá un día para ver qué hay. Con el botón de abajo agregás un cumple, un turno o una salida."],
   plata: ["La plata de la casa, paso a paso.", "Elegí qué querés ver. Si gastaste algo, tocá Anotar un gasto."],
   "plata/gasto": ["Anotá lo que gastaste.", "Si tenés el ticket, marcá la casilla. Un adulto lo revisa y lo aprueba."],
@@ -244,7 +252,7 @@ const AYUDA = {
   ajustes: ["Reglas de la casa.", "Elegí quién ve la plata y cuándo hace falta el OK de los dos administradores."],
   telefono: ["Tu llave de acceso.", "Guardala por si cambiás de teléfono. Sin la llave hay que pedir un código nuevo a un administrador."],
 };
-const TITULO = { inicio:() => S.hogar?.nombre || "Casa en Orden", resolver:"Para resolver", tareas:"Tareas", agenda:"Agenda", plata:() => vePlata() ? "Plata" : "Mi plata", "plata/pagos":"Cuentas a pagar", "plata/deudas":"Deudas", "plata/proyectos":"Proyectos", "plata/movs":"Movimientos", "plata/aprobar":"Para aprobar", casa:"Casa", "casa/residuos":"Residuos", "casa/horarios":"Horarios", "casa/limpieza":"Limpieza y rutinas", "casa/patrimonio":"Patrimonio", familia:() => S.hogar?.nombre || "Familia", informes:"Informes", ajustes:"Ajustes", telefono:"Este teléfono" };
+const TITULO = { chat:"Chat de la familia", inicio:() => S.hogar?.nombre || "Casa en Orden", resolver:"Para resolver", tareas:"Tareas", agenda:"Agenda", plata:() => vePlata() ? "Plata" : "Mi plata", "plata/pagos":"Cuentas a pagar", "plata/deudas":"Deudas", "plata/proyectos":"Proyectos", "plata/movs":"Movimientos", "plata/aprobar":"Para aprobar", casa:"Casa", "casa/residuos":"Residuos", "casa/horarios":"Horarios", "casa/limpieza":"Limpieza y rutinas", "casa/patrimonio":"Patrimonio", familia:() => S.hogar?.nombre || "Familia", informes:"Informes", ajustes:"Ajustes", telefono:"Este teléfono" };
 
 /* --- Inicio --- */
 const PARENTESCO = ["Papá","Mamá","Pareja","Hijo","Hija","Hermano","Hermana","Abuelo","Abuela","Tío/a","Primo/a","Otro"];
@@ -279,6 +287,7 @@ function vInicio(){
   h += `<div class="botonera">`;
   h += fila("tareas", "Tareas", faltan ? faltan + " para hoy" : "Al día", "tareas");
   h += fila("resolver", "Para resolver", pr ? pr + " pendientes" : "Nada pendiente", "aprobar", pr || "");
+  h += fila("chat", "Chat de la familia", S.mensajes.length ? "Último: " + nombre(S.mensajes[S.mensajes.length - 1].de) : "Mensajes y fotos", "chat");
   h += fila("agenda", "Agenda", "Calendario", "agenda");
   h += fila("plata", vePlata() ? "Plata" : "Mi plata", vePlata() ? "Cuentas y gastos" : "Mesada y gastos", "plata", urg + pend || "");
   h += fila("casa", "Casa", "Basura y horarios", "casa");
@@ -319,6 +328,28 @@ async function activarAvisos(){
     const j = sub.toJSON(); const r = await run(sb.from("push_subs").upsert({ hogar_id: S.H, miembro_id: yoId(), endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: "endpoint" }));
     if (r) { LS.set("cdo-push", S.H); toast("Listo, te van a llegar los avisos"); render() } }
   catch(e) { toast("No pude activar los avisos, probá de nuevo") } }
+
+const APP_URL = () => location.origin + location.pathname.replace(/index\.html$/, "");
+const calUrl = () => S.hogar?.cal_token ? `${SB_URL}/functions/v1/calendario?h=${S.H}&k=${S.hogar.cal_token}` : "";
+const gcalEvento = e => { const d = e.fecha.replace(/-/g, ""); let dates;
+  if (e.hora) { const [h, m] = e.hora.split(":").map(Number), t = Math.min(1439, h * 60 + m + 60), f = x => String(x).padStart(2, "0"); dates = `${d}T${f(h)}${f(m)}00/${d}T${f(Math.floor(t / 60))}${f(t % 60)}00` }
+  else { const n = parse(e.fecha); n.setDate(n.getDate() + 1); dates = `${d}/${iso(n).replace(/-/g, "")}` }
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(e.titulo) + "&dates=" + dates + "&ctz=America/Argentina/Buenos_Aires&details=" + encodeURIComponent((e.nota || "") + "\nDe Casa en Orden") };
+
+/* --- Chat --- */
+let chatFoto = null;
+const horaMsg = c => { const d = new Date(c), h = d.toTimeString().slice(0, 5), f = iso(d); return f === hoy() ? h : corta(f) + " " + h };
+function vChat(){
+  const me = yoId();
+  const ms = S.mensajes.map(m => `<div class="msg ${m.de === me ? "mio" : ""}">${m.de === me ? "" : av(m.de)}<div class="burb">${m.de === me ? "" : `<b>${esc(nombre(m.de))}</b>`}${m.foto ? `<button class="ch-img" data-act="chat-ver" data-src="${m.foto}"><img src="${m.foto}" alt="Foto de ${esc(nombre(m.de))}" loading="lazy"></button>` : ""}${m.texto ? `<p>${esc(m.texto)}</p>` : ""}<small>${horaMsg(m.creado)}</small></div></div>`).join("");
+  return `<div class="chat" id="chat">${ms || `<div class="calma"><span class="calma-i" aria-hidden="true">💬</span><b>Todavía no hay mensajes</b><small>Mandá el primero, o una foto de lo que están haciendo.</small></div>`}</div>
+  <form id="chatf" class="ch-in">${chatFoto ? `<div class="ch-prev"><img src="${chatFoto}" alt="Foto para mandar"><button type="button" class="round sm" data-act="chat-quitar" aria-label="Quitar foto">✕</button></div>` : ""}
+  <div class="ch-row"><button type="button" class="round" data-act="chat-foto" aria-label="Mandar una foto">${svg("foto", 22)}</button><input type="file" id="ch_foto" accept="image/*" hidden><input type="text" id="ch_txt" placeholder="Escribí un mensaje" autocomplete="off" enterkeyhint="send" maxlength="2000"><button class="btn" type="submit">Mandar</button></div></form>` }
+function bajarChat(){ setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 30) }
+function achicar(file, cb){ const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => { const M = 1080, k = Math.min(1, M / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); let q = .8, d = c.toDataURL("image/jpeg", q); while (d.length > 380000 && q > .3) { q -= .1; d = c.toDataURL("image/jpeg", q) } cb(d) };
+  img.onerror = () => toast("No pude leer esa foto, probá con otra"); img.src = url }
 
 /* --- Plata --- */
 function vPlata(){
@@ -389,6 +420,7 @@ function vAgenda(){
   let h = `<section class="blk cal-blk"><div class="calh"><button class="round" data-act="mes" data-d="-1" aria-label="Mes anterior">‹</button><b>${MESES[m]} ${y}</b><button class="round" data-act="mes" data-d="1" aria-label="Mes siguiente">›</button></div><div class="cal">${g}</div></section>`;
   h += `<section class="blk"><h2>${diaSel === hoy() ? "Hoy" : DIAS[parse(diaSel).getDay()] + " " + corta(diaSel)}</h2>${it.length ? it.map(x => x.html).join("") : vacio("No hay nada este día.")}</section>`;
   if (yo()?.tipo !== "infante") h += big("c-sky", "new", 'data-col="eventos"', "gasto", "Agregar al calendario");
+  h += `<button class="cta soft" data-act="gcal-sub">${svg("google", 20)} Conectar con Google Calendar</button>`;
   return h }
 
 /* --- Familia --- */
@@ -396,6 +428,8 @@ function vFamilia(){
   const card = m => `<button class="persona" data-act="det-miembro" data-id="${m.id}">${av(m.id)}<span><b>${esc(m.nombre)}</b><small>${m.rol === "admin" ? "Administrador" : m.tipo === "adolescente" ? "Adolescente" : m.tipo === "infante" ? "Infante" : "Adulto"}${m.user_id === S.session.user.id ? " · vos" : !m.user_id && m.tipo !== "infante" ? " · falta que entre" : ""}</small></span></button>`;
   let h = `<section class="blk"><h2>La familia</h2><div class="gente">${S.miembros.map(card).join("")}</div></section>`;
   if (esAdmin()) h += big("c-lila", "new", 'data-col="miembros"', "gasto", "Sumar a alguien");
+  const sinEntrar = esAdmin() ? S.miembros.filter(m => !m.user_id && m.tipo !== "infante" && S.codigos[m.id]) : [];
+  if (sinEntrar.length) h += `<section class="blk"><h2>Invitar por WhatsApp</h2>${sinEntrar.map(m => `<button class="fila wa" data-act="invitar" data-id="${m.id}">${av(m.id)}<span class="f-t"><b>${esc(m.nombre)}</b><small>Le llega el link y su código</small></span><span class="entrar">${svg("whatsapp", 16)} Invitar</span></button>`).join("")}</section>`;
   h += `<div class="botonera">${esAdmin() ? tile("ajustes", "Ajustes", "Reglas de la casa", "c-ink", "ajustes") : ""}${tile("telefono", "Este teléfono", "Tu llave", "c-sky", "telefono")}</div>`;
   return h }
 function vAjustes(){ const c = AJ();
@@ -445,10 +479,10 @@ function abrirDetalle(k, id){
   if (k === "bien") { const b = find("bienes", id);
     detalle(b.nombre, "c-lila", "patrimonio", [["Tipo", b.tipo === "mantenimiento" ? "Mantenimiento" : b.tipo === "documento" ? "Papel" : "Bien"], b.fecha ? ["Fecha", corta(b.fecha) + "/" + b.fecha.slice(2,4)] : null, b.nota ? ["Nota", esc(b.nota)] : null, b.privado ? ["Quién lo ve", "Solo admins"] : null], esAdmin() ? eb("bienes", id) : "") }
   if (k === "evento") { const e = find("eventos", id);
-    detalle(e.titulo, "c-sky", "agenda", [["Día", DIAS[parse(e.fecha).getDay()] + " " + corta(e.fecha)], e.hora ? ["Hora", esc(e.hora)] : null, ["Para", esc(e.quien ? nombre(e.quien) : "Toda la familia")], e.nota ? ["Nota", esc(e.nota)] : null, ["Lo anotó", esc(nombre(e.creado_por))]], (esAdmin() || e.creado_por === yoId()) ? eb("eventos", id) : "") }
+    detalle(e.titulo, "c-sky", "agenda", [["Día", DIAS[parse(e.fecha).getDay()] + " " + corta(e.fecha)], e.hora ? ["Hora", esc(e.hora)] : null, ["Para", esc(e.quien ? nombre(e.quien) : "Toda la familia")], e.nota ? ["Nota", esc(e.nota)] : null, ["Lo anotó", esc(nombre(e.creado_por))]], `<a class="btn line" href="${gcalEvento(e)}" target="_blank" rel="noopener">Agregar a mi Google Calendar</a>` + ((esAdmin() || e.creado_por === yoId()) ? eb("eventos", id) : "")) }
   if (k === "miembro") { const m = find("miembros", id); const cod = S.codigos[m.id];
     detalle(m.nombre, "c-lila", "familia", [["Rol", m.rol === "admin" ? "Administrador" : "Partícipe"], ["Tipo", m.tipo === "adolescente" ? "Adolescente" : m.tipo === "infante" ? "Infante" : "Adulto"], m.edad ? ["Edad", m.edad + " años"] : null, +m.mesada ? ["Mesada", fmt(m.mesada) + " por mes"] : null, ["Cuenta", m.user_id ? "Ya entró" : m.tipo === "infante" ? "No necesita" : "Todavía no entró"], esAdmin() && cod && !m.user_id ? ["Código", `<span class="code">${esc(cod)}</span>`] : null],
-      esAdmin() ? (cod && !m.user_id ? ab("invitar", id, "Copiar invitación para WhatsApp") : "") + (m.user_id && m.user_id !== S.session.user.id ? ab("reacceso", id, "Cambió de teléfono: nuevo código", "line") : "") + eb("miembros", id) : "") }
+      esAdmin() ? (cod && !m.user_id ? ab("invitar", id, "Invitar por WhatsApp") : "") + (m.user_id && m.user_id !== S.session.user.id ? ab("reacceso", id, "Cambió de teléfono: nuevo código", "line") : "") + eb("miembros", id) : "") }
 }
 
 /* ---------- instalación ---------- */
@@ -489,7 +523,7 @@ async function asegurarAcceso(){
 }
 
 /* ---------- render ---------- */
-const VISTAS = { inicio:vInicio, resolver:vResolver, tareas:vTareas, agenda:vAgenda, plata:() => vePlata() ? vPlata() : vMiPlata(), "plata/pagos":vPagos, "plata/deudas":vDeudas, "plata/proyectos":vProyectos, "plata/movs":vMovs, "plata/aprobar":vAprobar,
+const VISTAS = { inicio:vInicio, resolver:vResolver, tareas:vTareas, agenda:vAgenda, plata:() => vePlata() ? vPlata() : vMiPlata(), "plata/pagos":vPagos, "plata/deudas":vDeudas, "plata/proyectos":vProyectos, "plata/movs":vMovs, "plata/aprobar":vAprobar, chat:vChat,
   casa:vCasa, "casa/limpieza":() => listaT(["limpieza","rutina"], "limpieza", "c-mint"), "casa/residuos":() => listaT(["residuos"], "residuos", "c-peach"), "casa/horarios":() => listaT(["horario"], "horarios", "c-sky"), "casa/patrimonio":vPatrimonio,
   familia:vFamilia, ajustes:vAjustes, telefono:vTelefono, informes:vInformes };
 const NAV = [["inicio","Inicio","casa"],["tareas","Tareas","tareas"],["agenda","Agenda","agenda"],["plata","Plata","plata"]];
@@ -500,10 +534,11 @@ function render(){
   if (!S.H || !yo()) { nav.innerHTML = ""; app.innerHTML = vSinCasa(); return }
   const r = VISTAS[aqui()] ? aqui() : (ruta = ["inicio"], "inicio");
   const t = TITULO[r]; const titulo = typeof t === "function" ? t() : t;
-  const sc = window.scrollY;
-  app.innerHTML = `<header class="top">${ruta.length > 1 ? `<button class="volver" data-act="back">${svg("back", 18)}Volver</button>` : `<span class="logo">${svg("casa", 22)}</span>`}<h1>${esc(titulo)}</h1>${AYUDA[r] ? `<button class="round hb help" data-act="help" aria-label="¿Para qué sirve esta pantalla?">${svg("help", 22)}</button>` : ""}</header><main class="pg">${VISTAS[r]()}${ruta.length > 1 ? `<button class="btn line volver-b" data-act="back">${svg("back", 18)} Volver</button>` : ""}</main>`;
+  const sc = window.scrollY, act = document.activeElement?.id, guard = {}; ["ch_txt", "rq"].forEach(k => { const e = document.getElementById(k); if (e) guard[k] = e.value });
+  app.innerHTML = `<header class="top">${ruta.length > 1 ? `<button class="volver" data-act="back">${svg("back", 18)}Volver</button>` : `<span class="logo">${svg("casa", 22)}</span>`}<h1>${esc(titulo)}</h1>${AYUDA[r] ? `<button class="round hb help" data-act="help" aria-label="¿Para qué sirve esta pantalla?">${svg("help", 22)}</button>` : ""}</header><main class="pg">${VISTAS[r]()}${ruta.length > 1 && r !== "chat" ? `<button class="btn line volver-b" data-act="back">${svg("back", 18)} Volver</button>` : ""}</main>`;
   const raiz = ruta[1] || "inicio";
   nav.innerHTML = ""; if (0) nav.innerHTML = `<div class="in">${NAV.map(([k,l,ic]) => `<button class="${raiz === k || (k === "inicio" && ruta.length === 1) ? "on" : ""}" data-act="nav" data-r="${k}">${svg(ic, 24)}<span>${l}</span></button>`).join("")}</div>`;
+  Object.entries(guard).forEach(([k, v]) => { const e = document.getElementById(k); if (e) e.value = v }); if (act && (act === "ch_txt" || act === "rq")) document.getElementById(act)?.focus();
   window.scrollTo(0, sc);
 }
 
@@ -512,7 +547,7 @@ const find = (c, id) => S[c].find(x => x.id === id);
 document.addEventListener("click", async e => {
   const el = e.target.closest("[data-act]"); if (!el) return; const a = el.dataset.act, id = el.dataset.id;
   if (a === "close") { if (e.target === el || el.tagName === "BUTTON") closeSheet(); return }
-  if (a === "go") { verTodas = false; ordenando = null; go(el.dataset.r); return }
+  if (a === "go") { verTodas = false; ordenando = null; go(el.dataset.r); if (el.dataset.r === "chat") bajarChat(); return }
   if (a === "avisos") { activarAvisos(); return }
   if (a === "resp") { const ok = el.dataset.v === "1"; const r = await run(sb.rpc("responder_tarea", { t: id, acepta: ok })); if (r) { const t = find("tareas", id); if (t) t.estado = ok ? "ok" : "rechazada"; render(); recargar("tareas"); avisar({ tabla: "tareas", id, respuesta: ok }); toast(ok ? "Aceptada, ya está en tu lista" : "Le avisamos que no podés") } return }
   if (a === "perfil") { editPerfil = true; render(); return }
@@ -534,13 +569,20 @@ document.addEventListener("click", async e => {
   if (a === "instalar") { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render() } return }
   if (a === "dia") { diaSel = el.dataset.f; const d = parse(diaSel); cal = new Date(d.getFullYear(), d.getMonth(), 1); render(); return }
   if (a === "mes") { cal = new Date(cal.getFullYear(), cal.getMonth() + (+el.dataset.d), 1); render(); return }
-  if (a === "tick") { const t = find("tareas", id); if (!t || !puedoMarcar(t)) return; const was = hecha(t); const r = await run(sb.rpc("marcar_tarea", { t: id, dia: hoy() })); if (r) { recargar("tareas"); if (!was) toast("¡Bien hecho!" + (AJ().puntos && t.puntos ? ` +${t.puntos} puntos` : "")) } return }
+  if (a === "tick") { const t = find("tareas", id); if (!t || !puedoMarcar(t)) return; const was = hecha(t); const r = await run(sb.rpc("marcar_tarea", { t: id, dia: hoy() })); if (r) { recargar("tareas"); if (!was && !esAdmin()) avisar({ tabla: "tareas", id, hecha: true }); if (!was) toast("¡Bien hecho!" + (AJ().puntos && t.puntos ? ` +${t.puntos} puntos` : "")) } return }
   if (a === "aprobar" || a === "rechazar") { const r = await run(sb.rpc("aprobar_mov", { m: id, aprobar: a === "aprobar" })); if (r) { recargar("movs"); toast(a === "aprobar" ? "Aprobado" : "Rechazado") } return }
   if (a === "pagar") { const p = find("pagos", id); askMonto("Pagué: " + p.descr, p.monto, async v => { if (await ins("movs", { tipo:"gasto", descr:p.descr, monto:v, rubro:p.rubro || "Servicios", ticket:true })) await upd("pagos", id, p.recurrente ? { vence:addMes(p.vence), ultimo_pago:hoy() } : { pagado:true, ultimo_pago:hoy() }) && toast("Pago registrado") }); return }
   if (a === "cuota") { const d = find("deudas", id); const deb = d.direccion === "debemos"; askMonto(deb ? "Pagué cuota: " + d.descr : "Cobré: " + d.descr, +d.cuota || d.saldo, async v => { if (await ins("movs", { tipo:deb ? "gasto" : "ingreso", descr:(deb ? "Cuota " : "Cobro ") + d.descr, monto:v, rubro:"Deudas", ticket:true })) await upd("deudas", id, { saldo:Math.max(0, (+d.saldo || 0) - v), cuotas_pag:(+d.cuotas_pag || 0) + 1 }) && toast(deb ? "Cuota registrada" : "Cobro registrado") }); return }
   if (a === "aportar") { const p = find("proyectos", id); askMonto("Aporte a: " + p.nombre, "", async v => { if (await ins("movs", { tipo:"gasto", descr:"Ahorro " + p.nombre, monto:v, rubro:"Proyectos", ticket:true })) await upd("proyectos", id, { ahorrado:(+p.ahorrado || 0) + v }) && toast("Aporte guardado") }); return }
-  if (a === "invitar") { const m = find("miembros", id); const txt = `Te sumé a ${S.hogar?.nombre || "la casa"} en Casa en Orden. Entrá a ${location.origin}, creá tu cuenta y poné este código: ${S.codigos[id]}`;
-    try { await navigator.clipboard.writeText(txt); toast("Invitación copiada. Pegala en WhatsApp.") } catch(_) { sheet(`<h2>Invitación para ${esc(m.nombre)}</h2><div class="card">${esc(txt)}</div><div class="acts"><button class="btn line" data-act="close">Cerrar</button></div>`) } return }
+  if (a === "invitar") { const m = find("miembros", id); const txt = `Hola ${m.nombre}! Te sumé a ${S.hogar?.nombre || "la casa"} en Casa en Orden, la app de la familia 🏠\n1) Abrí este link en Chrome: ${APP_URL()}\n2) En "Me invitaron" poné este código: ${S.codigos[id]}\n3) Completá tus datos y tu foto.\nPara instalarla: menú ⋮ > Agregar a pantalla principal.`;
+    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank"); return }
+  if (a === "invitar-app") { window.open("https://wa.me/?text=" + encodeURIComponent(`Te paso la app de la familia, Casa en Orden 🏠 ${APP_URL()}`), "_blank"); return }
+  if (a === "gcal-sub") { const u = calUrl(); if (!u) { toast("Todavía no está listo, probá en un rato"); return }
+    sheet(`<h2>Conectar con Google Calendar</h2><p class="txt big">Así las cosas de la agenda y las tareas con horario aparecen solas en tu Google Calendar.</p><ol class="pasos"><li>Tocá <b>Abrir Google Calendar</b> y después <b>Agregar</b>.</li><li>Listo. Lo nuevo aparece solo (Google tarda unas horas en actualizar).</li></ol><div class="acts col"><a class="btn" href="https://calendar.google.com/calendar/render?cid=${encodeURIComponent(u.replace(/^https:/, "webcal:"))}" target="_blank" rel="noopener">Abrir Google Calendar</a><button class="btn line" data-act="copiar" data-t="${esc(u)}">Copiar dirección (para otro calendario)</button><button class="btn line" data-act="close">Cerrar</button></div>`); return }
+  if (a === "copiar") { try { await navigator.clipboard.writeText(el.dataset.t); toast("Copiado") } catch(_) { toast("No pude copiar") } return }
+  if (a === "chat-foto") { document.getElementById("ch_foto").click(); return }
+  if (a === "chat-quitar") { chatFoto = null; render(); return }
+  if (a === "chat-ver") { sheet(`<img class="ch-full" src="${el.dataset.src}" alt="Foto"><div class="acts"><button class="btn line" data-act="close">Cerrar</button></div>`); return }
   if (a === "presu") { const P = AJ().presupuesto || {}; formCtx = { presu:true }; sheet(`<h2>Presupuesto mensual por rubro</h2><form id="frm">${RUBROS.map(r => `<label class="fld">${r} ($)<input type="number" id="p_${r}" inputmode="decimal" value="${esc(P[r] || "")}"></label>`).join("")}<div class="acts"><button type="button" class="btn line" data-act="close">Cancelar</button><button class="btn" type="submit">Guardar</button></div></form>`); return }
   if (a === "cierre") { const L = movsMes(); const g = L.filter(x => x.tipo === "gasto"), i = L.filter(x => x.tipo === "ingreso"); const por = {}, pq = {}; g.forEach(x => { por[x.rubro] = (por[x.rubro] || 0) + (+x.monto || 0); pq[x.quien] = (pq[x.quien] || 0) + (+x.monto || 0) });
     const sin = g.filter(x => !x.ticket).length, pe = S.movs.filter(x => x.estado === "pendiente").length;
@@ -561,8 +603,11 @@ async function enviar(f){
     if (!foto) { toast("Falta tu foto de portada"); return } if (!nom || !ape || !nac || !par) { toast("Completá todos los datos"); return } if (nac > hoy()) { toast("Revisá la fecha de nacimiento"); return }
     const r = await run(sb.rpc("mi_perfil", { p_nombre: nom, p_apellido: ape, p_nacimiento: nac, p_parentesco: par, p_foto: foto }));
     if (r) { Object.assign(m, { nombre: nom, apellido: ape, nacimiento: nac, parentesco: par, foto }); m.edad = edadDe(m); fotoTmp = null; editPerfil = false; render(); recargar("miembros"); toast("¡Listo, " + nom + "!") } return }
+  if (f.id === "chatf") { const t = document.getElementById("ch_txt").value.trim(); if (!t && !chatFoto) return;
+    const r = await run(sb.from("mensajes").insert({ hogar_id: S.H, de: yoId(), texto: t || null, foto: chatFoto }).select().single());
+    if (r) { chatFoto = null; document.getElementById("ch_txt").value = ""; if (!S.mensajes.some(m => m.id === r.data.id)) S.mensajes.push(r.data); render(); bajarChat(); document.getElementById("ch_txt")?.focus(); avisar({ tabla: "mensajes", id: r.data.id }) } return }
   if (f.id === "rapidaf") { const t = document.getElementById("rq").value.trim(); if (!t) { toast("Escribí qué hay que hacer"); return }
-    const r = await ins("tareas", { titulo: t, cat: "rutina", quien: yoId(), repite: false, fecha: hoy(), dias: [], puntos: 0 }); if (r) toast("Sumado para hoy"); return }
+    const r = await ins("tareas", { titulo: t, cat: "rutina", quien: yoId(), repite: false, fecha: hoy(), dias: [], puntos: 0 }); if (r) { document.getElementById("rq").value = ""; toast("Sumado para hoy") } return }
   if (f.id === "llavef") { const c = deLlave(document.getElementById("l_llave").value); if (!c) { toast("Esa llave no es válida"); return } try { await entrarCon(c); toast("Listo, entraste") } catch(e) { toast("Esa llave no funciona") } return }
   if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
   if (f.id === "newf") { if (!document.getElementById("n_yo").value.trim()) { toast("Poné tu nombre"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); ruta = ["inicio","familia"]; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
