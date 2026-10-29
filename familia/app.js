@@ -506,14 +506,17 @@ document.addEventListener("change", e => { const el = e.target;
   if (el.dataset.act === "cfg") { const map = { c_adol:"adolVenPlata", c_doble:"dobleAprob", c_puntos:"puntos" }; saveAj({ [map[el.id]]: el.checked }).then(r => { if (r) { toast("Ajuste guardado"); if (el.id === "c_adol") TABLAS.forEach(recargar) } }) }
   if (el.dataset.act === "cfgnum") { const v = +el.value || 0; if (v !== +AJ().umbral) saveAj({ umbral: v }).then(r => r && toast("Ajuste guardado")) }
 });
-document.addEventListener("submit", async e => { e.preventDefault(); const f = e.target;
+let enviando = false;
+document.addEventListener("submit", async e => { e.preventDefault(); if (enviando) return; enviando = true; const b = e.target.querySelector('[type=submit]'); if (b) b.disabled = true;
+  try { await enviar(e.target) } finally { enviando = false; if (b && b.isConnected) b.disabled = false } });
+async function enviar(f){
   if (f.id === "llavef") { const c = deLlave(document.getElementById("l_llave").value); if (!c) { toast("Esa llave no es válida"); return } try { await entrarCon(c); toast("Listo, entraste") } catch(e) { toast("Esa llave no funciona") } return }
   if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
   if (f.id === "newf") { if (!document.getElementById("n_yo").value.trim()) { toast("Poné tu nombre"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); ruta = ["inicio","familia"]; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
   if (formCtx?.custom) { const v = +(document.getElementById("f_monto").value || "").replace(",", "."); if (!(v > 0)) { toast("Poné el monto"); return } const cb = formCtx.custom; closeSheet(); cb(v); return }
   if (formCtx?.presu) { const P = {}; RUBROS.forEach(r => { const v = +document.getElementById("p_" + r).value || 0; if (v) P[r] = v }); closeSheet(); saveAj({ presupuesto: P }).then(r => r && toast("Presupuesto guardado")); return }
-  submitForm();
-});
+  await submitForm();
+}
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet() });
 
 /* arrastrar para ordenar prioridades */
