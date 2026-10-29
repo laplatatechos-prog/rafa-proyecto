@@ -3,7 +3,7 @@
   "short_name": "TPL",
   "description": "Presupuestos de canaletas y zinguería",
   "start_url": "./index.html",
-  "scope": "./",
+  "scope": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f2f5f9",
