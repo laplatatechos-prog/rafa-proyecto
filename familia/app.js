@@ -5,7 +5,7 @@ const sb = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true,
 
 const RUBROS = ["Vivienda","Servicios","Comida","Salud","Chicos","Transporte","Deudas","Proyectos","Gustos","Otros"];
 const TABLAS = ["miembros","movs","pagos","deudas","proyectos","tareas","bienes","eventos","pendientes"];
-const COLS_MIEMBROS = "id,hogar_id,user_id,nombre,rol,tipo,edad,mesada,creado";
+const COLS_MIEMBROS = "id,hogar_id,user_id,nombre,apellido,parentesco,rol,tipo,edad,mesada,creado";
 const DIAS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const COLORS = ["#2a6fdb","#8e44ad","#16a085","#e67e22","#d63384","#7d8c1f","#c2372a"];
@@ -191,7 +191,7 @@ const IC = {
   back:'<path d="M15 5l-7 7 7 7"/>', help:'<path d="M9.3 9a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2 1-1.2 1.9v.5"/><circle cx="12" cy="17.6" r=".6"/>',
 };
 const svg = (k, w = 26) => `<svg width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k] || ""}</svg>`;
-const tile = (r, label, sub, col, ic, badge) => `<button class="tile ${col}" data-act="go" data-r="${r}"><span class="ico">${svg(ic)}</span><span class="tl">${esc(label)}</span>${sub ? `<span class="ts">${esc(sub)}</span>` : ""}${badge ? `<span class="badge">${badge}</span>` : ""}</button>`;
+const tile = (r, label, sub, col, ic, badge) => fila(r, label, sub, ic, badge);
 const chip = (t, c = "") => `<span class="chip ${c}">${esc(t)}</span>`;
 const rowBtn = (act, attrs, ic, col, title, subt, right) => `<button class="item" data-act="${act}" ${attrs}><span class="dot ${col}">${svg(ic, 20)}</span><span class="it"><b>${esc(title)}</b>${subt ? `<small>${subt}</small>` : ""}</span>${right || ""}<span class="chev" aria-hidden="true">›</span></button>`;
 const vacio = (txt, cta) => `<div class="vacio"><p>${esc(txt)}</p>${cta || ""}</div>`;
@@ -212,7 +212,7 @@ function lista(tabla, items, rowFn, vacioTxt){
 
 /* textos que explican cada pantalla (botón ?) */
 const AYUDA = {
-  inicio: ["Esta es la pantalla principal.", "Tocá un botón grande para entrar a cada parte. Arriba ves lo más importante de hoy."],
+  inicio: ["Esta es la pantalla principal.", "Arriba están tus datos. Abajo, cada botón Entrar te lleva a una parte; adentro, Volver te trae de nuevo acá."],
   resolver: ["Cosas para resolver: un arreglo, un trámite, un problema.", "Están en orden de prioridad: la número 1 es la más importante. Cuando se resuelve, tocá el círculo.", "Cualquiera puede anotar algo para resolver."],
   tareas: ["Acá están las tareas de la casa.", "Cuando terminás una, tocá el círculo y se marca en verde." , "Cada tarea hecha suma puntos."],
   agenda: ["El calendario de la familia.", "Tocá un día para ver qué hay. Con el botón de abajo agregás un cumple, un turno o una salida."],
@@ -234,31 +234,38 @@ const AYUDA = {
   ajustes: ["Reglas de la casa.", "Elegí quién ve la plata y cuándo hace falta el OK de los dos administradores."],
   telefono: ["Tu llave de acceso.", "Guardala por si cambiás de teléfono. Sin la llave hay que pedir un código nuevo a un administrador."],
 };
-const TITULO = { inicio:() => "¡Hola, " + (yo()?.nombre || "") + "!", resolver:"Para resolver", tareas:"Tareas", agenda:"Agenda", plata:() => vePlata() ? "Plata" : "Mi plata", "plata/pagos":"Cuentas a pagar", "plata/deudas":"Deudas", "plata/proyectos":"Proyectos", "plata/movs":"Movimientos", "plata/aprobar":"Para aprobar", casa:"Casa", "casa/residuos":"Residuos", "casa/horarios":"Horarios", "casa/limpieza":"Limpieza y rutinas", "casa/patrimonio":"Patrimonio", familia:() => S.hogar?.nombre || "Familia", informes:"Informes", ajustes:"Ajustes", telefono:"Este teléfono" };
+const TITULO = { inicio:() => S.hogar?.nombre || "Casa en Orden", resolver:"Para resolver", tareas:"Tareas", agenda:"Agenda", plata:() => vePlata() ? "Plata" : "Mi plata", "plata/pagos":"Cuentas a pagar", "plata/deudas":"Deudas", "plata/proyectos":"Proyectos", "plata/movs":"Movimientos", "plata/aprobar":"Para aprobar", casa:"Casa", "casa/residuos":"Residuos", "casa/horarios":"Horarios", "casa/limpieza":"Limpieza y rutinas", "casa/patrimonio":"Patrimonio", familia:() => S.hogar?.nombre || "Familia", informes:"Informes", ajustes:"Ajustes", telefono:"Este teléfono" };
 
 /* --- Inicio --- */
+const PARENTESCO = ["Papá","Mamá","Pareja","Hijo","Hija","Hermano","Hermana","Abuelo","Abuela","Tío/a","Primo/a","Otro"];
+let editPerfil = false;
+const perfilOk = m => m && m.nombre && m.apellido && m.edad != null && m.parentesco;
+function perfilForm(m){
+  return `<form id="perfilf" class="blk perfil"><h2>${perfilOk(m) ? "Cambiar mis datos" : "Contanos quién sos"}</h2>
+  <label class="fld">Nombre<input type="text" id="pf_nom" value="${esc(m.nombre || "")}" autocomplete="given-name" required></label>
+  <label class="fld">Apellido<input type="text" id="pf_ape" value="${esc(m.apellido || "")}" autocomplete="family-name"></label>
+  <label class="fld">Edad<input type="number" id="pf_edad" inputmode="numeric" min="0" max="120" value="${m.edad ?? ""}"></label>
+  <label class="fld">¿Qué sos en la familia?<select id="pf_par"><option value="">Elegí una opción</option>${PARENTESCO.map(p => `<option ${m.parentesco === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
+  <div class="acts">${perfilOk(m) ? `<button type="button" class="btn line" data-act="perfil-no">Cancelar</button>` : ""}<button type="submit" class="btn">Guardar</button></div></form>` }
+const fila = (r, label, sub, ic, badge) => `<button class="fila" data-act="go" data-r="${r}"><span class="f-ico">${svg(ic, 22)}</span><span class="f-t"><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</span>${badge ? `<span class="badge">${badge}</span>` : ""}<span class="entrar">Entrar ›</span></button>`;
 function vInicio(){
+  const m = yo();
   const th = deHoy(), mias = th.filter(t => t.quien === yoId() || (!t.quien && !esAdmin())), faltan = mias.filter(t => !hecha(t)).length;
-  const ev = S.eventos.filter(e => e.fecha >= hoy() && dias(e.fecha) <= 2).sort((a,b) => (a.fecha + a.hora) < (b.fecha + b.hora) ? -1 : 1)[0];
   const urg = vePlata() ? S.pagos.filter(p => !p.pagado && dias(p.vence) <= 3).length : 0;
   const pend = esAdmin() ? S.movs.filter(m => m.estado === "pendiente").length : 0;
-  const pts = puntosSemana()[yoId()] || 0;
-  let hero = `<div class="hero"><div class="hero-t">${DIAS[new Date().getDay()]} ${corta(hoy())}</div>`;
-  hero += faltan ? `<button class="hero-b" data-act="go" data-r="tareas"><b>Te ${faltan === 1 ? "queda 1 tarea" : "quedan " + faltan + " tareas"} hoy</b><span>Tocá para verlas</span></button>`
-                 : `<div class="hero-b ok"><b>${mias.length ? "¡Terminaste todo por hoy!" : "Hoy no tenés tareas"}</b>${AJ().puntos && pts ? `<span>Llevás ${pts} puntos esta semana</span>` : ""}</div>`;
-  if (ev) hero += `<button class="hero-s" data-act="go" data-r="agenda">${svg("agenda", 18)} ${dias(ev.fecha) === 0 ? "Hoy" : dias(ev.fecha) === 1 ? "Mañana" : DIAS[parse(ev.fecha).getDay()]}${ev.hora ? " " + esc(ev.hora) : ""}: ${esc(ev.titulo)}</button>`;
-  hero += `</div>`;
-  let g = `<div class="tiles">`;
-  g += tile("tareas", "Tareas", faltan ? faltan + " para hoy" : "Al día", "c-mint", "tareas");
   const pr = S.pendientes.filter(p => !p.resuelto).length;
-  g += tile("resolver", "Para resolver", pr ? pr + " pendientes" : "Nada", "c-rose", "aprobar", pr || "");
-  g += tile("agenda", "Agenda", "Calendario", "c-sky", "agenda");
-  g += tile("plata", vePlata() ? "Plata" : "Mi plata", vePlata() ? "Cuentas y gastos" : "Mesada y gastos", "c-sun", "plata", urg + pend || "");
-  g += tile("casa", "Casa", "Basura, horarios", "c-peach", "casa");
-  g += tile("familia", "Familia", "Quién es quién", "c-lila", "familia");
-  if (esAdmin()) g += tile("informes", "Informes", "Para admins", "c-ink", "informes");
-  g += `</div>`;
-  return hero + g;
+  const datos = [m.apellido ? m.nombre + " " + m.apellido : m.nombre, m.edad != null ? m.edad + " años" : "", m.parentesco || ""].filter(Boolean).join(" · ");
+  let h = `<section class="saludo"><span class="sal-av">${esc((m.nombre || "?")[0].toUpperCase())}</span><div class="sal-t"><small>${DIAS[new Date().getDay()]} ${corta(hoy())}</small><h2>¡Hola, ${esc(m.nombre)}!</h2>${perfilOk(m) ? `<p>${esc(datos)}</p><button class="link" data-act="perfil">Cambiar mis datos</button>` : `<p>Primero completá tus datos.</p>`}</div></section>`;
+  if (!perfilOk(m) || editPerfil) return h + perfilForm(m);
+  h += `<div class="botonera">`;
+  h += fila("tareas", "Tareas", faltan ? faltan + " para hoy" : "Al día", "tareas");
+  h += fila("resolver", "Para resolver", pr ? pr + " pendientes" : "Nada pendiente", "aprobar", pr || "");
+  h += fila("agenda", "Agenda", "Calendario", "agenda");
+  h += fila("plata", vePlata() ? "Plata" : "Mi plata", vePlata() ? "Cuentas y gastos" : "Mesada y gastos", "plata", urg + pend || "");
+  h += fila("casa", "Casa", "Basura y horarios", "casa");
+  h += fila("familia", "Familia", "Quién es quién", "familia");
+  if (esAdmin()) h += fila("informes", "Informes", "Para admins", "informes");
+  return h + `</div>`;
 }
 
 /* --- Tareas --- */
@@ -283,7 +290,7 @@ function vPlata(){
   const t = totales(), urg = S.pagos.filter(p => !p.pagado && dias(p.vence) <= 3).length, pend = S.movs.filter(m => m.estado === "pendiente").length;
   let h = `<div class="numero c-sun"><small>Lo que sobra en ${MESES[new Date().getMonth()]}</small><b class="${t.saldo < 0 ? "neg" : ""}">${fmt(t.saldo)}</b></div>`;
   h += big("c-sun", "new", 'data-col="movs"', "gasto", "Anotar un gasto");
-  h += `<div class="tiles">`;
+  h += `<div class="botonera">`;
   if (esAdmin()) h += tile("plata/aprobar", "Para aprobar", pend ? pend + " esperando" : "Nada pendiente", "c-mint", "aprobar", pend || "");
   h += tile("plata/pagos", "Cuentas", urg ? urg + " por vencer" : "Al día", "c-peach", "pagos", urg || "");
   h += tile("plata/deudas", "Deudas", fmt(debemos()), "c-rose", "deudas");
@@ -296,7 +303,7 @@ function vMiPlata(){ const me = yo(), g = gastoMesada(me?.id), queda = (+me?.mes
   let h = `<div class="numero c-mint"><small>Te queda de tu mesada</small><b class="${queda < 0 ? "neg" : ""}">${fmt(queda)}</b><span>de ${fmt(me?.mesada)} este mes</span></div>`;
   if (me?.tipo !== "infante") h += big("c-sun", "new", 'data-col="movs"', "gasto", "Anotar un gasto");
   h += `<section class="blk"><h2>Mis últimos gastos</h2>${L.length ? L.map(movRow).join("") : vacio("Todavía no anotaste nada.")}</section>`;
-  h += `<div class="tiles">${tile("plata/proyectos", "Proyectos", "Metas de la familia", "c-lila", "proyectos")}</div>`;
+  h += `<div class="botonera">${tile("plata/proyectos", "Proyectos", "Metas de la familia", "c-lila", "proyectos")}</div>`;
   return h }
 function movRow(m){ return rowBtn("det-mov", `data-id="${m.id}"`, m.tipo === "ingreso" ? "plata" : "movs", m.tipo === "ingreso" ? "c-mint" : "c-sun", m.descr || m.rubro, `${esc(nombre(m.quien))} · ${corta(m.fecha)}`, `<span class="rt"><span class="amt ${m.tipo === "ingreso" ? "pos" : ""}">${m.tipo === "ingreso" ? "+" : "−"}${fmt(m.monto)}</span>${estChip(m)}</span>`) }
 function vPagos(){ const fila = p => rowBtn("det-pago", `data-id="${p.id}"`, "pagos", "c-peach", p.descr, fmt(p.monto) + (p.recurrente ? " · todos los meses" : ""), p.pagado ? chip("Pagado", "c-mint") : cuando(p.vence));
@@ -321,7 +328,7 @@ function vResolver(){
 /* --- Casa --- */
 function vCasa(){ const res = deHoy().filter(t => t.cat === "residuos");
   let h = res.length ? `<div class="aviso c-peach">${svg("residuos", 20)} Hoy se saca: ${res.map(t => esc(t.titulo.replace(/^sacar\s*/i, ""))).join(", ")}</div>` : "";
-  return h + `<div class="tiles">${tile("casa/limpieza", "Limpieza y rutinas", S.tareas.filter(t => ["limpieza","rutina"].includes(t.cat)).length + " tareas", "c-mint", "limpieza")}${tile("casa/residuos", "Residuos", "Qué día y quién", "c-peach", "residuos")}${tile("casa/horarios", "Horarios", "Escuela, cena…", "c-sky", "horarios")}${tile("casa/patrimonio", "Patrimonio", "Papeles y service", "c-lila", "patrimonio")}</div>` }
+  return h + `<div class="botonera">${tile("casa/limpieza", "Limpieza y rutinas", S.tareas.filter(t => ["limpieza","rutina"].includes(t.cat)).length + " tareas", "c-mint", "limpieza")}${tile("casa/residuos", "Residuos", "Qué día y quién", "c-peach", "residuos")}${tile("casa/horarios", "Horarios", "Escuela, cena…", "c-sky", "horarios")}${tile("casa/patrimonio", "Patrimonio", "Papeles y service", "c-lila", "patrimonio")}</div>` }
 const diasTxt = t => !t.dias || !t.dias.length ? "Todos los días" : t.dias.map(d => DIAS[d]).join(", ");
 const listaT = (cats, ic, col) => { const L = S.tareas.filter(t => cats.includes(t.cat)); return `<section class="blk">${lista("tareas", L, t => rowBtn("det-tarea", `data-id="${t.id}"`, ic, col, t.titulo, diasTxt(t) + (t.hora ? " · " + esc(t.hora) : ""), chip(nombre(t.quien))), "Nada cargado todavía.")}</section>` + (esAdmin() ? big(col, "new", 'data-col="tareas"', "gasto", "Agregar") : "") };
 function vPatrimonio(){ const V = S.bienes.filter(b => esAdmin() || !b.privado);
@@ -353,7 +360,7 @@ function vFamilia(){
   const card = m => `<button class="persona" data-act="det-miembro" data-id="${m.id}">${av(m.id)}<span><b>${esc(m.nombre)}</b><small>${m.rol === "admin" ? "Administrador" : m.tipo === "adolescente" ? "Adolescente" : m.tipo === "infante" ? "Infante" : "Adulto"}${m.user_id === S.session.user.id ? " · vos" : !m.user_id && m.tipo !== "infante" ? " · falta que entre" : ""}</small></span></button>`;
   let h = `<section class="blk"><h2>La familia</h2><div class="gente">${S.miembros.map(card).join("")}</div></section>`;
   if (esAdmin()) h += big("c-lila", "new", 'data-col="miembros"', "gasto", "Sumar a alguien");
-  h += `<div class="tiles">${esAdmin() ? tile("ajustes", "Ajustes", "Reglas de la casa", "c-ink", "ajustes") : ""}${tile("telefono", "Este teléfono", "Tu llave", "c-sky", "telefono")}</div>`;
+  h += `<div class="botonera">${esAdmin() ? tile("ajustes", "Ajustes", "Reglas de la casa", "c-ink", "ajustes") : ""}${tile("telefono", "Este teléfono", "Tu llave", "c-sky", "telefono")}</div>`;
   return h }
 function vAjustes(){ const c = AJ();
   return `<section class="blk"><label class="sw"><input type="checkbox" id="c_adol" data-act="cfg" ${c.adolVenPlata ? "checked" : ""}><span>Los adolescentes ven la plata de la casa</span></label>
@@ -458,9 +465,9 @@ function render(){
   const r = VISTAS[aqui()] ? aqui() : (ruta = ["inicio"], "inicio");
   const t = TITULO[r]; const titulo = typeof t === "function" ? t() : t;
   const sc = window.scrollY;
-  app.innerHTML = `<header class="top">${ruta.length > 1 ? `<button class="round hb" data-act="back" aria-label="Volver">${svg("back", 22)}</button>` : `<span class="logo">${svg("casa", 22)}</span>`}<h1>${esc(titulo)}</h1>${AYUDA[r] ? `<button class="round hb help" data-act="help" aria-label="¿Para qué sirve esta pantalla?">${svg("help", 22)}</button>` : ""}</header><main class="pg">${VISTAS[r]()}</main>`;
+  app.innerHTML = `<header class="top">${ruta.length > 1 ? `<button class="volver" data-act="back">${svg("back", 18)}Volver</button>` : `<span class="logo">${svg("casa", 22)}</span>`}<h1>${esc(titulo)}</h1>${AYUDA[r] ? `<button class="round hb help" data-act="help" aria-label="¿Para qué sirve esta pantalla?">${svg("help", 22)}</button>` : ""}</header><main class="pg">${VISTAS[r]()}${ruta.length > 1 ? `<button class="btn line volver-b" data-act="back">${svg("back", 18)} Volver</button>` : ""}</main>`;
   const raiz = ruta[1] || "inicio";
-  nav.innerHTML = `<div class="in">${NAV.map(([k,l,ic]) => `<button class="${raiz === k || (k === "inicio" && ruta.length === 1) ? "on" : ""}" data-act="nav" data-r="${k}">${svg(ic, 24)}<span>${l}</span></button>`).join("")}</div>`;
+  nav.innerHTML = ""; if (0) nav.innerHTML = `<div class="in">${NAV.map(([k,l,ic]) => `<button class="${raiz === k || (k === "inicio" && ruta.length === 1) ? "on" : ""}" data-act="nav" data-r="${k}">${svg(ic, 24)}<span>${l}</span></button>`).join("")}</div>`;
   window.scrollTo(0, sc);
 }
 
@@ -470,6 +477,8 @@ document.addEventListener("click", async e => {
   const el = e.target.closest("[data-act]"); if (!el) return; const a = el.dataset.act, id = el.dataset.id;
   if (a === "close") { if (e.target === el || el.tagName === "BUTTON") closeSheet(); return }
   if (a === "go") { verTodas = false; ordenando = null; go(el.dataset.r); return }
+  if (a === "perfil") { editPerfil = true; render(); return }
+  if (a === "perfil-no") { editPerfil = false; render(); return }
   if (a === "back") { verTodas = false; ordenando = null; back(); return }
   if (a === "nav") { verTodas = false; ordenando = null; if (el.dataset.r === "inicio") home(); else { ruta = ["inicio", el.dataset.r]; window.scrollTo(0,0); render() } return }
   if (a === "help") { const t = AYUDA[aqui()] || []; sheet(`<div class="det-h"><span class="dot c-sun">${svg("help", 22)}</span><h2>${esc(t[0] || "")}</h2></div>${t.slice(1).map(p => `<p class="txt big">${esc(p)}</p>`).join("")}<div class="acts col"><button class="btn" data-act="close">Entendido</button></div>`); return }
@@ -510,6 +519,10 @@ let enviando = false;
 document.addEventListener("submit", async e => { e.preventDefault(); if (enviando) return; enviando = true; const b = e.target.querySelector('[type=submit]'); if (b) b.disabled = true;
   try { await enviar(e.target) } finally { enviando = false; if (b && b.isConnected) b.disabled = false } });
 async function enviar(f){
+  if (f.id === "perfilf") { const v = id => document.getElementById(id).value.trim(); const nom = v("pf_nom"), ape = v("pf_ape"), ed = v("pf_edad"), par = v("pf_par");
+    if (!nom || !ape || ed === "" || !par) { toast("Completá los cuatro datos"); return }
+    const r = await run(sb.rpc("mi_perfil", { p_nombre: nom, p_apellido: ape, p_edad: +ed, p_parentesco: par }));
+    if (r) { const m = yo(); Object.assign(m, { nombre: nom, apellido: ape, edad: +ed, parentesco: par }); editPerfil = false; render(); recargar("miembros"); toast("¡Listo, " + nom + "!") } return }
   if (f.id === "llavef") { const c = deLlave(document.getElementById("l_llave").value); if (!c) { toast("Esa llave no es válida"); return } try { await entrarCon(c); toast("Listo, entraste") } catch(e) { toast("Esa llave no funciona") } return }
   if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
   if (f.id === "newf") { if (!document.getElementById("n_yo").value.trim()) { toast("Poné tu nombre"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); ruta = ["inicio","familia"]; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
