@@ -1,2 +1,2 @@
-{"name":"Casa en Orden","short_name":"Casa","start_url":"./","scope":"./","display":"standalone","background_color":"#14213a","theme_color":"#14213a","lang":"es-AR",
+{"name":"Casa en Orden (familia)","short_name":"Familia","id":"/rafa-proyecto/familia/","start_url":"./","scope":"./","display":"standalone","background_color":"#f6f4ff","theme_color":"#6c4fe0","lang":"es-AR",
 "icons":[{"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},{"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
