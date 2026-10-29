@@ -13,7 +13,7 @@ const PRIORIDADES = [["Fijos: alquiler, servicios, colegio","Obligatorio","bad"]
 const AJ0 = { adolVenPlata:false, dobleAprob:true, umbral:100000, puntos:true, presupuesto:{} };
 
 const S = { session:null, hogares:[], H:null, hogar:null, codigos:{}, miembros:[], movs:[], pagos:[], deudas:[], proyectos:[], tareas:[], bienes:[], eventos:[] };
-let tab = "inicio", sub = { plata:"resumen", casa:"tareas" }, authMode = "entrar", cal = null, diaSel = null, chan = null, loaded = false;
+let tab = "inicio", sub = { plata:"resumen", casa:"tareas" }, cal = null, diaSel = null, chan = null, loaded = false;
 const LS = { get(k){ try { return localStorage.getItem(k) } catch(e) { return null } }, set(k,v){ try { localStorage.setItem(k,v) } catch(e) {} } };
 
 /* ---------- utilidades ---------- */
@@ -268,7 +268,7 @@ function vAgenda(){
 
 function vFamilia(){ const A = admins(), M = S.miembros.filter(m => m.rol !== "admin");
   const mrow = m => { const cod = S.codigos[m.id];
-    return `<div class="row ${esAdmin() ? "tap" : ""}" ${editAttr("miembros", m.id, esAdmin())}>${av(m.id)}<div class="main"><b>${esc(m.nombre)}${m.edad ? ` · ${m.edad} años` : ""}</b><span class="sub">${m.user_id ? (m.user_id === S.session.user.id ? "Sos vos" : "Tiene cuenta") : m.tipo === "infante" ? "Sin cuenta, lo manejan los administradores" : "Todavía no entró"}${esAdmin() && cod && !m.user_id ? ` · código <span class="code">${esc(cod)}</span>` : ""}</span></div>${m.rol === "admin" ? tag("Admin","adm") : tag(m.tipo === "adolescente" ? "Adolescente" : m.tipo === "infante" ? "Infante" : "Adulto")}</div>${esAdmin() && cod && !m.user_id ? `<div style="display:flex;gap:6px;padding:0 0 8px 42px"><button class="btn sm" data-act="invitar" data-id="${m.id}">Copiar invitación</button></div>` : ""}` };
+    return `<div class="row ${esAdmin() ? "tap" : ""}" ${editAttr("miembros", m.id, esAdmin())}>${av(m.id)}<div class="main"><b>${esc(m.nombre)}${m.edad ? ` · ${m.edad} años` : ""}</b><span class="sub">${m.user_id ? (m.user_id === S.session.user.id ? "Sos vos" : "Tiene cuenta") : m.tipo === "infante" ? "Sin cuenta, lo manejan los administradores" : "Todavía no entró"}${esAdmin() && cod && !m.user_id ? ` · código <span class="code">${esc(cod)}</span>` : ""}</span></div>${m.rol === "admin" ? tag("Admin","adm") : tag(m.tipo === "adolescente" ? "Adolescente" : m.tipo === "infante" ? "Infante" : "Adulto")}</div>${esAdmin() && cod && !m.user_id ? `<div style="display:flex;gap:6px;padding:0 0 8px 42px"><button class="btn sm" data-act="invitar" data-id="${m.id}">Copiar invitación</button></div>` : ""}${esAdmin() && m.user_id && m.user_id !== S.session.user.id ? `<div style="display:flex;gap:6px;padding:0 0 8px 42px"><button class="btn sm line" data-act="reacceso" data-id="${m.id}">Cambió de teléfono: nuevo código</button></div>` : ""}` };
   let h = `<div class="card"><h3>Administradores <small>${A.length} de 2</small></h3>${A.map(mrow).join("") || `<div class="empty">Sin administradores.</div>`}</div><div class="card"><h3>Partícipes <small>sin rol de responsable</small></h3>${M.map(mrow).join("") || `<div class="empty">Agregá a los chicos y a quien viva en la casa.</div>`}</div>`;
   const c = AJ();
   h += `<div class="card"><h3>Qué puede hacer cada uno</h3><div class="row"><div class="main">Ver la plata de la casa</div><span>${c.adolVenPlata ? "Admins y adolescentes" : "Solo admins"}</span></div><div class="row"><div class="main">Cargar un gasto</div><span>Todos menos infantes</span></div><div class="row"><div class="main">Aprobar gastos</div><span>${c.dobleAprob ? `Admins (2 OK desde ${fmt(c.umbral)})` : "Un admin"}</span></div><div class="row"><div class="main">Agregar al calendario</div><span>Todos</span></div><div class="row"><div class="main">Marcar tareas hechas</div><span>Cada uno las suyas</span></div></div>`;
@@ -279,7 +279,7 @@ function vFamilia(){ const A = admins(), M = S.miembros.filter(m => m.rol !== "a
     <label class="fld ck"><input type="checkbox" id="c_puntos" data-act="cfg" ${c.puntos ? "checked" : ""}> Puntos por tareas para los chicos</label></div>`;
     h += ADD("miembros","Agregar miembro");
     h += `<div class="note">Cada miembro nuevo recibe un código. Mandale la invitación por WhatsApp: entra al link, crea su cuenta y pone el código.</div>` }
-  h += `<div class="card"><h3>Mi cuenta</h3><div class="row"><div class="main">${esc(S.session.user.email)}</div></div>${installBtn()}<div class="row"><div class="main"><button class="link" data-act="salir">Cerrar sesión</button></div></div></div>`;
+  h += `<div class="card"><h3>Este teléfono</h3><div class="row"><div class="main">Llave de acceso<span class="sub">Guardala por si cambiás de teléfono o borrás el navegador.</span></div><button class="btn sm line" data-act="llave">Copiar llave</button></div>${installBtn()}</div>`;
   return h }
 
 /* ---------- instalación ---------- */
@@ -292,25 +292,32 @@ function installBtn(){ if (standalone()) return "";
   return `<div class="row"><div class="main sub">${ios ? "Para instalarla: en Safari tocá Compartir y después “Agregar a inicio”." : "Para instalarla: en Chrome tocá el menú ⋮ y después “Instalar app” o “Agregar a pantalla principal”."}</div></div>` }
 
 /* ---------- pantallas sin casa / login ---------- */
-function vAuth(){
-  const reg = authMode === "crear";
-  return `<div class="auth"><h1>Casa en Orden</h1><div class="muted">La app de la familia: plata, tareas, calendario y la casa.</div>
-  <form id="authf" class="card"><h3>${reg ? "Crear cuenta" : "Entrar"}</h3>
-  <label class="fld">Mail<input type="email" id="a_mail" autocomplete="email" required style="font:inherit;font-size:16px;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px"></label>
-  <label class="fld">Contraseña<input type="password" id="a_pass" autocomplete="${reg ? "new-password" : "current-password"}" required minlength="6" style="font:inherit;font-size:16px;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px"></label>
-  <button class="btn" type="submit">${reg ? "Crear cuenta" : "Entrar"}</button>
-  <button type="button" class="link" data-act="authmode">${reg ? "Ya tengo cuenta, quiero entrar" : "No tengo cuenta, quiero crear una"}</button></form>
-  ${installBtn() ? `<div class="card">${installBtn()}</div>` : ""}</div>` }
+const inp = 'style="font:inherit;font-size:16px;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px"';
 function vSinCasa(){
-  return `<div class="auth"><h1>Bienvenido</h1><div class="muted">${esc(S.session.user.email)}</div>
+  return `<div class="auth"><h1>Casa en Orden</h1><div class="muted">La app de la familia: plata, tareas, calendario y la casa.</div>
   <form id="joinf" class="card"><h3>Me invitaron</h3><div class="empty">Poné el código que te pasó un administrador.</div>
-  <label class="fld">Código<input type="text" id="j_cod" autocapitalize="characters" maxlength="8" style="font:inherit;font-size:18px;letter-spacing:.15em;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px"></label>
+  <label class="fld">Código<input type="text" id="j_cod" autocapitalize="characters" maxlength="8" ${inp.replace("16px","18px;letter-spacing:.15em")}></label>
   <button class="btn" type="submit">Entrar a la casa</button></form>
   <form id="newf" class="card"><h3>Soy administrador y arranco de cero</h3>
-  <label class="fld">Nombre de la casa<input type="text" id="n_casa" placeholder="Casa Igoa" style="font:inherit;font-size:16px;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px"></label>
-  <label class="fld">Tu nombre<input type="text" id="n_yo" style="font:inherit;font-size:16px;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px"></label>
+  <label class="fld">Nombre de la casa<input type="text" id="n_casa" placeholder="Casa Igoa" ${inp}></label>
+  <label class="fld">Tu nombre<input type="text" id="n_yo" ${inp}></label>
   <button class="btn line" type="submit">Crear la casa</button></form>
-  <button class="link" data-act="salir">Cerrar sesión</button></div>` }
+  <form id="llavef" class="card"><h3>Ya usaba la app en otro teléfono</h3>
+  <label class="fld">Llave de acceso<input type="text" id="l_llave" autocomplete="off" ${inp}></label>
+  <button class="btn line" type="submit">Entrar con mi llave</button></form>
+  ${installBtn() ? `<div class="card">${installBtn()}</div>` : ""}</div>` }
+
+/* ---------- acceso sin usuario ni contraseña ---------- */
+const llaveDe = c => btoa(c.email + ":" + c.password).replace(/=+$/,"");
+function deLlave(k){ try { const t = atob(k.trim()); const i = t.lastIndexOf(":"); return i > 0 ? { email: t.slice(0,i), password: t.slice(i+1) } : null } catch(e) { return null } }
+async function entrarCon(c){ const { error } = await sb.auth.signInWithPassword(c); if (error) throw error; LS.set("cdo-llave", llaveDe(c)) }
+async function asegurarAcceso(){
+  if (S.session) return true;
+  const k = LS.get("cdo-llave"); const c = k && deLlave(k);
+  try { if (c) { await entrarCon(c); return true } } catch(e) {}
+  const { data, error } = await sb.rpc("crear_acceso"); if (error) { toast(errMsg(error)); return false }
+  try { await entrarCon(data); const { data: s } = await sb.auth.getSession(); S.session = s.session; return true } catch(e) { toast(errMsg(e)); return false }
+}
 
 /* ---------- render ---------- */
 const ICON = { inicio:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>', plata:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/>', agenda:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', casa:'<path d="M4 12l5 5L20 6"/>', familia:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c3 .2 5.5 2.6 5.5 5.8"/>' };
@@ -319,7 +326,7 @@ const HEAD = { inicio:() => "Hola, " + (yo()?.nombre || ""), plata:() => vePlata
 const SUBH = { inicio:() => DIAS[new Date().getDay()] + " " + corta(hoy()) + (esAdmin() ? " · Administrador" : " · Partícipe"), plata:() => esAdmin() ? "Rendición, pagos, deudas y proyectos" : "Lo que cargues lo aprueba un administrador", agenda:() => "Calendario de la familia", casa:() => "Limpieza, residuos, horarios y patrimonio", familia:() => "Quién está y qué puede hacer" };
 function render(){
   const app = document.getElementById("app"), nav = document.getElementById("nav");
-  if (!S.session) { nav.innerHTML = ""; app.innerHTML = vAuth(); return }
+  if (!S.session) { nav.innerHTML = ""; if (!booting) app.innerHTML = vSinCasa(); return }
   if (!loaded) return;
   if (!S.H || !yo()) { nav.innerHTML = ""; app.innerHTML = vSinCasa(); return }
   const sc = window.scrollY;
@@ -338,8 +345,8 @@ document.addEventListener("click", async e => {
   if (a === "new") { openForm(el.dataset.col); return }
   if (a === "edit") { const o = find(el.dataset.col, id); if (o) openForm(el.dataset.col, o); return }
   if (a === "delete") { const { col, obj } = formCtx; if (el.dataset.sure) { if (col === "miembros" && obj.user_id === S.session.user.id) { toast("No podés borrarte a vos"); return } closeSheet(); if (await del(col, obj.id)) toast("Borrado") } else { el.dataset.sure = "1"; el.textContent = "¿Seguro? Tocá de nuevo" } return }
-  if (a === "authmode") { authMode = authMode === "crear" ? "entrar" : "crear"; render(); return }
-  if (a === "salir") { await sb.auth.signOut(); return }
+  if (a === "llave") { const k = LS.get("cdo-llave") || ""; try { await navigator.clipboard.writeText(k); toast("Llave copiada. Guardala en un lugar seguro.") } catch(_) { sheet(`<h2>Tu llave de acceso</h2><div class="card" style="word-break:break-all">${esc(k)}</div><div class="acts"><button class="btn line" data-act="close">Cerrar</button></div>`) } return }
+  if (a === "reacceso") { const m = find("miembros", id); if (!el.dataset.sure) { el.dataset.sure = "1"; el.textContent = "¿Seguro? El teléfono viejo pierde el acceso"; return } const r = await run(sb.rpc("reiniciar_acceso", { m: id })); if (r) { recargar("miembros"); toast("Nuevo código para " + m.nombre + ": " + r.data) } return }
   if (a === "instalar") { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render() } return }
   if (a === "dia") { diaSel = el.dataset.f; const d = parse(diaSel); cal = new Date(d.getFullYear(), d.getMonth(), 1); render(); return }
   if (a === "mes") { cal = new Date(cal.getFullYear(), cal.getMonth() + (+el.dataset.d), 1); render(); return }
@@ -363,11 +370,9 @@ document.addEventListener("change", e => { const el = e.target;
   if (el.dataset.act === "cfgnum") { const v = +el.value || 0; if (v !== +AJ().umbral) saveAj({ umbral: v }).then(r => r && toast("Ajuste guardado")) }
 });
 document.addEventListener("submit", async e => { e.preventDefault(); const f = e.target;
-  if (f.id === "authf") { const email = document.getElementById("a_mail").value.trim(), password = document.getElementById("a_pass").value;
-    if (authMode === "crear") { const r = await run(sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin } })); if (r && !r.data.session) toast("Te mandamos un mail para confirmar la cuenta. Después entrá.") }
-    else await run(sb.auth.signInWithPassword({ email, password })); return }
-  if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
-  if (f.id === "newf") { const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); tab = "familia"; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
+  if (f.id === "llavef") { const c = deLlave(document.getElementById("l_llave").value); if (!c) { toast("Esa llave no es válida"); return } try { await entrarCon(c); toast("Listo, entraste") } catch(e) { toast("Esa llave no funciona") } return }
+  if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
+  if (f.id === "newf") { if (!document.getElementById("n_yo").value.trim()) { toast("Poné tu nombre"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); tab = "familia"; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
   if (formCtx?.custom) { const v = +(document.getElementById("f_monto").value || "").replace(",", "."); if (!(v > 0)) { toast("Poné el monto"); return } const cb = formCtx.custom; closeSheet(); cb(v); return }
   if (formCtx?.presu) { const P = {}; RUBROS.forEach(r => { const v = +document.getElementById("p_" + r).value || 0; if (v) P[r] = v }); closeSheet(); saveAj({ presupuesto: P }).then(r => r && toast("Presupuesto guardado")); return }
   submitForm();
@@ -380,5 +385,7 @@ sb.auth.onAuthStateChange((ev, session) => {
   if (!session) { S.H = null; loaded = false; if (chan) { sb.removeChannel(chan); chan = null } render(); return }
   if (session.user.id !== antes) { loaded = false; render(); setTimeout(entrarHogar, 0) }
 });
+let booting = true;
+(async () => { const { data } = await sb.auth.getSession(); if (!data.session) { const c = deLlave(LS.get("cdo-llave") || ""); if (c) { try { await entrarCon(c) } catch(e) {} } } booting = false; render() })();
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 render();
