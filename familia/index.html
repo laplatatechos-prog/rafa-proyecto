@@ -207,6 +207,45 @@ header.top{border-bottom:2px solid var(--negro);box-shadow:0 3px 0 var(--naranja
 .chk{border-color:var(--accent)!important}.task.done .chk{background:var(--accent)!important}
 .sheet{border-top:6px solid var(--accent)}
 .toast{background:var(--negro);color:#fff;border-bottom:4px solid var(--naranja)}
+/* v4: solo rayas naranja grisáceo, sin negro; portada con foto; tareas calmas */
+[hidden]{display:none!important}
+:root{--raya:#d39a72;--raya2:#e9c9b2;--negro:transparent}
+header.top{border-bottom:0;box-shadow:0 3px 0 var(--raya)}
+.help{box-shadow:inset 0 0 0 2px var(--raya2)}
+.saludo::after{background:repeating-linear-gradient(135deg,var(--raya) 0 10px,var(--raya2) 10px 20px)}
+.fila,.fila:nth-child(even){border-left-color:var(--raya)}
+.volver,.volver-b,.cta{box-shadow:inset 0 0 0 2px var(--raya2)}
+.cta.soft{border:2px dashed var(--raya)}
+.blk,.card{border-top-color:var(--raya)}.numero{border-left-color:var(--raya)}
+.num-p,.badge{background:var(--raya)}
+.bar i{background:linear-gradient(90deg,var(--accent),var(--raya))}
+.toast{border-bottom-color:var(--raya)}
+.saludo{padding:0;flex-direction:column;align-items:stretch;border-top:0}
+.sal-in{display:flex;gap:14px;align-items:center;padding:18px 18px 22px}
+.portada{height:130px;background:#ddd center/cover no-repeat}
+.saludo.con-foto .sal-in{margin-top:-46px;align-items:flex-end}
+.saludo.con-foto .sal-t{padding-bottom:2px}.saludo.con-foto .sal-t small{display:none}.portada{position:relative}.portada span{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.88);color:var(--ink);font-weight:800;font-size:13px;padding:4px 10px;border-radius:20px;text-transform:capitalize}
+.sal-av{background-size:cover;background-position:center;border:4px solid #fff;width:76px;height:76px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.saludo:not(.con-foto){border-top:6px solid var(--accent)}
+.av.foto{background-size:cover;background-position:center}
+.pf-foto{display:block;cursor:pointer;margin-bottom:12px}
+.pf-prev{display:flex;align-items:center;justify-content:center;height:150px;border-radius:14px;border:2px dashed var(--raya);background:var(--surface2) center/cover no-repeat;text-align:center}
+.pf-prev.con{border-style:solid}.pf-prev.con .pf-cta{background:rgba(255,255,255,.85);border-radius:12px;padding:6px 10px}.pf-prev.con .pf-cta small{display:none}.pf-prev.con .pf-cta b{font-size:13px}
+.pf-cta{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent)}.pf-cta small{color:var(--muted)}
+.rapida{background:var(--surface);border-radius:16px;padding:16px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px;border-left:6px solid var(--raya)}
+.rapida label{font-family:var(--f-display);font-weight:600;font-size:20px}
+.rq-w{display:flex;gap:8px}.rq-w input{flex:1;min-width:0;font:inherit;font-size:16px;border:2px solid var(--line);border-radius:12px;padding:12px;background:var(--surface2);color:var(--ink)}
+.rq-w input:focus{border-color:var(--accent);outline:none}.rq-w .btn{width:auto;padding:12px 18px}
+.rapida .link{font-size:14px;padding:0}
+.calma{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:34px 16px;color:var(--muted)}
+.calma-i{font-size:44px;margin-bottom:4px}.calma b{font-family:var(--f-display);font-weight:600;font-size:21px;color:var(--ink)}
+.pedidas{border-top-color:var(--accent)}
+.pedida{display:flex;flex-direction:column;gap:10px;background:var(--surface2);border-radius:14px;padding:12px}
+.pd-b{display:flex;gap:8px}.pd-b .btn{flex:1}
+.plegado{background:var(--surface);border-radius:14px;padding:4px 14px;box-shadow:var(--sh)}
+.plegado summary{cursor:pointer;font-weight:800;color:var(--muted);padding:10px 0;list-style-position:inside}
+.plegado[open]{padding-bottom:12px}.plegado .task,.plegado .pts{margin-top:8px}
+.avisos{font-size:15px}
 </style></head><body>
 <div class="app" id="app"><div class="auth"><h1>Casa en Orden</h1><div class="empty">Cargando…</div></div></div>
 <nav id="nav"></nav><div id="layer"></div>

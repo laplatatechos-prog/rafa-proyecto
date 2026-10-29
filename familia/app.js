@@ -5,7 +5,7 @@ const sb = supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true,
 
 const RUBROS = ["Vivienda","Servicios","Comida","Salud","Chicos","Transporte","Deudas","Proyectos","Gustos","Otros"];
 const TABLAS = ["miembros","movs","pagos","deudas","proyectos","tareas","bienes","eventos","pendientes"];
-const COLS_MIEMBROS = "id,hogar_id,user_id,nombre,apellido,parentesco,rol,tipo,edad,mesada,creado";
+const COLS_MIEMBROS = "id,hogar_id,user_id,nombre,apellido,parentesco,nacimiento,foto,rol,tipo,edad,mesada,creado";
 const DIAS = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const COLORS = ["#2a6fdb","#8e44ad","#16a085","#e67e22","#d63384","#7d8c1f","#c2372a"];
@@ -51,7 +51,9 @@ const esAdmin = () => yo()?.rol === "admin";
 const vePlata = () => esAdmin() || (AJ().adolVenPlata && yo()?.tipo === "adolescente");
 const nombre = id => !id ? "Cualquiera" : (S.miembros.find(m => m.id === id)?.nombre || "Sin asignar");
 const color = id => { const i = S.miembros.findIndex(m => m.id === id); return COLORS[(i < 0 ? 0 : i) % COLORS.length] };
-const av = id => `<span class="av" style="background:${color(id)}">${esc((nombre(id)[0] || "?").toUpperCase())}</span>`;
+const fotoDe = id => S.miembros.find(m => m.id === id)?.foto;
+const av = id => fotoDe(id) ? `<span class="av foto" style="background-image:url(${fotoDe(id)})"></span>` : `<span class="av" style="background:${color(id)}">${esc((nombre(id)[0] || "?").toUpperCase())}</span>`;
+const edadDe = m => { if (!m.nacimiento) return m.edad; const n = parse(m.nacimiento), h = new Date(); let e = h.getFullYear() - n.getFullYear(); if (h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) e--; return e };
 const admins = () => S.miembros.filter(m => m.rol === "admin");
 
 /* ---------- datos ---------- */
@@ -81,7 +83,9 @@ function suscribir(){
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S.H) TABLAS.forEach(recargar) });
 
-async function ins(t, d){ const r = await run(sb.from(t).insert({ hogar_id: S.H, ...d })); if (r) recargar(t); return r }
+const AVISAN = ["tareas","eventos","pendientes","movs","pagos","deudas","proyectos","bienes"];
+const avisar = body => sb.functions.invoke("avisar", { body }).catch(() => {});
+async function ins(t, d){ const r = await run(sb.from(t).insert({ hogar_id: S.H, ...d }).select("id").single()); if (r) { recargar(t); if (AVISAN.includes(t) && r.data?.id) avisar({ tabla: t, id: r.data.id }) } return r }
 async function upd(t, id, d){ const r = await run(sb.from(t).update(d).eq("id", id)); if (r) recargar(t); return r }
 async function del(t, id){ const r = await run(sb.from(t).delete().eq("id", id)); if (r) recargar(t); return r }
 async function saveAj(d){ const aj = { ...AJ(), ...d }; const r = await run(sb.from("hogares").update({ ajustes: aj }).eq("id", S.H)); if (r) { S.hogar.ajustes = aj; render() } return r }
@@ -99,7 +103,7 @@ async function entrarHogar(){
 const movsMes = (m = mes(hoy())) => S.movs.filter(x => mes(x.fecha) === m && x.estado === "aprobado");
 function totales(){ const L = movsMes(); const ing = sum(L.filter(x => x.tipo === "ingreso")), gas = sum(L.filter(x => x.tipo === "gasto")); return { ing, gas, saldo: ing - gas } }
 const debemos = () => S.deudas.filter(d => d.direccion === "debemos").reduce((a,d) => a + (+d.saldo || 0), 0);
-const tareasDe = f => { const w = parse(f).getDay(); return S.tareas.filter(t => t.cat !== "horario" && (!t.dias || !t.dias.length || t.dias.includes(w))) };
+const tareasDe = f => { const w = parse(f).getDay(); return S.tareas.filter(t => t.cat !== "horario" && t.estado !== "rechazada" && (t.repite === false ? t.fecha === f : (!t.dias || !t.dias.length || t.dias.includes(w)))) };
 const deHoy = () => tareasDe(hoy());
 const hecha = (t, f = hoy()) => t.hechas && t.hechas[f];
 function puntosSemana(){ const p = {}; const lim = new Date(); lim.setDate(lim.getDate() - 6); const l = iso(lim);
@@ -115,17 +119,20 @@ const SCH = {
   pagos: () => [{k:"descr",l:"Qué hay que pagar",req:1},{k:"monto",l:"Monto ($)",t:"number"},{k:"vence",l:"Vence",t:"date",req:1},{k:"rubro",l:"Rubro",t:"select",o:RUBROS.map(r=>[r,r])},{k:"recurrente",l:"Se repite todos los meses",t:"check"}],
   deudas: () => [{k:"descr",l:"Deuda",req:1},{k:"direccion",l:"Dirección",t:"select",o:[["debemos","Nosotros debemos"],["nosdeben","Nos deben a nosotros"]]},{k:"saldo",l:"Saldo pendiente ($)",t:"number"},{k:"cuota",l:"Cuota ($)",t:"number"},{k:"cuotas_tot",l:"Cantidad de cuotas",t:"number"},{k:"cuotas_pag",l:"Cuotas pagadas",t:"number"}],
   proyectos: () => [{k:"nombre",l:"Proyecto",req:1},{k:"meta",l:"Meta ($)",t:"number"},{k:"ahorrado",l:"Ya ahorrado ($)",t:"number"},{k:"fecha",l:"Para cuándo",t:"date"},{k:"proximo",l:"Próximo paso"},{k:"quien",l:"Responsable",t:"select",o:mOpts([["","Nadie"]])}],
-  tareas: () => [{k:"titulo",l:"Tarea",req:1},{k:"cat",l:"Tipo",t:"select",o:[["limpieza","Limpieza"],["residuos","Residuos"],["rutina","Rutina"],["horario","Horario fijo"]]},{k:"quien",l:"Quién",t:"select",o:mOpts([["","Cualquiera"]])},{k:"dias",l:"Días (ninguno = todos los días)",t:"dias"},{k:"hora",l:"Hora",t:"time"},{k:"puntos",l:"Puntos",t:"number"}],
+  tareas: () => [{k:"titulo",l:"Tarea",req:1},{k:"quien",l:"Quién la hace",t:"select",o:mOpts([["","Cualquiera"]])},{k:"repite",l:"¿Se repite?",t:"select",o:[["true","Sí, se repite"],["false","No, una sola vez"]]},{k:"dias",l:"Qué días (ninguno = todos los días)",t:"dias"},{k:"fecha",l:"Qué día",t:"date"},{k:"hora",l:"Horario (te avisa a esa hora)",t:"time"},{k:"cat",l:"Tipo",t:"select",o:[["rutina","Rutina"],["limpieza","Limpieza"],["residuos","Residuos"],["horario","Horario fijo"]]},{k:"puntos",l:"Puntos",t:"number"}],
   bienes: () => [{k:"nombre",l:"Nombre",req:1},{k:"tipo",l:"Tipo",t:"select",o:[["bien","Bien"],["mantenimiento","Mantenimiento"],["documento","Documento"]]},{k:"fecha",l:"Fecha (vencimiento o próximo service)",t:"date"},{k:"nota",l:"Nota (dónde está, número de póliza, etc.)"},{k:"privado",l:"Solo lo ven los administradores",t:"check"}],
   pendientes: () => [{k:"titulo",l:"Qué hay que resolver",req:1},{k:"quien",l:"Quién se encarga",t:"select",o:mOpts([["","Sin asignar"]])},{k:"fecha",l:"Para cuándo (opcional)",t:"date"},{k:"nota",l:"Detalle (opcional)"}],
   eventos: () => [{k:"titulo",l:"Qué es",req:1},{k:"fecha",l:"Día",t:"date",req:1},{k:"hora",l:"Hora",t:"time"},{k:"quien",l:"Para quién",t:"select",o:mOpts([["","Toda la familia"]])},{k:"nota",l:"Nota"}],
   miembros: o => [{k:"nombre",l:"Nombre",req:1},{k:"rol",l:"Rol",t:"select",o:(admins().length < 2 || o?.rol === "admin") ? [["miembro","Partícipe (sin rol de responsable)"],["admin","Administrador"]] : [["miembro","Partícipe (sin rol de responsable)"]]},{k:"tipo",l:"Tipo",t:"select",o:[["adulto","Adulto"],["adolescente","Adolescente"],["infante","Infante"]]},{k:"edad",l:"Edad",t:"number"},{k:"mesada",l:"Mesada mensual ($)",t:"number"}],
 };
-const DEF = { movs:()=>({tipo:"gasto",rubro:"Comida",fecha:hoy()}), pagos:()=>({rubro:"Servicios",vence:hoy(),recurrente:true}), deudas:()=>({direccion:"debemos",cuotas_pag:0}), proyectos:()=>({ahorrado:0,quien:yoId()}), tareas:()=>({cat:"limpieza",quien:"",dias:[],puntos:5}), bienes:()=>({tipo:"bien"}), eventos:()=>({fecha:diaSel||hoy(),quien:""}), pendientes:()=>({quien:""}), miembros:()=>({rol:"miembro",tipo:"adolescente",mesada:0}) };
+const DEF = { movs:()=>({tipo:"gasto",rubro:"Comida",fecha:hoy()}), pagos:()=>({rubro:"Servicios",vence:hoy(),recurrente:true}), deudas:()=>({direccion:"debemos",cuotas_pag:0}), proyectos:()=>({ahorrado:0,quien:yoId()}), tareas:()=>({cat:"rutina",quien:"",dias:[],puntos:5,repite:true,fecha:hoy()}), bienes:()=>({tipo:"bien"}), eventos:()=>({fecha:diaSel||hoy(),quien:""}), pendientes:()=>({quien:""}), miembros:()=>({rol:"miembro",tipo:"adolescente",mesada:0}) };
 const TIT = { movs:"gasto o ingreso", pagos:"pago", deudas:"deuda", proyectos:"proyecto", tareas:"tarea", bienes:"bien o documento", eventos:"evento", pendientes:"cosa para resolver", miembros:"miembro" };
 const NULLABLE = ["quien","fecha","edad"];
 
 function sheet(html){ const L = document.getElementById("layer"); L.innerHTML = `<div class="sheet-bg" data-act="close"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`; const f = L.querySelector("input,select"); if (f) setTimeout(() => f.focus(), 50) }
+function ajRepite(){ const r = document.getElementById("f_repite"); if (!r) return; const una = r.value === "false";
+  const d = document.getElementById("f_dias_0")?.closest(".fld"), f = document.getElementById("f_fecha")?.closest(".fld"); if (d) d.hidden = una; if (f) f.hidden = !una }
+document.addEventListener("change", e => { if (e.target.id === "f_repite") ajRepite(); if (e.target.id === "pf_foto") cargarFoto(e.target) });
 function closeSheet(){ document.getElementById("layer").innerHTML = "" }
 function fieldHTML(f, v){
   const id = "f_" + f.k;
@@ -143,6 +150,7 @@ let formCtx = null;
 function openForm(col, obj){
   const fields = SCH[col](obj); const v = obj || DEF[col](); formCtx = { col, obj, fields };
   const puedeBorrar = obj && (esAdmin() || ((col === "eventos" || col === "pendientes") && obj.creado_por === yoId()) || (col === "movs" && obj.creado_por === yoId() && obj.estado === "pendiente"));
+  setTimeout(ajRepite, 0);
   sheet(`<h2>${obj ? "Editar" : "Nuevo"} ${TIT[col]}</h2><form id="frm">${fields.map(f => fieldHTML(f, v[f.k])).join("")}
   <div class="acts">${puedeBorrar ? `<button type="button" class="btn danger" data-act="delete">Borrar</button>` : ""}<button type="button" class="btn line" data-act="close">Cancelar</button><button class="btn" type="submit">Guardar</button></div></form>`);
 }
@@ -150,10 +158,12 @@ async function submitForm(){
   const { col, obj, fields } = formCtx; const d = readForm(fields);
   const falta = fields.find(f => f.req && (f.t === "number" ? !(d[f.k] > 0) : !d[f.k])); if (falta) { toast("Completá: " + falta.l); return }
   if (col === "miembros" && d.rol === "admin" && obj?.rol !== "admin" && admins().length >= 2) { toast("Ya hay 2 administradores"); return }
+  if (col === "tareas") { d.repite = d.repite !== "false"; if (d.repite) d.fecha = null; else { d.dias = []; if (!d.fecha) { toast("Elegí qué día"); return } } }
   closeSheet();
   if (obj) { if (col === "movs") { delete d.estado } await upd(col, obj.id, d) && toast("Guardado"); return }
   if (col === "movs") { const r = await ins("movs", d); if (r) toast(esAdmin() ? "Cargado" : "Cargado. Lo tiene que aprobar un administrador"); return }
   if (col === "eventos") { const r = await ins("eventos", { ...d, creado_por: yoId() }); if (r) toast("Agregado al calendario"); return }
+  if (col === "tareas") { const r = await ins("tareas", { ...DEF.tareas(), ...d }); if (r) toast(d.quien && d.quien !== yoId() ? "Listo. " + nombre(d.quien) + " la tiene que aceptar" : "Tarea sumada"); return }
   if (col === "pendientes") { const r = await ins("pendientes", { ...d, creado_por: yoId() }); if (r) toast("Anotado para resolver"); return }
   if (col === "miembros") { const r = await ins("miembros", d); if (r) toast("Miembro agregado. Abajo tenés el código para invitarlo."); return }
   const r = await ins(col, { ...DEF[col](), ...d }); if (r) toast("Guardado");
@@ -239,14 +249,22 @@ const TITULO = { inicio:() => S.hogar?.nombre || "Casa en Orden", resolver:"Para
 /* --- Inicio --- */
 const PARENTESCO = ["Papá","Mamá","Pareja","Hijo","Hija","Hermano","Hermana","Abuelo","Abuela","Tío/a","Primo/a","Otro"];
 let editPerfil = false;
-const perfilOk = m => m && m.nombre && m.apellido && m.edad != null && m.parentesco;
-function perfilForm(m){
+const perfilOk = m => m && m.nombre && m.apellido && m.nacimiento && m.parentesco && m.foto;
+let fotoTmp = null;
+function cargarFoto(inp){ const f = inp.files && inp.files[0]; if (!f) return; const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => { const M = 720, k = Math.min(1, M / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+    let q = .8, d = c.toDataURL("image/jpeg", q); while (d.length > 380000 && q > .3) { q -= .1; d = c.toDataURL("image/jpeg", q) }
+    fotoTmp = d; const pv = document.getElementById("pf_prev"); if (pv) { pv.style.backgroundImage = `url(${d})`; pv.classList.add("con") } };
+  img.onerror = () => toast("No pude leer esa foto, probá con otra"); img.src = url }
+function perfilForm(m){ const fo = fotoTmp || m.foto;
   return `<form id="perfilf" class="blk perfil"><h2>${perfilOk(m) ? "Cambiar mis datos" : "Contanos quién sos"}</h2>
-  <label class="fld">Nombre<input type="text" id="pf_nom" value="${esc(m.nombre || "")}" autocomplete="given-name" required></label>
+  <label class="pf-foto"><span id="pf_prev" class="pf-prev ${fo ? "con" : ""}" style="${fo ? `background-image:url(${fo})` : ""}"><span class="pf-cta">${svg("telefono", 22)}<b>Tocá para poner tu foto de portada</b><small>Es obligatoria</small></span></span><input type="file" id="pf_foto" accept="image/*" hidden></label>
+  <label class="fld">Nombre<input type="text" id="pf_nom" value="${esc(m.nombre || "")}" autocomplete="given-name"></label>
   <label class="fld">Apellido<input type="text" id="pf_ape" value="${esc(m.apellido || "")}" autocomplete="family-name"></label>
-  <label class="fld">Edad<input type="number" id="pf_edad" inputmode="numeric" min="0" max="120" value="${m.edad ?? ""}"></label>
+  <label class="fld">Fecha de nacimiento<input type="date" id="pf_nac" value="${esc(m.nacimiento || "")}" max="${hoy()}"></label>
   <label class="fld">¿Qué sos en la familia?<select id="pf_par"><option value="">Elegí una opción</option>${PARENTESCO.map(p => `<option ${m.parentesco === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
-  <div class="acts">${perfilOk(m) ? `<button type="button" class="btn line" data-act="perfil-no">Cancelar</button>` : ""}<button type="submit" class="btn">Guardar</button></div></form>` }
+  <div class="acts">${perfilOk(m) ? `<button type="button" class="btn line" data-act="perfil-no">Cancelar</button>` : ""}<button type="submit" class="btn">${perfilOk(m) ? "Guardar" : "Entrar"}</button></div></form>` }
 const fila = (r, label, sub, ic, badge) => `<button class="fila" data-act="go" data-r="${r}"><span class="f-ico">${svg(ic, 22)}</span><span class="f-t"><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</span>${badge ? `<span class="badge">${badge}</span>` : ""}<span class="entrar">Entrar ›</span></button>`;
 function vInicio(){
   const m = yo();
@@ -254,9 +272,10 @@ function vInicio(){
   const urg = vePlata() ? S.pagos.filter(p => !p.pagado && dias(p.vence) <= 3).length : 0;
   const pend = esAdmin() ? S.movs.filter(m => m.estado === "pendiente").length : 0;
   const pr = S.pendientes.filter(p => !p.resuelto).length;
-  const datos = [m.apellido ? m.nombre + " " + m.apellido : m.nombre, m.edad != null ? m.edad + " años" : "", m.parentesco || ""].filter(Boolean).join(" · ");
-  let h = `<section class="saludo"><span class="sal-av">${esc((m.nombre || "?")[0].toUpperCase())}</span><div class="sal-t"><small>${DIAS[new Date().getDay()]} ${corta(hoy())}</small><h2>¡Hola, ${esc(m.nombre)}!</h2>${perfilOk(m) ? `<p>${esc(datos)}</p><button class="link" data-act="perfil">Cambiar mis datos</button>` : `<p>Primero completá tus datos.</p>`}</div></section>`;
+  const e = edadDe(m), datos = [m.apellido ? m.nombre + " " + m.apellido : m.nombre, e != null ? e + " años" : "", m.parentesco || ""].filter(Boolean).join(" · ");
+  let h = `<section class="saludo ${m.foto ? "con-foto" : ""}">${m.foto ? `<div class="portada" style="background-image:url(${m.foto})"><span>${DIAS[new Date().getDay()]} ${corta(hoy())}</span></div>` : ""}<div class="sal-in"><span class="sal-av" ${m.foto ? `style="background-image:url(${m.foto})"` : ""}>${m.foto ? "" : esc((m.nombre || "?")[0].toUpperCase())}</span><div class="sal-t"><small>${DIAS[new Date().getDay()]} ${corta(hoy())}</small><h2>¡Hola, ${esc(m.nombre)}!</h2>${perfilOk(m) ? `<p>${esc(datos)}</p><button class="link" data-act="perfil">Cambiar mis datos</button>` : `<p>Para entrar, completá tus datos y poné tu foto.</p>`}</div></div></section>`;
   if (!perfilOk(m) || editPerfil) return h + perfilForm(m);
+  h += avisosBtn();
   h += `<div class="botonera">`;
   h += fila("tareas", "Tareas", faltan ? faltan + " para hoy" : "Al día", "tareas");
   h += fila("resolver", "Para resolver", pr ? pr + " pendientes" : "Nada pendiente", "aprobar", pr || "");
@@ -270,19 +289,36 @@ function vInicio(){
 
 /* --- Tareas --- */
 function tareaRow(t, f = hoy()){ const d = hecha(t, f), can = puedoMarcar(t) && f === hoy();
-  return `<div class="task ${d ? "done" : ""}"><button class="chk" data-act="tick" data-id="${t.id}" ${can ? "" : "disabled"} aria-label="${d ? "Desmarcar" : "Marcar hecha"}: ${esc(t.titulo)}">${d ? svg("tareas", 18) : ""}</button><button class="task-t" data-act="det-tarea" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(nombre(t.quien))}${t.hora ? " · " + esc(t.hora) : ""}</small></button>${AJ().puntos && t.puntos ? chip("+" + t.puntos, "c-sun") : ""}</div>` }
+  return `<div class="task ${d ? "done" : ""}"><button class="chk" data-act="tick" data-id="${t.id}" ${can ? "" : "disabled"} aria-label="${d ? "Desmarcar" : "Marcar hecha"}: ${esc(t.titulo)}">${d ? svg("tareas", 18) : ""}</button><button class="task-t" data-act="det-tarea" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(nombre(t.quien))}${t.hora ? " · " + esc(t.hora) : ""}</small></button>${t.estado === "pedida" ? chip("Esperando que acepte", "c-peach") : AJ().puntos && t.puntos ? chip("+" + t.puntos, "c-sun") : ""}</div>` }
 function vTareas(){
-  const th = deHoy().filter(t => t.cat !== "residuos" || true);
-  th.sort(porPrio);
-  const mias = th.filter(t => t.quien === yoId()), libres = th.filter(t => !t.quien), otras = th.filter(t => t.quien && t.quien !== yoId());
-  let h = `<section class="blk"><h2>Mis tareas de hoy</h2>${mias.length ? mias.map(t => tareaRow(t)).join("") : vacio("Hoy no tenés tareas asignadas.")}</section>`;
-  if (libres.length) h += `<section class="blk"><h2>Las puede hacer cualquiera</h2>${libres.map(t => tareaRow(t)).join("")}</section>`;
+  const me = yoId();
+  const pedidas = S.tareas.filter(t => t.estado === "pedida" && t.quien === me);
+  const th = deHoy().filter(t => !(t.estado === "pedida" && t.quien === me)).sort(porPrio);
+  const mias = th.filter(t => t.quien === me || !t.quien), faltan = mias.filter(t => !hecha(t)), listas = mias.filter(t => hecha(t));
+  const otras = th.filter(t => t.quien && t.quien !== me);
+  let h = `<form id="rapidaf" class="rapida"><label for="rq">¿Qué más podemos hacer hoy?</label><div class="rq-w"><input id="rq" type="text" placeholder="Escribí algo, ej: comprar pan" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Sumar</button></div><button type="button" class="link" data-act="new" data-col="tareas">Más opciones: para otro, qué días, horario, si se repite</button></form>`;
+  if (pedidas.length) h += `<section class="blk pedidas"><h2>Te pidieron</h2>${pedidas.map(t => `<div class="pedida"><div class="it"><b>${esc(t.titulo)}</b><small>${esc(t.creado_por ? "De " + nombre(t.creado_por) : "")}${t.hora ? " · " + esc(t.hora) : ""}${t.repite === false ? "" : " · se repite"}</small></div><div class="pd-b"><button class="btn sm line" data-act="resp" data-id="${t.id}" data-v="0">No puedo</button><button class="btn sm" data-act="resp" data-id="${t.id}" data-v="1">Aceptar</button></div></div>`).join("")}</section>`;
+  if (!faltan.length) h += `<div class="calma"><span class="calma-i" aria-hidden="true">☀️</span><b>${mias.length ? "¡Listo! Hoy ya está todo hecho" : "Hoy no hay nada para hacer"}</b><small>Si se te ocurre algo, sumalo arriba.</small></div>`;
+  else h += `<section class="blk"><h2>Hoy hay para hacer esto</h2>${faltan.map(t => tareaRow(t)).join("")}</section>`;
+  if (listas.length && faltan.length) h += `<details class="plegado"><summary>Ya hechas hoy (${listas.length})</summary>${listas.map(t => tareaRow(t)).join("")}</details>`;
   if (otras.length) h += verTodas ? `<section class="blk"><h2>Las de los demás</h2>${otras.map(t => tareaRow(t)).join("")}</section><button class="link" data-act="todas">Ocultar las de los demás</button>`
                                   : `<button class="cta soft" data-act="todas">Ver las de los demás (${otras.length})</button>`;
   if (AJ().puntos) { const p = puntosSemana(); const M = S.miembros.filter(m => m.tipo !== "adulto"); if (M.length) { const mx = Math.max(10, ...M.map(m => p[m.id] || 0));
-    h += `<section class="blk"><h2>Puntos de la semana</h2>${M.map(m => `<div class="pts"><span>${esc(m.nombre)}</span><div class="bar"><i style="width:${Math.round((p[m.id] || 0) / mx * 100)}%"></i></div><b>${p[m.id] || 0}</b></div>`).join("")}</section>` } }
-  if (esAdmin()) h += big("c-mint", "new", 'data-col="tareas"', "gasto", "Agregar una tarea");
-  return h }
+    h += `<details class="plegado"><summary>Puntos de la semana</summary>${M.map(m => `<div class="pts"><span>${esc(m.nombre)}</span><div class="bar"><i style="width:${Math.round((p[m.id] || 0) / mx * 100)}%"></i></div><b>${p[m.id] || 0}</b></div>`).join("")}</details>` } }
+  return h + avisosBtn() }
+const avisosOn = () => typeof Notification !== "undefined" && Notification.permission === "granted" && LS.get("cdo-push") === S.H;
+const avisosBtn = () => avisosOn() ? "" : `<button class="cta soft avisos" data-act="avisos">🔔 Activar avisos en este teléfono</button>`;
+const b64u = s => { const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(b, c => c.charCodeAt(0)) };
+async function activarAvisos(){
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || typeof Notification === "undefined") { toast(ios ? "En iPhone primero instalá la app: Compartir y “Agregar a inicio”" : "Este teléfono no permite avisos"); return }
+  const p = await Notification.requestPermission(); if (p !== "granted") { toast("Sin permiso no te puedo avisar. Activalo en Ajustes del teléfono > Notificaciones"); return }
+  try { const { data, error } = await sb.functions.invoke("avisar", { method: "GET" }); if (error || !data?.pub) throw error;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(data.pub) });
+    const j = sub.toJSON(); const r = await run(sb.from("push_subs").upsert({ hogar_id: S.H, miembro_id: yoId(), endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: "endpoint" }));
+    if (r) { LS.set("cdo-push", S.H); toast("Listo, te van a llegar los avisos"); render() } }
+  catch(e) { toast("No pude activar los avisos, probá de nuevo") } }
 
 /* --- Plata --- */
 function vPlata(){
@@ -477,6 +513,8 @@ document.addEventListener("click", async e => {
   const el = e.target.closest("[data-act]"); if (!el) return; const a = el.dataset.act, id = el.dataset.id;
   if (a === "close") { if (e.target === el || el.tagName === "BUTTON") closeSheet(); return }
   if (a === "go") { verTodas = false; ordenando = null; go(el.dataset.r); return }
+  if (a === "avisos") { activarAvisos(); return }
+  if (a === "resp") { const ok = el.dataset.v === "1"; const r = await run(sb.rpc("responder_tarea", { t: id, acepta: ok })); if (r) { const t = find("tareas", id); if (t) t.estado = ok ? "ok" : "rechazada"; render(); recargar("tareas"); avisar({ tabla: "tareas", id, respuesta: ok }); toast(ok ? "Aceptada, ya está en tu lista" : "Le avisamos que no podés") } return }
   if (a === "perfil") { editPerfil = true; render(); return }
   if (a === "perfil-no") { editPerfil = false; render(); return }
   if (a === "back") { verTodas = false; ordenando = null; back(); return }
@@ -519,10 +557,12 @@ let enviando = false;
 document.addEventListener("submit", async e => { e.preventDefault(); if (enviando) return; enviando = true; const b = e.target.querySelector('[type=submit]'); if (b) b.disabled = true;
   try { await enviar(e.target) } finally { enviando = false; if (b && b.isConnected) b.disabled = false } });
 async function enviar(f){
-  if (f.id === "perfilf") { const v = id => document.getElementById(id).value.trim(); const nom = v("pf_nom"), ape = v("pf_ape"), ed = v("pf_edad"), par = v("pf_par");
-    if (!nom || !ape || ed === "" || !par) { toast("Completá los cuatro datos"); return }
-    const r = await run(sb.rpc("mi_perfil", { p_nombre: nom, p_apellido: ape, p_edad: +ed, p_parentesco: par }));
-    if (r) { const m = yo(); Object.assign(m, { nombre: nom, apellido: ape, edad: +ed, parentesco: par }); editPerfil = false; render(); recargar("miembros"); toast("¡Listo, " + nom + "!") } return }
+  if (f.id === "perfilf") { const v = id => document.getElementById(id).value.trim(); const m = yo(); const nom = v("pf_nom"), ape = v("pf_ape"), nac = v("pf_nac"), par = v("pf_par"), foto = fotoTmp || m.foto;
+    if (!foto) { toast("Falta tu foto de portada"); return } if (!nom || !ape || !nac || !par) { toast("Completá todos los datos"); return } if (nac > hoy()) { toast("Revisá la fecha de nacimiento"); return }
+    const r = await run(sb.rpc("mi_perfil", { p_nombre: nom, p_apellido: ape, p_nacimiento: nac, p_parentesco: par, p_foto: foto }));
+    if (r) { Object.assign(m, { nombre: nom, apellido: ape, nacimiento: nac, parentesco: par, foto }); m.edad = edadDe(m); fotoTmp = null; editPerfil = false; render(); recargar("miembros"); toast("¡Listo, " + nom + "!") } return }
+  if (f.id === "rapidaf") { const t = document.getElementById("rq").value.trim(); if (!t) { toast("Escribí qué hay que hacer"); return }
+    const r = await ins("tareas", { titulo: t, cat: "rutina", quien: yoId(), repite: false, fecha: hoy(), dias: [], puntos: 0 }); if (r) toast("Sumado para hoy"); return }
   if (f.id === "llavef") { const c = deLlave(document.getElementById("l_llave").value); if (!c) { toast("Esa llave no es válida"); return } try { await entrarCon(c); toast("Listo, entraste") } catch(e) { toast("Esa llave no funciona") } return }
   if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
   if (f.id === "newf") { if (!document.getElementById("n_yo").value.trim()) { toast("Poné tu nombre"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); ruta = ["inicio","familia"]; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
