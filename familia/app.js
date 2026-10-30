@@ -110,7 +110,11 @@ const tareasDe = f => { const w = parse(f).getDay(); return S.tareas.filter(t =>
 const deHoy = () => tareasDe(hoy());
 const hecha = (t, f = hoy()) => t.hechas && t.hechas[f];
 function puntosSemana(){ const p = {}; const lim = new Date(); lim.setDate(lim.getDate() - 6); const l = iso(lim);
-  S.tareas.forEach(t => Object.entries(t.hechas || {}).forEach(([d, who]) => { if (who && d >= l && d <= hoy()) p[who] = (p[who] || 0) + (+t.puntos || 0) })); return p }
+  S.tareas.forEach(t => Object.entries(t.hechas || {}).forEach(([d, who]) => { if (who && d >= l && d <= hoy() && aprobada(t, d)) p[who] = (p[who] || 0) + (+t.puntos || 0) })); return p }
+const aprobada = (t, f = hoy()) => !!(t.aprobadas && t.aprobadas[f]);
+function porAprobar(){ const lim = new Date(); lim.setDate(lim.getDate() - 7); const l = iso(lim), out = [];
+  S.tareas.forEach(t => Object.entries(t.hechas || {}).forEach(([d, who]) => { if (who && d >= l && !aprobada(t, d)) out.push({ t, d, who }) }));
+  return out.sort((a, b) => a.d < b.d ? 1 : -1) }
 const puedoMarcar = t => esAdmin() || !t.quien || t.quien === yoId();
 const gastoMesada = id => sum(S.movs.filter(x => x.quien === id && x.mesada && mes(x.fecha) === mes(hoy()) && x.estado !== "rechazado"));
 
@@ -122,7 +126,7 @@ const SCH = {
   pagos: () => [{k:"descr",l:"Qué hay que pagar",req:1},{k:"monto",l:"Monto ($)",t:"number"},{k:"vence",l:"Vence",t:"date",req:1},{k:"rubro",l:"Rubro",t:"select",o:RUBROS.map(r=>[r,r])},{k:"recurrente",l:"Se repite todos los meses",t:"check"}],
   deudas: () => [{k:"descr",l:"Deuda",req:1},{k:"direccion",l:"Dirección",t:"select",o:[["debemos","Nosotros debemos"],["nosdeben","Nos deben a nosotros"]]},{k:"saldo",l:"Saldo pendiente ($)",t:"number"},{k:"cuota",l:"Cuota ($)",t:"number"},{k:"cuotas_tot",l:"Cantidad de cuotas",t:"number"},{k:"cuotas_pag",l:"Cuotas pagadas",t:"number"}],
   proyectos: () => [{k:"nombre",l:"Proyecto",req:1},{k:"meta",l:"Meta ($)",t:"number"},{k:"ahorrado",l:"Ya ahorrado ($)",t:"number"},{k:"fecha",l:"Para cuándo",t:"date"},{k:"proximo",l:"Próximo paso"},{k:"quien",l:"Responsable",t:"select",o:mOpts([["","Nadie"]])}],
-  tareas: () => [{k:"titulo",l:"Tarea",req:1},{k:"quien",l:"Quién la hace",t:"select",o:mOpts([["","Cualquiera"]])},{k:"repite",l:"¿Se repite?",t:"select",o:[["true","Sí, se repite"],["false","No, una sola vez"]]},{k:"dias",l:"Qué días (ninguno = todos los días)",t:"dias"},{k:"fecha",l:"Qué día",t:"date"},{k:"hora",l:"Horario (te avisa a esa hora)",t:"time"},{k:"cat",l:"Tipo",t:"select",o:[["rutina","Rutina"],["limpieza","Limpieza"],["residuos","Residuos"],["horario","Horario fijo"]]},{k:"puntos",l:"Puntos",t:"number"}],
+  tareas: () => [{k:"titulo",l:"Tarea",req:1},{k:"quien",l:"Quién la hace",t:"select",o:mOpts([["","Cualquiera"]])},{k:"repite",l:"¿Se repite?",t:"select",o:[["true","Sí, se repite"],["false","No, una sola vez"]]},{k:"dias",l:"Qué días (ninguno = todos los días)",t:"dias"},{k:"fecha",l:"Qué día",t:"date"},{k:"hora",l:"Horario (te avisa a esa hora)",t:"time"},{k:"cat",l:"Tipo",t:"select",o:[["rutina","Rutina"],["limpieza","Limpieza"],["residuos","Residuos"],["horario","Horario fijo"]]},{k:"puntos",l:"Puntos que vale (se suman cuando un adulto la aprueba)",t:"number",req:1}],
   bienes: () => [{k:"nombre",l:"Nombre",req:1},{k:"tipo",l:"Tipo",t:"select",o:[["bien","Bien"],["mantenimiento","Mantenimiento"],["documento","Documento"]]},{k:"fecha",l:"Fecha (vencimiento o próximo service)",t:"date"},{k:"nota",l:"Nota (dónde está, número de póliza, etc.)"},{k:"privado",l:"Solo lo ven los administradores",t:"check"}],
   pendientes: () => [{k:"titulo",l:"Qué hay que resolver",req:1},{k:"quien",l:"Quién se encarga",t:"select",o:mOpts([["","Sin asignar"]])},{k:"fecha",l:"Para cuándo (opcional)",t:"date"},{k:"nota",l:"Detalle (opcional)"}],
   eventos: () => [{k:"titulo",l:"Qué es",req:1},{k:"fecha",l:"Día",t:"date",req:1},{k:"hora",l:"Hora",t:"time"},{k:"quien",l:"Para quién",t:"select",o:mOpts([["","Toda la familia"]])},{k:"nota",l:"Nota"}],
@@ -285,7 +289,8 @@ function vInicio(){
   if (!perfilOk(m) || editPerfil) return h + perfilForm(m);
   h += avisosBtn();
   h += `<div class="botonera">`;
-  h += fila("tareas", "Tareas", faltan ? faltan + " para hoy" : "Al día", "tareas");
+  const pa = esAdmin() ? porAprobar().length : 0;
+  h += fila("tareas", "Tareas", pa ? pa + " para aprobar" : faltan ? faltan + " para hoy" : "Al día", "tareas", pa || "");
   h += fila("resolver", "Para resolver", pr ? pr + " pendientes" : "Nada pendiente", "aprobar", pr || "");
   h += fila("chat", "Chat de la familia", S.mensajes.length ? "Último: " + nombre(S.mensajes[S.mensajes.length - 1].de) : "Mensajes y fotos", "chat");
   h += fila("agenda", "Agenda", "Calendario", "agenda");
@@ -298,7 +303,7 @@ function vInicio(){
 
 /* --- Tareas --- */
 function tareaRow(t, f = hoy()){ const d = hecha(t, f), can = puedoMarcar(t) && f === hoy();
-  return `<div class="task ${d ? "done" : ""}"><button class="chk" data-act="tick" data-id="${t.id}" ${can ? "" : "disabled"} aria-label="${d ? "Desmarcar" : "Marcar hecha"}: ${esc(t.titulo)}">${d ? svg("tareas", 18) : ""}</button><button class="task-t" data-act="det-tarea" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(nombre(t.quien))}${t.hora ? " · " + esc(t.hora) : ""}</small></button>${t.estado === "pedida" ? chip("Esperando que acepte", "c-peach") : AJ().puntos && t.puntos ? chip("+" + t.puntos, "c-sun") : ""}</div>` }
+  return `<div class="task ${d ? "done" : ""}"><button class="chk" data-act="tick" data-id="${t.id}" ${can ? "" : "disabled"} aria-label="${d ? "Desmarcar" : "Marcar hecha"}: ${esc(t.titulo)}">${d ? svg("tareas", 18) : ""}</button><button class="task-t" data-act="det-tarea" data-id="${t.id}"><b>${esc(t.titulo)}</b><small>${esc(nombre(t.quien))}${t.hora ? " · " + esc(t.hora) : ""}</small></button>${t.estado === "pedida" ? chip("Esperando que acepte", "c-peach") : d && !aprobada(t, f) ? chip("Esperando OK", "c-peach") : chip((d ? "✓ " : "+") + (t.puntos || 5) + " pts", "c-sun")}</div>` }
 function vTareas(){
   const me = yoId();
   const pedidas = S.tareas.filter(t => t.estado === "pedida" && t.quien === me);
@@ -306,13 +311,15 @@ function vTareas(){
   const mias = th.filter(t => t.quien === me || !t.quien), faltan = mias.filter(t => !hecha(t)), listas = mias.filter(t => hecha(t));
   const otras = th.filter(t => t.quien && t.quien !== me);
   let h = `<form id="rapidaf" class="rapida"><label for="rq">¿Qué más podemos hacer hoy?</label><div class="rq-w"><input id="rq" type="text" placeholder="Escribí algo, ej: comprar pan" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Sumar</button></div><button type="button" class="link" data-act="new" data-col="tareas">Más opciones: para otro, qué días, horario, si se repite</button></form>`;
+  const pa = esAdmin() ? porAprobar() : [];
+  if (pa.length) h += `<section class="blk pedidas"><h2>Para aprobar (${pa.length})</h2>${pa.map(x => `<div class="pedida"><div class="aprob-h">${av(x.who)}<div class="it"><b>${esc(x.t.titulo)}</b><small>${esc(nombre(x.who))} · ${x.d === hoy() ? "hoy" : DIAS[parse(x.d).getDay()] + " " + corta(x.d)} · ${x.t.puntos || 5} puntos</small></div></div><div class="pd-b"><button class="btn sm line" data-act="no-tarea" data-id="${x.t.id}" data-d="${x.d}" data-w="${x.who}">No está hecha</button><button class="btn sm" data-act="ok-tarea" data-id="${x.t.id}" data-d="${x.d}" data-w="${x.who}">Aprobar</button></div></div>`).join("")}</section>`;
   if (pedidas.length) h += `<section class="blk pedidas"><h2>Te pidieron</h2>${pedidas.map(t => `<div class="pedida"><div class="it"><b>${esc(t.titulo)}</b><small>${esc(t.creado_por ? "De " + nombre(t.creado_por) : "")}${t.hora ? " · " + esc(t.hora) : ""}${t.repite === false ? "" : " · se repite"}</small></div><div class="pd-b"><button class="btn sm line" data-act="resp" data-id="${t.id}" data-v="0">No puedo</button><button class="btn sm" data-act="resp" data-id="${t.id}" data-v="1">Aceptar</button></div></div>`).join("")}</section>`;
   if (!faltan.length) h += `<div class="calma"><span class="calma-i" aria-hidden="true">☀️</span><b>${mias.length ? "¡Listo! Hoy ya está todo hecho" : "Hoy no hay nada para hacer"}</b><small>Si se te ocurre algo, sumalo arriba.</small></div>`;
   else h += `<section class="blk"><h2>Hoy hay para hacer esto</h2>${faltan.map(t => tareaRow(t)).join("")}</section>`;
   if (listas.length && faltan.length) h += `<details class="plegado"><summary>Ya hechas hoy (${listas.length})</summary>${listas.map(t => tareaRow(t)).join("")}</details>`;
   if (otras.length) h += verTodas ? `<section class="blk"><h2>Las de los demás</h2>${otras.map(t => tareaRow(t)).join("")}</section><button class="link" data-act="todas">Ocultar las de los demás</button>`
                                   : `<button class="cta soft" data-act="todas">Ver las de los demás (${otras.length})</button>`;
-  if (AJ().puntos) { const p = puntosSemana(); const M = S.miembros.filter(m => m.tipo !== "adulto"); if (M.length) { const mx = Math.max(10, ...M.map(m => p[m.id] || 0));
+  { const p = puntosSemana(); const M = S.miembros.filter(m => m.tipo !== "adulto"); if (M.length) { const mx = Math.max(10, ...M.map(m => p[m.id] || 0));
     h += `<details class="plegado"><summary>Puntos de la semana</summary>${M.map(m => `<div class="pts"><span>${esc(m.nombre)}</span><div class="bar"><i style="width:${Math.round((p[m.id] || 0) / mx * 100)}%"></i></div><b>${p[m.id] || 0}</b></div>`).join("")}</details>` } }
   return h + avisosBtn() }
 const avisosOn = () => typeof Notification !== "undefined" && Notification.permission === "granted" && LS.get("cdo-push") === S.H;
@@ -475,7 +482,7 @@ function abrirDetalle(k, id){
   if (k === "pend") { const p = find("pendientes", id); const ok = esAdmin() || p.creado_por === yoId();
     detalle(p.titulo, "c-rose", "aprobar", [["Quién se encarga", esc(p.quien ? nombre(p.quien) : "Sin asignar")], p.fecha ? ["Para cuándo", corta(p.fecha)] : null, p.nota ? ["Nota", esc(p.nota)] : null, ["Prioridad", "N° " + ([...S.pendientes.filter(x => !x.resuelto)].sort(porPrio).findIndex(x => x.id === id) + 1 || "-")], ["Estado", p.resuelto ? chip("Resuelto", "c-mint") : chip("Pendiente", "c-sun")], ["Lo anotó", esc(nombre(p.creado_por))]], ok ? eb("pendientes", id) : "") }
   if (k === "tarea") { const t = find("tareas", id);
-    detalle(t.titulo, "c-mint", "tareas", [["Quién", esc(nombre(t.quien))], ["Días", diasTxt(t)], t.hora ? ["Hora", esc(t.hora)] : null, AJ().puntos && t.puntos ? ["Puntos", "+" + t.puntos] : null, hecha(t) ? ["Hoy", "Hecha por " + esc(nombre(hecha(t)))] : null], esAdmin() ? eb("tareas", id) : "") }
+    detalle(t.titulo, "c-mint", "tareas", [["Quién", esc(nombre(t.quien))], ["Días", diasTxt(t)], t.hora ? ["Hora", esc(t.hora)] : null, ["Puntos", "+" + (t.puntos || 5)], hecha(t) ? ["Hoy", "Hecha por " + esc(nombre(hecha(t))) + (aprobada(t) ? " · aprobada" : " · falta el OK")] : null], esAdmin() ? eb("tareas", id) : "") }
   if (k === "bien") { const b = find("bienes", id);
     detalle(b.nombre, "c-lila", "patrimonio", [["Tipo", b.tipo === "mantenimiento" ? "Mantenimiento" : b.tipo === "documento" ? "Papel" : "Bien"], b.fecha ? ["Fecha", corta(b.fecha) + "/" + b.fecha.slice(2,4)] : null, b.nota ? ["Nota", esc(b.nota)] : null, b.privado ? ["Quién lo ve", "Solo admins"] : null], esAdmin() ? eb("bienes", id) : "") }
   if (k === "evento") { const e = find("eventos", id);
@@ -569,7 +576,10 @@ document.addEventListener("click", async e => {
   if (a === "instalar") { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; render() } return }
   if (a === "dia") { diaSel = el.dataset.f; const d = parse(diaSel); cal = new Date(d.getFullYear(), d.getMonth(), 1); render(); return }
   if (a === "mes") { cal = new Date(cal.getFullYear(), cal.getMonth() + (+el.dataset.d), 1); render(); return }
-  if (a === "tick") { const t = find("tareas", id); if (!t || !puedoMarcar(t)) return; const was = hecha(t); const r = await run(sb.rpc("marcar_tarea", { t: id, dia: hoy() })); if (r) { recargar("tareas"); if (!was && !esAdmin()) avisar({ tabla: "tareas", id, hecha: true }); if (!was) toast("¡Bien hecho!" + (AJ().puntos && t.puntos ? ` +${t.puntos} puntos` : "")) } return }
+  if (a === "tick") { const t = find("tareas", id); if (!t || !puedoMarcar(t)) return; const was = hecha(t); const r = await run(sb.rpc("marcar_tarea", { t: id, dia: hoy() })); if (r) { recargar("tareas"); if (!was && !esAdmin()) avisar({ tabla: "tareas", id, hecha: true }); if (!was) toast(esAdmin() ? `¡Hecha! +${t.puntos || 5} puntos` : `¡Bien hecho! Cuando un adulto la apruebe sumás ${t.puntos || 5} puntos`) } return }
+  if (a === "ok-tarea" || a === "no-tarea") { const ok = a === "ok-tarea", t = find("tareas", id), d = el.dataset.d, who = el.dataset.w;
+    const r = await run(sb.rpc("aprobar_tarea", { t: id, dia: d, ok })); if (r) { if (t) { if (ok) t.aprobadas = { ...(t.aprobadas || {}), [d]: yoId() }; else { delete t.hechas[d]; if (t.aprobadas) delete t.aprobadas[d] } }
+      render(); recargar("tareas"); avisar({ tabla: "tareas", id, aprobada: ok, dia: d, de: who }); toast(ok ? `Aprobada: +${t?.puntos || 5} puntos para ${nombre(who)}` : "Le avisamos que no está hecha") } return }
   if (a === "aprobar" || a === "rechazar") { const r = await run(sb.rpc("aprobar_mov", { m: id, aprobar: a === "aprobar" })); if (r) { recargar("movs"); toast(a === "aprobar" ? "Aprobado" : "Rechazado") } return }
   if (a === "pagar") { const p = find("pagos", id); askMonto("Pagué: " + p.descr, p.monto, async v => { if (await ins("movs", { tipo:"gasto", descr:p.descr, monto:v, rubro:p.rubro || "Servicios", ticket:true })) await upd("pagos", id, p.recurrente ? { vence:addMes(p.vence), ultimo_pago:hoy() } : { pagado:true, ultimo_pago:hoy() }) && toast("Pago registrado") }); return }
   if (a === "cuota") { const d = find("deudas", id); const deb = d.direccion === "debemos"; askMonto(deb ? "Pagué cuota: " + d.descr : "Cobré: " + d.descr, +d.cuota || d.saldo, async v => { if (await ins("movs", { tipo:deb ? "gasto" : "ingreso", descr:(deb ? "Cuota " : "Cobro ") + d.descr, monto:v, rubro:"Deudas", ticket:true })) await upd("deudas", id, { saldo:Math.max(0, (+d.saldo || 0) - v), cuotas_pag:(+d.cuotas_pag || 0) + 1 }) && toast(deb ? "Cuota registrada" : "Cobro registrado") }); return }
@@ -607,7 +617,7 @@ async function enviar(f){
     const r = await run(sb.from("mensajes").insert({ hogar_id: S.H, de: yoId(), texto: t || null, foto: chatFoto }).select().single());
     if (r) { chatFoto = null; document.getElementById("ch_txt").value = ""; if (!S.mensajes.some(m => m.id === r.data.id)) S.mensajes.push(r.data); render(); bajarChat(); document.getElementById("ch_txt")?.focus(); avisar({ tabla: "mensajes", id: r.data.id }) } return }
   if (f.id === "rapidaf") { const t = document.getElementById("rq").value.trim(); if (!t) { toast("Escribí qué hay que hacer"); return }
-    const r = await ins("tareas", { titulo: t, cat: "rutina", quien: yoId(), repite: false, fecha: hoy(), dias: [], puntos: 0 }); if (r) { document.getElementById("rq").value = ""; toast("Sumado para hoy") } return }
+    const r = await ins("tareas", { titulo: t, cat: "rutina", quien: yoId(), repite: false, fecha: hoy(), dias: [], puntos: 5 }); if (r) { document.getElementById("rq").value = ""; toast("Sumado para hoy") } return }
   if (f.id === "llavef") { const c = deLlave(document.getElementById("l_llave").value); if (!c) { toast("Esa llave no es válida"); return } try { await entrarCon(c); toast("Listo, entraste") } catch(e) { toast("Esa llave no funciona") } return }
   if (f.id === "joinf") { const cod = document.getElementById("j_cod").value; if (!cod.trim()) { toast("Poné el código"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("unirme", { cod })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); toast("Listo, ya estás adentro") } return }
   if (f.id === "newf") { if (!document.getElementById("n_yo").value.trim()) { toast("Poné tu nombre"); return } if (!await asegurarAcceso()) return; const r = await run(sb.rpc("crear_hogar", { nombre_hogar: document.getElementById("n_casa").value, mi_nombre: document.getElementById("n_yo").value })); if (r) { LS.set("cdo-hogar", r.data); loaded = false; await entrarHogar(); ruta = ["inicio","familia"]; render(); toast("Casa creada. Ahora sumá a la familia.") } return }
