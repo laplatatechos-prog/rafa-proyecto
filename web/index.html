@@ -46,6 +46,7 @@
 
   <section id="tab-asistente" hidden>
     <div class="chips">
+      <button data-q="¿Qué obra hago primero? Ordená todas las obras activas pesando la seña que dejó cada cliente y hace cuánto, cuánto espera, urgencia, margen para nosotros, si es cliente viejo o nuevo, clima y materiales. Explicá cada lugar.">¿Cuál primero?</button>
       <button data-q="Dame el panorama: prioridades de esta semana, riesgos por lluvia, pedidos de materiales y cobros pendientes.">Panorama semana</button>
       <button data-q="¿Qué obras chocan con lluvia en los próximos días y a qué fecha las muevo?">Lluvia</button>
       <button data-q="¿A quién le tengo que cobrar y cuánto? Ordenalo de mayor a menor.">Cobros</button>
@@ -84,6 +85,18 @@
             <option value="terminada">Terminada</option>
           </select>
         </label>
+        <label>Urgencia
+          <select name="urgencia">
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente (se llueve)</option>
+          </select>
+        </label>
+        <div class="row">
+          <label>Cliente desde<input name="cliente_desde" type="date"></label>
+          <label>Esperando desde<input name="esperando_desde" type="date"></label>
+        </div>
         <label>Detalle<textarea name="situacion" rows="2" placeholder="Ej: falta medir canaleta"></textarea></label>
       </fieldset>
       <fieldset><legend>4 · Materiales</legend>

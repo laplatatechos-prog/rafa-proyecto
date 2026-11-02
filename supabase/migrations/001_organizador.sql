@@ -11,6 +11,10 @@ create table if not exists public.obra_detalle (
   pedido_pagado  boolean not null default false,
   pedido_proveedor text,
   pedido_fecha   date,
+  -- Variables para priorizar
+  urgencia       text not null default 'media' check (urgencia in ('baja','media','alta','urgente')),
+  cliente_desde  date,                       -- desde cuándo es cliente (viejo / nuevo)
+  esperando_desde date default public.tpl_hoy(), -- desde cuándo espera que se haga el trabajo
   updated_at     timestamptz not null default now()
 );
 
@@ -54,7 +58,12 @@ begin
         'materiales', coalesce((select jsonb_agg(to_jsonb(m) order by m.orden, m.nombre) from obra_materiales m where m.obra_id = o.id), '[]'),
         'cobros', coalesce((select jsonb_agg(to_jsonb(c) order by c.fecha) from obra_cobros c where c.obra_id = o.id), '[]'),
         'total_materiales', coalesce((select sum(cantidad*precio_unit) from obra_materiales m where m.obra_id = o.id), 0),
-        'cobrado', coalesce((select sum(monto) from obra_cobros c where c.obra_id = o.id), 0)
+        'cobrado', coalesce((select sum(monto) from obra_cobros c where c.obra_id = o.id), 0),
+        -- Datos del sistema de presupuestos: cuándo se presupuestó y qué seña/forma de pago aceptó
+        'presupuesto_fecha', (select p.created_at from presupuestos p where p.id = o.pres_id),
+        'aceptacion', (select jsonb_build_object('fecha', a.created_at, 'forma', a.forma, 'cuotas', a.cuotas,
+                                                 'monto', a.monto, 'anticipo', a.anticipo, 'fecha_obra_pedida', a.fecha_obra)
+                       from aceptaciones a where a.pres_id = o.pres_id)
       ) as x
       from obras o
     ) s
@@ -80,14 +89,19 @@ begin
     cuadrilla = coalesce(excluded.cuadrilla, obras.cuadrilla), estado = excluded.estado,
     total = excluded.total, notas = excluded.notas, updated_by = 'organizador', updated_at = now();
 
-  insert into obra_detalle(obra_id, trabajo, situacion, necesita_seco, pedido_estado, pedido_pagado, pedido_proveedor, pedido_fecha, updated_at)
+  insert into obra_detalle(obra_id, trabajo, situacion, necesita_seco, pedido_estado, pedido_pagado, pedido_proveedor, pedido_fecha,
+                           urgencia, cliente_desde, esperando_desde, updated_at)
   values (v_id, d->>'trabajo', d->>'situacion', coalesce((d->>'necesita_seco')::boolean, true),
           case when d->>'pedido_estado' in ('pendiente','hecho','recibido') then d->>'pedido_estado' else 'pendiente' end,
-          coalesce((d->>'pedido_pagado')::boolean, false), d->>'pedido_proveedor', nullif(d->>'pedido_fecha','')::date, now())
+          coalesce((d->>'pedido_pagado')::boolean, false), d->>'pedido_proveedor', nullif(d->>'pedido_fecha','')::date,
+          case when d->>'urgencia' in ('baja','media','alta','urgente') then d->>'urgencia' else 'media' end,
+          nullif(d->>'cliente_desde','')::date, coalesce(nullif(d->>'esperando_desde','')::date, tpl_hoy()), now())
   on conflict (obra_id) do update set
     trabajo = excluded.trabajo, situacion = excluded.situacion, necesita_seco = excluded.necesita_seco,
     pedido_estado = excluded.pedido_estado, pedido_pagado = excluded.pedido_pagado,
-    pedido_proveedor = excluded.pedido_proveedor, pedido_fecha = excluded.pedido_fecha, updated_at = now();
+    pedido_proveedor = excluded.pedido_proveedor, pedido_fecha = excluded.pedido_fecha,
+    urgencia = excluded.urgencia, cliente_desde = excluded.cliente_desde,
+    esperando_desde = coalesce(nullif(d->>'esperando_desde','')::date, obra_detalle.esperando_desde), updated_at = now();
 
   if p ? 'materiales' then
     delete from obra_materiales where obra_id = v_id;

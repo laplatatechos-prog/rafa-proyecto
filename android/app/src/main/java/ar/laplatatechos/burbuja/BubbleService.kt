@@ -266,7 +266,7 @@ class BubbleService : Service() {
         if (o != null) {
             fun l(k: String, n: String) { if (!o.isNull(k) && o.optString(k).isNotBlank()) sb.append("\n• $n: ${o.optString(k)}") }
             l("cliente", "Cliente"); l("tel", "Tel"); l("dir", "Dirección"); l("trabajo", "Trabajo"); l("situacion", "Situación")
-            l("fecha", "Inicio"); l("dias", "Días"); l("total", "Total $"); l("pedido_estado", "Pedido")
+            l("fecha", "Inicio"); l("dias", "Días"); l("total", "Total $"); l("pedido_estado", "Pedido"); l("urgencia", "Urgencia")
             val m = o.optJSONArray("materiales")
             if (m != null) for (i in 0 until m.length()) {
                 val x = m.getJSONObject(i)

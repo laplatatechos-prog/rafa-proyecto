@@ -82,6 +82,10 @@ function diasMalos(o) {
   if (o.detalle && o.detalle.necesita_seco === false) return [];
   return diasObra(o).filter((f) => st.clima[f]?.malo);
 }
+function espera(o) {
+  const desde = o.detalle?.esperando_desde || o.aceptacion?.fecha?.slice(0, 10) || o.presupuesto_fecha?.slice(0, 10);
+  return desde && activa(o) ? Math.round((new Date(hoyISO()) - new Date(desde.slice(0, 10))) / 864e5) : 0;
+}
 function activa(o) { return o.estado !== "terminada"; }
 
 // ---------- render ----------
@@ -115,6 +119,8 @@ function renderLista() {
       <div class="tags">
         <span class="tag">${fechaCorta(o.fecha)}${o.dias > 1 ? ` · ${o.dias} días` : ""}</span>
         <span class="tag">${ESTADOS[o.estado] || o.estado}</span>
+        ${d.urgencia === "urgente" || d.urgencia === "alta" ? `<span class="tag mal">${d.urgencia === "urgente" ? "Urgente" : "Urgencia alta"}</span>` : ""}
+        ${espera(o) > 30 ? `<span class="tag warn">Espera ${espera(o)} días</span>` : ""}
         ${malos.length ? `<span class="tag mal">Lluvia: ${malos.map(fechaCorta).join(", ")}</span>` : ""}
         ${o.materiales?.length ? `<span class="tag ${ped === "pendiente" ? "warn" : "ok"}">Pedido ${ped}${d.pedido_pagado ? " · pagado" : ped !== "pendiente" ? " · sin pagar" : ""} · ${plata(o.total_materiales)}</span>` : ""}
         ${o.total ? `<span class="tag ${s > 0 ? "warn" : "ok"}">${s > 0 ? "Falta " + plata(s) : "Cobrado"}</span>` : ""}
@@ -142,7 +148,8 @@ function abrirObra(o) {
   const e = st.editando, d = e.detalle || {}, f = $("#formObra");
   $("#tituloObra").textContent = o ? e.cliente || "Obra" : "Nueva obra";
   for (const n of ["cliente", "tel", "dir", "estado", "total", "fecha", "dias", "notas"]) f.elements[n].value = e[n] ?? "";
-  for (const n of ["trabajo", "situacion", "pedido_estado", "pedido_proveedor"]) f.elements[n].value = d[n] ?? (n === "pedido_estado" ? "pendiente" : "");
+  for (const n of ["trabajo", "situacion", "pedido_estado", "pedido_proveedor", "urgencia", "cliente_desde", "esperando_desde"])
+    f.elements[n].value = d[n] ?? ({ pedido_estado: "pendiente", urgencia: "media", esperando_desde: o ? "" : hoyISO() }[n] ?? "");
   f.elements.pedido_pagado.checked = !!d.pedido_pagado;
   f.elements.necesita_seco.checked = d.necesita_seco !== false;
   renderMats(); renderCobros(); climaObra(); wa();
@@ -195,7 +202,8 @@ function datosForm() {
     total: f.total.value, fecha: f.fecha.value, dias: f.dias.value, notas: f.notas.value, cuadrilla: e.cuadrilla ?? null,
     detalle: { trabajo: f.trabajo.value, situacion: f.situacion.value, necesita_seco: f.necesita_seco.checked,
       pedido_estado: f.pedido_estado.value, pedido_pagado: f.pedido_pagado.checked, pedido_proveedor: f.pedido_proveedor.value,
-      pedido_fecha: e.detalle?.pedido_fecha ?? null },
+      pedido_fecha: e.detalle?.pedido_fecha ?? null, urgencia: f.urgencia.value,
+      cliente_desde: f.cliente_desde.value, esperando_desde: f.esperando_desde.value },
     materiales: e.materiales.filter((m) => String(m.nombre || "").trim()),
   };
 }
@@ -242,7 +250,7 @@ function mostrarPropuesta(p) {
     if (p.accion === "actualizar") add("Obra", st.obras.find((x) => x.id === o.id)?.cliente || "No encontrada: se crea nueva");
     add("Cliente", o.cliente); add("Tel", o.tel); add("Dirección", o.dir); add("Trabajo", o.trabajo); add("Situación", o.situacion);
     add("Estado", ESTADOS[o.estado]); add("Inicio", o.fecha && fechaCorta(o.fecha)); add("Días", o.dias); add("Total", o.total != null ? plata(o.total) : null);
-    add("Pedido", o.pedido_estado); add("Pedido pagado", o.pedido_pagado == null ? null : o.pedido_pagado ? "sí" : "no");
+    add("Urgencia", o.urgencia); add("Pedido", o.pedido_estado); add("Pedido pagado", o.pedido_pagado == null ? null : o.pedido_pagado ? "sí" : "no");
     if (o.materiales?.length) add("Materiales", o.materiales.map((m) => `${m.cantidad} ${m.unidad || ""} ${m.nombre}${m.precio_unit ? " @ " + plata(m.precio_unit) : ""}`).join("; "));
     add("Notas", o.notas);
   }

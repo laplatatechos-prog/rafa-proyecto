@@ -45,19 +45,25 @@ const hoy = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Ar
 
 const SISTEMA_ANALISIS = `Sos el asistente operativo de Rafael, dueño de La Plata Techos (techos, impermeabilizaciones, zinguería, estructuras en La Plata).
 Hablás en español rioplatense, directo, como jefe de operaciones: sin rodeos, sin frases de cortesía.
-Recibís todas las obras (datos del cliente, trabajo, estado, materiales con precios, pedido de materiales, cobros) y el pronóstico de La Plata.
-Reglas de criterio:
-- Trabajos de techo e impermeabilización no se hacen con lluvia (prob >= 60% o >= 2 mm) ni con viento fuerte (>= 40 km/h). Avisá qué obra choca con qué día y proponé fecha alternativa dentro del pronóstico.
-- Una obra con fecha cercana y pedido de materiales "pendiente" o sin pagar es un riesgo: marcalo.
-- Saldo a cobrar = total de la obra menos lo cobrado. Ordená los cobros pendientes de mayor a menor.
-- Priorizá por plata y por fecha. Respondé con listas numeradas, cortas, con montos en pesos.
-- Si falta un dato para decidir, decí cuál.`;
+Recibís todas las obras (cliente, trabajo, estado, materiales con precios, pedido de materiales, cobros, seña aceptada en el sistema de presupuestos, urgencia, antigüedad del cliente, desde cuándo espera) y el pronóstico de La Plata.
+
+Cómo ordenar qué obra va primero. Pesá todo junto, no una sola variable:
+1. Plata ya dejada: si el cliente señó o pagó (cobros, aceptacion.anticipo), cuánto y hace cuánto. Quien ya puso plata y espera hace tiempo tiene prioridad: no se lo puede colgar.
+2. Tiempo esperando: días desde esperando_desde (o desde presupuesto_fecha / aceptacion.fecha si falta). Más de 30 días con seña es una alerta roja de reputación.
+3. Urgencia del cliente (urgente > alta > media > baja). Una filtración activa es urgente aunque el monto sea chico.
+4. Beneficio para la empresa: total de la obra menos materiales = margen bruto estimado. Obras grandes y con buen margen suben.
+5. Antigüedad del cliente (cliente_desde): un cliente viejo y fiel pesa más; uno nuevo con seña también, porque es la primera impresión.
+6. Factibilidad: lluvia o viento en la fecha (techo e impermeabilización no se hacen con prob >= 60 %, >= 2 mm o viento >= 40 km/h), materiales sin pedir o sin pagar.
+
+Cuando te pidan un orden, devolvé una lista numerada: cliente, por qué va en ese lugar (una línea con los números concretos: seña, días esperando, margen, urgencia), y la acción inmediata (pedir material, confirmar fecha por WhatsApp, cobrar saldo). Cerrá con los riesgos: quién está colgado hace demasiado, qué choca con lluvia, qué cobro está atrasado.
+Montos en pesos. Si falta un dato que cambia el orden, decí cuál y a quién preguntárselo.`;
 
 const SISTEMA_DICTADO = `Convertís lo que Rafael dicta (techista de La Plata, habla rápido y coloquial) en datos para su sistema de obras.
 Elegí una acción: "nueva" (cliente u obra nueva), "actualizar" (cambios a una obra existente: identificála por nombre de cliente o dirección en la lista y poné su id), o "cobro" (registró un pago de un cliente).
 Completá solo lo que se dijo; lo que no se dijo va como null (no inventes). Fechas en formato AAAA-MM-DD; "el martes" o "mañana" se calculan desde la fecha de hoy que te paso.
 Montos en pesos argentinos sin puntos ("dos palos" = 2000000, "500 lucas" = 500000).
 Materiales: si coinciden con el catálogo, usá su precio y su id; si no, precio_unit null.
+Urgencia: "se le llueve", "filtración" = urgente; "cuando puedas" = baja. cliente_desde: si dice que es cliente de hace años, estimá la fecha; esperando_desde: desde cuándo espera el trabajo, si lo dice.
 "resumen" es una confirmación de 1 a 3 líneas para leer en una burbuja del celular.`;
 
 const ESQUEMA_DICTADO = {
@@ -70,7 +76,7 @@ const ESQUEMA_DICTADO = {
     obra: {
       anyOf: [{ type: "null" }, {
         type: "object", additionalProperties: false,
-        required: ["id", "cliente", "tel", "dir", "fecha", "dias", "estado", "total", "notas", "trabajo", "situacion", "pedido_estado", "pedido_pagado", "materiales"],
+        required: ["id", "cliente", "tel", "dir", "fecha", "dias", "estado", "total", "notas", "trabajo", "situacion", "pedido_estado", "pedido_pagado", "urgencia", "cliente_desde", "esperando_desde", "materiales"],
         properties: {
           id: { type: ["string", "null"] }, cliente: { type: ["string", "null"] }, tel: { type: ["string", "null"] },
           dir: { type: ["string", "null"] }, fecha: { type: ["string", "null"] }, dias: { type: ["integer", "null"] },
@@ -79,6 +85,9 @@ const ESQUEMA_DICTADO = {
           trabajo: { type: ["string", "null"] }, situacion: { type: ["string", "null"] },
           pedido_estado: { anyOf: [{ type: "null" }, { type: "string", enum: ["pendiente", "hecho", "recibido"] }] },
           pedido_pagado: { type: ["boolean", "null"] },
+          urgencia: { anyOf: [{ type: "null" }, { type: "string", enum: ["baja", "media", "alta", "urgente"] }] },
+          cliente_desde: { type: ["string", "null"] },
+          esperando_desde: { type: ["string", "null"] },
           materiales: {
             anyOf: [{ type: "null" }, {
               type: "array", items: {
@@ -118,7 +127,7 @@ async function confirmar(key: string, p: any, obras: any[]) {
   const base = ex ?? { id: "", fecha: hoy(), dias: 1, estado: "aceptado", detalle: {}, materiales: [] };
   const pick = (v: unknown, w: unknown) => (v === null || v === undefined ? w : v);
   const det: Record<string, unknown> = { ...(base.detalle ?? {}) };
-  for (const k of ["trabajo", "situacion", "pedido_estado", "pedido_pagado"]) if (n[k] !== null && n[k] !== undefined) det[k] = n[k];
+  for (const k of ["trabajo", "situacion", "pedido_estado", "pedido_pagado", "urgencia", "cliente_desde", "esperando_desde"]) if (n[k] !== null && n[k] !== undefined) det[k] = n[k];
   const out: Record<string, unknown> = {
     id: ex ? ex.id : "", cliente: pick(n.cliente, base.cliente), tel: pick(n.tel, base.tel), dir: pick(n.dir, base.dir),
     fecha: pick(n.fecha, base.fecha), dias: pick(n.dias, base.dias), estado: pick(n.estado, base.estado),
