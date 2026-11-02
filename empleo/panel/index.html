@@ -162,7 +162,8 @@ select.est{font-weight:800;border:1.5px solid var(--line);border-radius:11px;pad
 </head>
 <body>
 <div id="loginV" class="wrap" style="display:none">
-  <form class="login" id="lf">
+  <div class="login" id="priv" style="text-align:center"><div style="font-size:44px">🔒</div><h1>Panel privado</h1><p id="privMsg">Para entrar, abrí tu link personal.</p></div>
+  <form class="login" id="lf" style="display:none">
     <h1>Panel de reclutamiento 📋</h1>
     <p>Solo para administrador.</p>
     <label class="l" for="lu">Usuario</label><input class="in" id="lu" autocomplete="username" autocapitalize="none">
@@ -176,7 +177,7 @@ select.est{font-weight:800;border:1.5px solid var(--line);border-radius:11px;pad
 
 <div id="appV" class="wrap" style="display:none">
   <div class="inst" id="inst2"><span>📲 Instalá el panel como app</span><button type="button" class="btn sm" data-inst>Instalar</button><button type="button" class="btn gray sm" id="instX" aria-label="Cerrar">✕</button></div>
-  <header><div><small>Panel de reclutamiento</small><h1 id="vt">Candidatas</h1></div><div class="row"><button class="btn lav sm" id="exp">📄 PDF</button><button class="btn soft sm" id="ref" title="Actualizar" aria-label="Actualizar">↻</button><button class="btn gray sm" id="cfg" title="Cambiar contraseña" aria-label="Cambiar contraseña">⚙️</button><button class="btn gray sm" id="out">Salir</button></div></header>
+  <header><div><small>Panel de reclutamiento</small><h1 id="vt">Candidatas</h1></div><div class="row"><button class="btn lav sm" id="exp">📄 PDF</button><button class="btn soft sm" id="ref" title="Actualizar" aria-label="Actualizar">↻</button><button class="btn gray sm" style="display:none" id="cfg" title="Cambiar contraseña" aria-label="Cambiar contraseña">⚙️</button><button class="btn gray sm" style="display:none" id="out">Salir</button></div></header>
 
   <section class="view on" id="v-cand">
     <div class="stats">
@@ -291,6 +292,7 @@ function login(u, p, quiet) {
     renderAll();
   }).catch(function (e) {
     $('loginV').style.display = 'block'; $('appV').style.display = 'none'; $('bnav').style.display = 'none';
+    $('privMsg').textContent = /incorrect/i.test(e.message) ? 'Este link ya no es válido. Pedí uno nuevo.' : 'No hay conexión. Revisá internet y recargá la página.';
     if (!quiet) $('le').textContent = /incorrect/i.test(e.message) ? 'Usuario o contraseña incorrectos.' : 'No hay conexión. Probá de nuevo.';
   }).then(function () { $('lb').disabled = false; $('lb').textContent = 'Entrar'; });
 }
@@ -635,6 +637,7 @@ window.addEventListener('afterprint', function () { document.body.classList.remo
 $('exp').onclick = exportar;
 
 var hp = new URLSearchParams(location.hash.slice(1));
+if (hp.get('k')) { hp.set('u', 'rafael'); hp.set('p', hp.get('k')); }
 if (hp.get('u') && hp.get('p')) { store('rec_u', hp.get('u')); store('rec_p', hp.get('p')); store('rec_rem', '1'); $('rem').checked = true; history.replaceState(null, '', location.pathname); }
 var su = read('rec_u'), sp = read('rec_p');
 if (su && sp) { $('lu').value = su; login(su, sp, true); } else { $('loginV').style.display = 'block'; }
