@@ -28,6 +28,7 @@ textarea.in{min-height:80px;resize:vertical}
 .btn.lav{background:var(--lav);color:var(--lav-d)}
 .btn.wa{background:#25a35a;color:#fff;text-decoration:none;display:inline-block}
 .btn.sm{padding:8px 12px;font-size:14px;border-radius:11px}
+.pw{position:relative}.pw .in{padding-right:52px}.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;padding:8px;cursor:pointer}
 .lerr{color:var(--warn);font-weight:800;margin-top:10px;min-height:20px}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
 header h1{margin:0;font-size:24px;font-weight:900}
@@ -157,14 +158,14 @@ select.est{font-weight:800;border:1.5px solid var(--line);border-radius:11px;pad
     <h1>Panel de reclutamiento 📋</h1>
     <p>Solo para administrador.</p>
     <label class="l" for="lu">Usuario</label><input class="in" id="lu" autocomplete="username" autocapitalize="none">
-    <label class="l" for="lp">Contraseña</label><input class="in" id="lp" type="password" autocomplete="current-password">
+    <label class="l" for="lp">Contraseña</label><div class="pw"><input class="in" id="lp" type="password" autocomplete="current-password"><button type="button" class="eye" data-eye="lp" aria-label="Mostrar contraseña">👁️</button></div>
     <button type="submit" class="btn full" id="lb">Entrar</button>
     <div class="lerr" id="le"></div>
   </form>
 </div>
 
 <div id="appV" class="wrap" style="display:none">
-  <header><div><small>Panel de reclutamiento</small><h1 id="vt">Candidatas</h1></div><div class="row"><button class="btn lav sm" id="exp">📄 PDF</button><button class="btn soft sm" id="ref" title="Actualizar" aria-label="Actualizar">↻</button><button class="btn gray sm" id="out">Salir</button></div></header>
+  <header><div><small>Panel de reclutamiento</small><h1 id="vt">Candidatas</h1></div><div class="row"><button class="btn lav sm" id="exp">📄 PDF</button><button class="btn soft sm" id="ref" title="Actualizar" aria-label="Actualizar">↻</button><button class="btn gray sm" id="cfg" title="Cambiar contraseña" aria-label="Cambiar contraseña">⚙️</button><button class="btn gray sm" id="out">Salir</button></div></header>
 
   <section class="view on" id="v-cand">
     <div class="stats">
@@ -246,7 +247,28 @@ function aviso(b) {
 function arr(x) { return Array.isArray(x) ? x : []; }
 
 // ---------- login ----------
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-eye]'); if (!b) return;
+  var i = $(b.dataset.eye); i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? '👁️' : '🙈';
+});
+$('cfg').onclick = function () {
+  var pw = function (id, lab) { return '<label class="l" for="' + id + '">' + lab + '</label><div class="pw"><input class="in" id="' + id + '" type="password"><button type="button" class="eye" data-eye="' + id + '">👁️</button></div>'; };
+  $('sheet').innerHTML = '<h2>Cambiar contraseña</h2>' + pw('c0', 'Contraseña actual') + pw('c1', 'Contraseña nueva (mínimo 6)') + pw('c2', 'Repetí la nueva') +
+    '<div class="lerr" id="cErr"></div><div class="row" style="margin-top:8px"><button class="btn gray" data-close style="flex:1">Cancelar</button><button class="btn" id="cSave" style="flex:2">Guardar</button></div>';
+  $('modal').classList.add('on');
+  $('cSave').onclick = function () {
+    var a = $('c0').value, n = $('c1').value, r = $('c2').value, er = $('cErr');
+    if (n.length < 6) { er.textContent = 'La nueva tiene que tener al menos 6 caracteres.'; return; }
+    if (n !== r) { er.textContent = 'Las dos contraseñas nuevas no coinciden.'; return; }
+    this.disabled = true; this.textContent = 'Guardando…';
+    var btn = this;
+    rpc('personal_cambiar_clave', {u: U, p: a, nueva: n}).then(function () {
+      P = n; store('rec_p', n); $('modal').classList.remove('on'); toast('Contraseña cambiada ✓');
+    }).catch(function (e) { btn.disabled = false; btn.textContent = 'Guardar'; er.textContent = /incorrect/i.test(e.message) ? 'La contraseña actual no es correcta.' : 'No se pudo cambiar. Probá de nuevo.'; });
+  };
+};
 function login(u, p, quiet) {
+  u = String(u || '').trim().toLowerCase();
   $('le').textContent = ''; $('lb').disabled = true; $('lb').textContent = 'Entrando…';
   return rpc('personal_listar', {u: u, p: p}).then(function (r) {
     U = u; P = p; store('rec_u', u); store('rec_p', p);
