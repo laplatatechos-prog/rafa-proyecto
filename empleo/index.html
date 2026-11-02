@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postulate · Trabajo en La Plata</title>
+<meta name="description" content="Postulate en 3 minutos desde el celular.">
+<meta property="og:title" content="Estamos buscando personal · La Plata">
+<meta property="og:description" content="Postulate en 3 minutos desde el celular.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌷</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fdf7f4;--card:#fff;--ink:#2f2833;--muted:#857a86;--line:#f0e4de;--acc:#d46a6a;--acc-d:#b85656;--acc2:#fdecea;--lav:#efe9fb;--lav-d:#7a62b8;--mint:#e5f4ec;--mint-d:#2f7a55;--warn:#b5382f;--r:22px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-size:16px;line-height:1.45}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 10% 0%,#fde3dc 0,transparent 40%),radial-gradient(circle at 100% 30%,#efe6fb 0,transparent 35%)}
+.wrap{max-width:540px;margin:0 auto;padding:14px 16px 36px}
+.tabs{display:flex;justify-content:space-between;gap:4px;margin:4px 0 14px;position:sticky;top:0;z-index:5;background:rgba(253,247,244,.92);backdrop-filter:blur(8px);padding:8px 0}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;font:inherit;color:var(--muted);cursor:default;padding:0}
+.tab .ic{width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .25s}
+.tab span{font-size:11px;font-weight:800;letter-spacing:.02em}
+.tab.on .ic{background:var(--acc);border-color:var(--acc);transform:scale(1.1);box-shadow:0 6px 14px -6px rgba(212,106,106,.8)}
+.tab.on{color:var(--acc-d)}
+.tab.ok .ic{background:var(--acc2);border-color:#f3c2bc;cursor:pointer}
+.tab.ok{cursor:pointer}
+.card{background:var(--card);border-radius:var(--r);padding:22px 20px;box-shadow:0 4px 24px -12px rgba(120,60,60,.18)}
+.hero{position:relative;overflow:hidden;background:linear-gradient(140deg,#e58a7d 0%,#d46a6a 50%,#b968a0 100%);color:#fff;border-radius:var(--r);padding:26px 20px 22px;margin-bottom:14px;box-shadow:0 14px 30px -16px rgba(185,104,160,.8)}
+.hero:after{content:"";position:absolute;right:-50px;top:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.13)}
+.hero:before{content:"";position:absolute;left:-30px;bottom:-60px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero .hi{font-weight:800;opacity:.9;margin-bottom:4px;position:relative}
+.hero h1{margin:0 0 8px;font-size:25px;line-height:1.18;font-weight:900;position:relative}
+.hero p{margin:0;opacity:.95;position:relative}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative}
+.chips span{background:rgba(255,255,255,.22);border-radius:99px;padding:6px 12px;font-weight:800;font-size:14px}
+h2{margin:0 0 4px;font-size:21px;font-weight:900}
+.sub{margin:0 0 18px;color:var(--muted);font-size:15px}
+.box{border-radius:18px;padding:16px;margin-bottom:12px}
+.box h3{margin:0 0 10px;font-size:16px;font-weight:900}
+.b-mint{background:var(--mint)}.b-lav{background:var(--lav)}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;gap:10px;margin:7px 0;font-weight:700}
+.list li:before{content:"✓";flex:none;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--mint-d);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:13px}
+.tl{margin:0;padding:0;list-style:none;counter-reset:s}
+.tl li{position:relative;padding:0 0 12px 38px;font-weight:700;counter-increment:s}
+.tl li:before{content:counter(s);position:absolute;left:0;top:-1px;width:26px;height:26px;border-radius:50%;background:#fff;color:var(--lav-d);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:14px}
+.tl li:after{content:"";position:absolute;left:12px;top:26px;bottom:2px;width:2px;background:#d8cdf2}
+.tl li:last-child:after{display:none}
+.tl small{display:block;color:var(--muted);font-weight:600}
+.q{margin-bottom:22px}
+.q>label,.q>.lab{display:block;font-weight:800;margin-bottom:8px}
+.q small{display:block;color:var(--muted);font-weight:600;font-size:13px;margin-top:-4px;margin-bottom:8px}
+.opt{color:var(--muted);font-weight:600;font-size:13px}
+input[type=text],input[type=tel],textarea{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font:inherit;background:#fffcfb;color:var(--ink);transition:border-color .2s}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--acc);background:#fff}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills button{border:1.5px solid var(--line);background:#fffcfb;border-radius:99px;padding:10px 16px;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s}
+.pills button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.pills button.o{border-style:dashed}
+.pills button.o.on{background:var(--lav-d);border-color:var(--lav-d);border-style:solid}
+.otro{display:none;margin-top:10px}
+.otro.on{display:block;animation:in .2s ease}
+.stars{display:flex;gap:4px}
+.stars button{font-size:38px;line-height:1;border:0;background:none;color:#eadfd8;cursor:pointer;padding:0 2px;transition:transform .1s}
+.stars button.on{color:#f3aa3c}
+.stars button:active{transform:scale(1.25)}
+.stars-l{font-size:13px;color:var(--muted);font-weight:700;margin-top:2px;min-height:18px}
+.photo{display:flex;align-items:center;gap:16px}
+.photo .pv{width:94px;height:94px;border-radius:50%;background:var(--acc2) center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:32px;flex:none;border:2px dashed #eeb3ab}
+.photo .pv.has{border:3px solid #fff;box-shadow:0 0 0 2px var(--acc);font-size:0}
+.btn-file{display:inline-block;background:var(--acc2);color:var(--acc-d);font-weight:900;padding:11px 18px;border-radius:14px;cursor:pointer}
+.photo input{display:none}
+.sug{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.sug button{border:0;background:var(--lav);color:var(--lav-d);font:inherit;font-size:14px;font-weight:800;border-radius:99px;padding:7px 12px;cursor:pointer}
+.nav{display:flex;gap:10px;margin-top:6px}
+.nav button{flex:1;border:0;border-radius:16px;padding:16px;font:inherit;font-weight:900;font-size:17px;cursor:pointer}
+.next{background:linear-gradient(135deg,#df7a72,#d46a6a);color:#fff;box-shadow:0 10px 22px -12px rgba(212,106,106,.95)}
+.next:active{transform:translateY(1px)}
+.back{background:#f4ece7;color:var(--ink);flex:0 0 32%!important}
+.next:disabled{opacity:.6}
+.err{color:var(--warn);font-weight:800;font-size:14px;margin-top:6px;display:none}
+.q.bad input,.q.bad textarea{border-color:var(--warn)}
+.q.bad>.err{display:block}
+.step{display:none;animation:in .3s ease}.step.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.done{text-align:center;padding:34px 22px;position:relative;overflow:hidden}
+.done .ok{width:88px;height:88px;border-radius:50%;background:var(--mint);color:var(--mint-d);font-size:46px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.conf{position:absolute;top:-12px;width:9px;height:14px;border-radius:3px;animation:fall 2.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(520px) rotate(540deg);opacity:0}}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
+.center{text-align:center;padding:60px 20px;color:var(--muted);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="center">Cargando…</div></div>
+
+<script src="config.js"></script>
+<script>
+var slug = new URLSearchParams(location.search).get('b') || '';
+var J = null, data = {habilidades: []}, foto = '', cv = '', cur = 0;
+var TABS = [['💼', 'El trabajo'], ['✅', 'Condiciones'], ['🙋‍♀️', 'Sobre vos'], ['⭐', 'Experiencia'], ['💬', 'Preguntas']];
+var NIVEL = ['', 'Lo básico', 'Me defiendo', 'Bien', 'Muy bien', '¡Es lo mío!'];
+var CONSULTA = 'Tengo una consulta';
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+function arr(x) { return Array.isArray(x) ? x : []; }
+
+function pills(k, opts, extra, req, multi, otroLabel) {
+  // otroLabel: texto del botón que abre un campo libre ("Otro" o "Tengo una consulta")
+  return '<div class="q" data-k="' + k + '"' + (req ? ' data-req' : '') + (multi ? ' data-multi' : '') + '>' + extra +
+    '<div class="pills" data-opts="' + esc(opts.join('|')) + '" data-otro="' + esc(otroLabel || '') + '"></div>' +
+    '<div class="otro"><input type="text" placeholder="' + (otroLabel === CONSULTA ? 'Escribí tu consulta' : 'Contanos cuál') + '"></div>' +
+    '<div class="err">' + (multi ? 'Marcá al menos una' : 'Elegí una opción') + '</div></div>';
+}
+function field(k, label, help, type, req, pat, errTxt, ph) {
+  var tag = type === 'area' ? '<textarea id="i-' + k + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></textarea>'
+    : '<input id="i-' + k + '" type="' + type + '"' + (type === 'tel' ? ' inputmode="numeric"' : '') + (k === 'nombre' ? ' autocomplete="name"' : '') + '>';
+  return '<div class="q" data-k="' + k + '"' + (req ? ' data-req' : '') + (pat ? ' data-pat="' + pat + '"' : '') + '>' +
+    '<label for="i-' + k + '">' + label + (req ? '' : ' <span class="opt">(opcional)</span>') + '</label>' + (help ? '<small>' + help + '</small>' : '') +
+    tag + '<div class="err">' + (errTxt || 'Completá este dato') + '</div></div>';
+}
+
+function build() {
+  var chips = [J.lugar, J.horario, J.sueldo].filter(Boolean).map(function (c) { return '<span>' + esc(c) + '</span>'; }).join('');
+  var tareas = arr(J.tareas).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+  var sueldoTxt = J.sueldo ? 'El sueldo es de ' + J.sueldo + ', con un período de prueba al inicio. ¿Te sirve?' : 'Hay un período de prueba al inicio. ¿Te parece bien?';
+  var horarioTxt = J.horario ? '¿Podés trabajar ' + J.horario.charAt(0).toLowerCase() + J.horario.slice(1) + '?' : '¿Tenés disponibilidad para el horario del puesto?';
+  document.title = J.titulo + ' · Postulate';
+  $('app').innerHTML =
+    '<div id="flow"><div class="tabs" id="tabs"></div>' +
+    '<form class="card" novalidate onsubmit="return false">' +
+    // 0 El trabajo
+    '<section class="step on" data-t="0"><div class="hero" style="margin:-22px -20px 18px;border-radius:22px 22px 18px 18px">' +
+      '<div class="hi">¡Hola! 👋 Estamos buscando</div><h1>' + esc(J.titulo) + '</h1>' +
+      (J.descripcion ? '<p>' + esc(J.descripcion) + '</p>' : '') + '<div class="chips">' + chips + '</div></div>' +
+      (tareas ? '<div class="box b-mint"><h3>¿Qué vas a hacer?</h3><ul class="list">' + tareas + '</ul></div>' : '') +
+      '<div class="box b-lav"><h3>¿Cómo sigue?</h3><ol class="tl">' +
+        '<li>Completás este formulario<small>Son 3 minutos desde el celular.</small></li>' +
+        '<li>Leemos todas las postulaciones<small>Te escribimos por WhatsApp si tu perfil encaja.</small></li>' +
+        '<li>Charla y entrevista<small>Para conocernos y sacarte todas las dudas.</small></li>' +
+        '<li>Período de prueba<small>Unos días para ver si estamos cómodos.</small></li></ol></div>' +
+    '</section>' +
+    // 1 Condiciones
+    '<section class="step" data-t="1"><h2>Primero, las condiciones</h2><p class="sub">Si tenés alguna duda, tocá "' + CONSULTA + '".</p>' +
+      pills('horario', ['Sí', 'No'], '<span class="lab">' + esc(horarioTxt) + '</span>', true, false, CONSULTA) +
+      pills('sueldo', ['Sí', 'No'], '<span class="lab">' + esc(sueldoTxt) + '</span>', true, false, CONSULTA) +
+      pills('antec', ['Sí', 'No'], '<span class="lab">¿Podés presentar el certificado de antecedentes penales?</span><small>Se saca online y es gratis.</small>', true, false, CONSULTA) +
+    '</section>' +
+    // 2 Sobre vos
+    '<section class="step" data-t="2"><h2>Contanos de vos</h2><p class="sub">Para conocerte y poder escribirte.</p>' +
+      '<div class="q" data-k="foto" data-req><span class="lab">Una foto tuya 📸</span><small>Que se vea bien la cara.</small>' +
+        '<div class="photo"><div class="pv" id="pv">📷</div><label class="btn-file">Subir foto<input type="file" accept="image/*" id="fotoIn"></label></div><div class="err">Subí una foto</div></div>' +
+      field('nombre', 'Nombre y apellido', '', 'text', true, '', 'Completá tu nombre') +
+      field('dni', 'DNI', 'Solo números, sin puntos.', 'tel', true, '^[0-9]{7,8}$', 'Poné el DNI con 7 u 8 números') +
+      field('wa', 'WhatsApp', 'Código de área sin 0 y número sin 15. Ej: 221 5551234', 'tel', true, '^[0-9 ]{10,14}$', 'Revisá el número (ej: 221 5551234)') +
+      field('dir', '¿En qué barrio vivís?', '', 'text', true, '', 'Completá tu barrio') +
+      pills('viaje', ['Menos de 30 min', '30 min a 1 hora', 'Más de 1 hora'], '<span class="lab">¿Cuánto tardás en llegar' + (J.lugar ? ' a ' + esc(J.lugar) : '') + '?</span>', true, false, 'Otro') +
+    '</section>' +
+    // 3 Experiencia
+    '<section class="step" data-t="3"><h2>Tu experiencia</h2><p class="sub">No hace falta ser experta, contanos con sinceridad.</p>' +
+      '<div class="q" data-k="nivel" data-req><span class="lab">¿Qué tan bien hacés este trabajo?</span><div class="stars" id="stars"></div><div class="stars-l" id="starsL">Tocá las estrellas</div><div class="err">Marcá de 1 a 5 estrellas</div></div>' +
+      (arr(J.habilidades).length ? pills('habilidades', arr(J.habilidades), '<span class="lab">¿Qué te sale bien?</span><small>Marcá todo lo que quieras.</small>', true, true, 'Otro') : '') +
+      pills('exp', ['Nunca', 'Menos de 1 año', '1 a 3 años', 'Más de 3 años'], '<span class="lab">¿Cuánto tiempo trabajaste en algo parecido?</span>', true, false, 'Otro') +
+      (J.pregunta_extra ? field('extra1', esc(J.pregunta_extra), '', 'area', true) : '') +
+      field('refs', 'Referencias', 'Nombre y teléfono de 1 o 2 personas para las que trabajaste. Si no tenés, dejalo vacío.', 'area', false) +
+      '<div class="q" data-k="cv"><span class="lab">Tu currículum <span class="opt">(opcional)</span></span><small>PDF o foto del CV.</small>' +
+        '<label class="btn-file" id="cvBtn">📄 Adjuntar CV<input type="file" accept="application/pdf,image/*" id="cvIn" style="display:none"></label> <span id="cvName" class="opt"></span><div class="err" id="cvErr"></div></div>' +
+    '</section>' +
+    // 4 Preguntas
+    '<section class="step" data-t="4"><h2>¿Querés preguntarnos algo? 💬</h2><p class="sub">Escribí lo que quieras saber y te respondemos por WhatsApp.</p>' +
+      '<div class="q" data-k="preguntas"><span class="lab">Tus preguntas <span class="opt">(opcional)</span></span><small>Tocá una idea para sumarla:</small>' +
+        '<div class="sug"><button type="button">¿Dónde queda exactamente?</button><button type="button">¿Cómo y cuándo se paga?</button><button type="button">¿Cuándo se empieza?</button><button type="button">¿Cuánto dura la prueba?</button></div>' +
+        '<textarea id="i-preguntas" placeholder="Escribí acá tus preguntas"></textarea></div>' +
+      field('comentario', '¿Algo más que quieras contarnos de vos?', '', 'area', false) +
+    '</section>' +
+    '<div class="nav"><button type="button" class="back" id="back" style="display:none">Atrás</button><button type="button" class="next" id="next"></button></div>' +
+    '<div class="err" id="sendErr" style="text-align:center"></div></form></div>' +
+    '<div class="card done" id="done" style="display:none"><div class="ok">✓</div><h2 id="doneName">¡Gracias! 💐</h2>' +
+      '<p class="sub" style="margin:8px 0 16px;font-size:16px">Recibimos tu postulación. Vamos a leerla con mucha atención y <b>te estaremos llamando</b> en los próximos días. ¡Que tengas un lindo día!</p>' +
+      '<div class="box b-lav" style="text-align:left"><h3>Mientras tanto</h3><ul class="list"><li>Tené a mano tu DNI</li><li>Si podés, sacá el certificado de antecedentes</li><li>Avisale a tus referencias que las podemos llamar</li></ul></div></div>' +
+    '<div class="foot">Tus datos se usan solo para esta búsqueda y no son públicos.</div>';
+  wire();
+  show();
+}
+
+function wire() {
+  [].forEach.call(document.querySelectorAll('.pills'), function (box) {
+    var q = box.closest('.q'), k = q.dataset.k, multi = q.hasAttribute('data-multi'), otroL = box.dataset.otro;
+    var otroBox = q.querySelector('.otro');
+    var opts = box.dataset.opts.split('|'); if (otroL) opts.push(otroL);
+    opts.forEach(function (o, i) {
+      var isO = otroL && i === opts.length - 1;
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = o; if (isO) b.className = 'o';
+      b.onclick = function () {
+        if (multi) {
+          b.classList.toggle('on');
+          if (isO) { otroBox.classList.toggle('on', b.classList.contains('on')); if (b.classList.contains('on')) otroBox.querySelector('input').focus(); }
+          else { var j = data[k].indexOf(o); if (j < 0) data[k].push(o); else data[k].splice(j, 1); }
+        } else {
+          data[k] = o;
+          [].forEach.call(box.children, function (x) { x.classList.toggle('on', x === b); });
+          otroBox.classList.toggle('on', !!isO);
+          if (isO) otroBox.querySelector('input').focus();
+        }
+        q.classList.remove('bad');
+      };
+      box.appendChild(b);
+    });
+  });
+  var st = $('stars');
+  for (var n = 1; n <= 5; n++) (function (n) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = '★'; b.setAttribute('aria-label', n + ' estrellas');
+    b.onclick = function () {
+      data.nivel = n;
+      [].forEach.call(st.children, function (x, i) { x.classList.toggle('on', i < n); });
+      $('starsL').textContent = n + ' · ' + NIVEL[n];
+      st.closest('.q').classList.remove('bad');
+    };
+    st.appendChild(b);
+  })(n);
+  [].forEach.call(document.querySelectorAll('.sug button'), function (b) {
+    b.onclick = function () {
+      var t = $('i-preguntas'); t.value = (t.value ? t.value.replace(/\s*$/, '') + '\n' : '') + b.textContent; b.style.opacity = .4; t.focus();
+    };
+  });
+  $('fotoIn').onchange = function (e) {
+    var file = e.target.files[0]; if (!file) return;
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var max = 640, s = Math.min(1, max / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      foto = c.toDataURL('image/jpeg', 0.8);
+      var pv = $('pv'); pv.style.backgroundImage = 'url(' + foto + ')'; pv.classList.add('has');
+      document.querySelector('[data-k=foto]').classList.remove('bad');
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = function () { alert('No se pudo leer esa foto. Probá con otra.'); };
+    img.src = url;
+  };
+  $('cvIn').onchange = function (e) {
+    var file = e.target.files[0], ce = $('cvErr'); ce.style.display = 'none'; if (!file) return;
+    var ok = function (d) { cv = d; $('cvName').textContent = '✓ ' + file.name; $('cvBtn').firstChild.textContent = '📄 Cambiar CV'; };
+    if (/pdf$/i.test(file.type)) {
+      if (file.size > 2.5e6) { cv = ''; ce.textContent = 'El PDF pesa mucho (máx. 2,5 MB). Probá con una foto del CV.'; ce.style.display = 'block'; return; }
+      var fr = new FileReader(); fr.onload = function () { ok(fr.result); }; fr.readAsDataURL(file);
+    } else {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () { var s = Math.min(1, 1400 / Math.max(img.width, img.height)); var c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', 0.8)); URL.revokeObjectURL(url); };
+      img.src = url;
+    }
+  };
+  [].forEach.call(document.querySelectorAll('input,textarea'), function (el) {
+    el.addEventListener('input', function () { var q = el.closest('.q'); if (q) q.classList.remove('bad'); });
+  });
+  $('back').onclick = function () { cur--; show(); };
+  $('next').onclick = next;
+  $('tabs').onclick = function (e) { var t = e.target.closest('.tab.ok'); if (t) { cur = +t.dataset.i; show(); } };
+}
+
+function check(sec) {
+  var ok = true;
+  [].forEach.call(sec.querySelectorAll('.q'), function (q) {
+    var k = q.dataset.k, bad = false, otro = q.querySelector('.otro');
+    var otroTxt = otro ? otro.querySelector('input').value.trim() : '';
+    var el = q.querySelector(':scope > input:not([type=file]), :scope > textarea');
+    if (el) data[k] = el.value.trim();
+    var req = q.hasAttribute('data-req');
+    if (k === 'foto') bad = req && !foto;
+    else if (q.hasAttribute('data-multi')) {
+      var sel = data[k].slice(); if (otro.classList.contains('on') && otroTxt) sel.push('Otro: ' + otroTxt);
+      data[k + 'Final'] = sel;
+      bad = req && !sel.length;
+      if (otro.classList.contains('on') && !otroTxt) bad = true;
+    } else if (otro && otro.classList.contains('on')) {
+      bad = !otroTxt;
+      data[k + 'Txt'] = otroTxt;
+    } else {
+      bad = req && !data[k];
+      if (otro) delete data[k + 'Txt'];
+    }
+    if (!bad && el && q.dataset.pat) bad = !new RegExp(q.dataset.pat).test(String(data[k]));
+    q.classList.toggle('bad', bad);
+    if (bad && ok) { ok = false; q.scrollIntoView({behavior: 'smooth', block: 'center'}); }
+  });
+  return ok;
+}
+function show() {
+  var steps = document.querySelectorAll('.step');
+  [].forEach.call(steps, function (s, i) { s.classList.toggle('on', i === cur); });
+  $('tabs').innerHTML = TABS.map(function (t, i) {
+    return '<button type="button" class="tab ' + (i === cur ? 'on' : (i < cur ? 'ok' : '')) + '" data-i="' + i + '"><div class="ic">' + (i < cur ? '✓' : t[0]) + '</div><span>' + t[1] + '</span></button>';
+  }).join('');
+  $('back').style.display = cur ? '' : 'none';
+  $('next').textContent = cur === 0 ? '¡Quiero postularme! 🙌' : (cur === steps.length - 1 ? 'Enviar postulación ✨' : 'Siguiente');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function payload() {
+  var d = {};
+  ['horario', 'sueldo', 'antec', 'viaje', 'exp'].forEach(function (k) {
+    if (data[k + 'Txt'] !== undefined && data[k] !== 'Sí' && data[k] !== 'No' && (data[k] === CONSULTA || data[k] === 'Otro')) d[k] = data[k] + ': ' + data[k + 'Txt'];
+    else d[k] = data[k] || '';
+  });
+  ['nombre', 'dni', 'wa', 'dir', 'nivel', 'extra1', 'refs', 'preguntas', 'comentario'].forEach(function (k) { if (data[k] !== undefined && data[k] !== '') d[k] = data[k]; });
+  d.habilidades = data.habilidadesFinal || [];
+  if (J.pregunta_extra) d.extra1_pregunta = J.pregunta_extra;
+  return d;
+}
+function next() {
+  var steps = document.querySelectorAll('.step');
+  if (cur > 0 && !check(steps[cur])) return;
+  if (cur < steps.length - 1) { cur++; show(); return; }
+  var btn = $('next'), err = $('sendErr');
+  btn.disabled = true; btn.textContent = 'Enviando…'; err.style.display = 'none';
+  rpc('personal_postular', {s: J.slug, d: payload(), foto: foto, cv: cv}).then(function () {
+    $('doneName').textContent = '¡Gracias, ' + String(data.nombre || '').split(' ')[0] + '! 💐'; $('flow').style.display = 'none'; $('done').style.display = 'block'; window.scrollTo(0, 0); confetti();
+  }).catch(function (e) {
+    btn.disabled = false; btn.textContent = 'Enviar postulación ✨';
+    err.textContent = /cerrada/i.test(e.message) ? 'Esta búsqueda ya se cerró. ¡Gracias igual!' : 'No se pudo enviar. Revisá tu conexión y probá de nuevo.';
+    err.style.display = 'block';
+  });
+}
+function confetti() {
+  var cols = ['#d46a6a', '#f3aa3c', '#7a62b8', '#2f7a55', '#e58a7d'], d = $('done');
+  for (var i = 0; i < 40; i++) {
+    var c = document.createElement('i'); c.className = 'conf';
+    c.style.left = Math.random() * 100 + '%'; c.style.background = cols[i % cols.length];
+    c.style.animationDelay = Math.random() * .6 + 's'; d.appendChild(c);
+  }
+}
+
+rpc('personal_busqueda', {s: slug}).then(function (j) {
+  if (!j) { $('app').innerHTML = '<div class="card center">🌷<br><br>Esta búsqueda ya se cerró.<br>¡Gracias por tu interés!</div>'; return; }
+  J = j; build();
+}).catch(function () {
+  $('app').innerHTML = '<div class="card center">No pudimos cargar la página.<br>Revisá tu conexión y volvé a intentar.</div>';
+});
+</script>
+</body>
+</html>

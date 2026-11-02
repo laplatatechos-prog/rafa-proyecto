@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Panel de reclutamiento</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbf6f2;--card:#fff;--ink:#2f2833;--muted:#857a86;--line:#efe4de;--acc:#d46a6a;--acc-d:#b85656;--acc2:#fdecea;--lav:#efe9fb;--lav-d:#7a62b8;--mint:#e5f4ec;--mint-d:#2f7a55;--sun:#fdf3dc;--sun-d:#8a5d0b;--warn:#b5382f;--r:18px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-size:15px;line-height:1.4}
+.wrap{max-width:780px;margin:0 auto;padding:16px 16px 100px}
+button{font:inherit;cursor:pointer}
+.login{max-width:380px;margin:12vh auto 0;background:var(--card);border-radius:22px;padding:28px 22px;box-shadow:0 4px 24px -12px rgba(120,60,60,.2)}
+.login h1{margin:0 0 4px;font-size:24px;font-weight:900}
+.login p{margin:0 0 18px;color:var(--muted)}
+label.l{display:block;font-weight:800;margin:12px 0 6px}
+input,textarea,select{font:inherit;color:var(--ink)}
+.in{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;background:#fffcfb}
+.in:focus{outline:none;border-color:var(--acc)}
+textarea.in{min-height:80px;resize:vertical}
+.btn{border:0;border-radius:13px;padding:11px 15px;font-weight:900;background:var(--acc);color:#fff}
+.btn.full{width:100%;padding:15px;font-size:16px;margin-top:18px}
+.btn.soft{background:var(--acc2);color:var(--acc-d)}
+.btn.gray{background:#f3ebe6;color:var(--ink)}
+.btn.lav{background:var(--lav);color:var(--lav-d)}
+.btn.wa{background:#25a35a;color:#fff;text-decoration:none;display:inline-block}
+.btn.sm{padding:8px 12px;font-size:14px;border-radius:11px}
+.lerr{color:var(--warn);font-weight:800;margin-top:10px;min-height:20px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
+header h1{margin:0;font-size:24px;font-weight:900}
+header small{display:block;color:var(--muted);font-weight:700;font-size:13px}
+.bnav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:8;padding-bottom:env(safe-area-inset-bottom)}
+.bnav div{display:flex;max-width:780px;width:100%}
+.bnav button{flex:1;border:0;background:none;padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-weight:800;font-size:12px;position:relative}
+.bnav button b{font-size:21px;line-height:1.1}
+.bnav button.on{color:var(--acc-d)}
+.bnav button.on:before{content:"";position:absolute;top:0;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--acc)}
+.bnav .dot{position:absolute;top:5px;right:calc(50% - 22px);background:var(--acc);color:#fff;border-radius:99px;font-size:10px;padding:1px 6px}
+.view{display:none;animation:in .25s ease}.view.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border-radius:16px;padding:12px 8px;text-align:center;box-shadow:0 1px 8px -4px rgba(120,60,60,.2)}
+.stat b{display:block;font-size:26px;font-weight:900}
+.stat span{color:var(--muted);font-size:12px;font-weight:800}
+.stat.hl b{color:var(--acc)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:7px 13px;font-weight:800;color:var(--ink)}
+.chips button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.bar{display:flex;gap:8px;margin-bottom:12px}
+.bar .in{padding:10px 12px}
+.bar select.in{flex:0 0 42%}
+.c{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:0 1px 10px -5px rgba(120,60,60,.22)}
+.top{display:flex;gap:14px;align-items:center}
+.av{width:70px;height:70px;border-radius:50%;background:var(--acc2) center/cover no-repeat;flex:none;cursor:zoom-in;display:flex;align-items:center;justify-content:center;font-size:26px}
+.av.has{font-size:0}
+.who{flex:1;min-width:0}
+.who h3{margin:0;font-size:18px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who p{margin:2px 0 0;color:var(--muted);font-size:13px;font-weight:700}
+.score{flex:none;text-align:center;border-radius:14px;padding:6px 10px;min-width:66px}
+.score b{display:block;font-size:23px;font-weight:900;line-height:1.1}
+.score span{font-size:10px;font-weight:900;letter-spacing:.05em}
+.s-LLAMAR{background:var(--mint);color:var(--mint-d)}.s-RESERVA{background:var(--sun);color:var(--sun-d)}.s-BAJA{background:#f1ece6;color:#857a86}.s-DESCARTADA{background:#f8e1dd;color:var(--warn)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.tags span{background:#f7f0ea;border-radius:9px;padding:4px 9px;font-size:13px;font-weight:800}
+.tags span.q{background:var(--lav);color:var(--lav-d)}
+.prog{height:7px;background:#f1e9e3;border-radius:9px;overflow:hidden;margin:2px 0 10px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#e58a7d,#2f7a55);border-radius:9px;transition:width .3s}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select.est{font-weight:800;border:1.5px solid var(--line);border-radius:11px;padding:8px 10px;background:#fff}
+.det{display:none;border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.det.on{display:block}
+.det h4{margin:14px 0 8px;font-size:14px;font-weight:900;color:var(--lav-d)}
+.det h4:first-child{margin-top:0}
+.det dl{margin:0;display:grid;gap:10px}
+.det dt{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.det dd{margin:0;white-space:pre-wrap;font-weight:600}
+.checks{display:grid;gap:6px}
+.checks label{display:flex;gap:10px;align-items:center;background:#faf6f2;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer}
+.checks input{width:20px;height:20px;accent-color:var(--mint-d)}
+.checks label.done{background:var(--mint);color:var(--mint-d)}
+.checks small{display:block;font-weight:600;color:var(--muted)}
+.saved{color:var(--mint-d);font-size:13px;font-weight:800}
+.empty{text-align:center;color:var(--muted);padding:44px 10px;font-weight:700}
+.big{position:fixed;inset:0;background:rgba(20,15,15,.88);display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+.big img{max-width:100%;max-height:100%;border-radius:14px}
+.job h3{margin:0 0 2px;font-size:18px;font-weight:900}
+.job .meta{color:var(--muted);font-weight:700;font-size:13px;margin-bottom:10px}
+.link{display:flex;gap:6px;align-items:center;background:#faf6f2;border-radius:12px;padding:8px 8px 8px 12px;margin-bottom:10px}
+.link code{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:inherit;font-weight:700;color:var(--lav-d)}
+.badge{display:inline-block;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:900}
+.b-on{background:var(--mint);color:var(--mint-d)}.b-off{background:#f1ece6;color:var(--muted)}
+.tpls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.tpls button{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:12px;text-align:left;font-weight:800}
+.tpls button b{display:block;font-size:22px}
+.guide details{background:var(--card);border-radius:var(--r);margin-bottom:10px;box-shadow:0 1px 10px -5px rgba(120,60,60,.2);overflow:hidden}
+.guide summary{list-style:none;padding:16px;font-weight:900;font-size:16px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary i{font-style:normal;width:34px;height:34px;border-radius:50%;background:var(--lav);color:var(--lav-d);display:flex;align-items:center;justify-content:center;flex:none}
+.guide summary small{display:block;color:var(--muted);font-weight:700;font-size:13px}
+.guide .gb{padding:0 16px 16px 62px}
+.guide ul{margin:0;padding-left:18px}
+.guide li{margin:6px 0;font-weight:600}
+.tip{background:var(--sun);color:var(--sun-d);border-radius:12px;padding:10px 12px;font-weight:800;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-weight:800;display:none;z-index:10}
+.modal{position:fixed;inset:0;background:rgba(40,30,35,.5);display:none;align-items:flex-end;justify-content:center;z-index:9}
+.modal.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:620px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 18px 30px}
+.sheet h2{margin:0 0 6px;font-size:20px;font-weight:900}
+.etabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.etabs button{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:8px 4px;font-weight:800;font-size:13px;color:var(--ink)}
+.etabs button b{display:block;font-size:20px}
+.etabs button small{display:block;color:var(--muted);font-weight:700;font-size:11px}
+.etabs button.on{background:var(--acc2);border-color:var(--acc);color:var(--acc-d)}
+.say{background:var(--mint);color:#1f4d37;border-radius:14px;padding:12px 14px;margin:8px 0;font-weight:700}
+.say b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mint-d);margin-bottom:3px}
+.eh{margin:18px 0 8px;font-size:15px;font-weight:900;color:var(--lav-d)}
+.eq{background:#faf6f2;border-radius:14px;padding:12px;margin-bottom:8px}
+.eqt{font-weight:800;margin-bottom:8px}
+.sc{display:flex;gap:6px;margin-bottom:8px}
+.sc button{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-weight:900;color:var(--muted)}
+.sc button.on{color:#fff;border-color:transparent;transform:scale(1.08)}
+.sc .s1{background:#d9534f}.sc .s2{background:#e8893c}.sc .s3{background:#e2b33a}.sc .s4{background:#7cb35b}.sc .s5{background:#2f7a55}
+.sc.big2 button{width:50px;height:50px;font-size:18px}
+.eq .in{padding:9px 12px;font-size:14px}
+.etot{text-align:center;font-weight:800;margin:12px 0;font-size:16px}
+.etot b{color:var(--acc)}
+.favb{width:100%;border:2px dashed #f0b8c4;background:#fff;color:#c0476a;border-radius:14px;padding:13px;font-weight:900;font-size:16px;margin-top:6px}
+.favb.on{background:#fde4ec;border-style:solid}
+#report{display:none}
+@media print{
+  body.printing>*:not(#report){display:none!important}
+  body.printing #report{display:block}
+  body{background:#fff}
+  #report{font-size:11pt;color:#222}
+  #report h1{font-size:20pt;margin:0}
+  #report table{width:100%;border-collapse:collapse;margin:12px 0 18px}
+  #report th,#report td{border:1px solid #ddd;padding:5px 7px;text-align:left;font-size:10pt}
+  #report th{background:#f6eee9}
+  #report .rc{page-break-inside:avoid;border:1px solid #e5d9d2;border-radius:10px;padding:12px;margin-bottom:12px}
+  #report .rh{display:flex;gap:12px;align-items:center}
+  #report .rh img{width:70px;height:70px;border-radius:50%;object-fit:cover}
+  #report h2{margin:0;font-size:14pt}
+  #report h3{margin:10px 0 4px;font-size:11.5pt}
+  #report .rmeta{color:#777;font-size:10pt}
+  #report p{margin:5px 0}
+  #report ul{margin:2px 0;padding-left:18px}
+}
+</style>
+</head>
+<body>
+<div id="loginV" class="wrap" style="display:none">
+  <form class="login" id="lf">
+    <h1>Panel de reclutamiento 📋</h1>
+    <p>Solo para administrador.</p>
+    <label class="l" for="lu">Usuario</label><input class="in" id="lu" autocomplete="username" autocapitalize="none">
+    <label class="l" for="lp">Contraseña</label><input class="in" id="lp" type="password" autocomplete="current-password">
+    <button type="submit" class="btn full" id="lb">Entrar</button>
+    <div class="lerr" id="le"></div>
+  </form>
+</div>
+
+<div id="appV" class="wrap" style="display:none">
+  <header><div><small>Panel de reclutamiento</small><h1 id="vt">Candidatas</h1></div><div class="row"><button class="btn lav sm" id="exp">📄 PDF</button><button class="btn soft sm" id="ref" title="Actualizar" aria-label="Actualizar">↻</button><button class="btn gray sm" id="out">Salir</button></div></header>
+
+  <section class="view on" id="v-cand">
+    <div class="stats">
+      <div class="stat"><b id="sTot">–</b><span>Recibidas</span></div>
+      <div class="stat hl"><b id="sLla">–</b><span>Para llamar</span></div>
+      <div class="stat"><b id="sPro">–</b><span>En proceso</span></div>
+    </div>
+    <div class="bar"><select class="in" id="fJob"></select><input class="in" id="q" placeholder="Buscar nombre o barrio"></div>
+    <div class="chips" id="fTabs"></div>
+    <div id="list"></div>
+  </section>
+
+  <section class="view" id="v-preg"><p style="margin:0 0 12px;color:var(--muted);font-weight:700">Consultas y preguntas que te dejaron las postulantes. Respondelas por WhatsApp.</p><div id="pregList"></div></section>
+
+  <section class="view" id="v-bus">
+    <button class="btn full" style="margin:0 0 14px" id="newJob">＋ Nueva búsqueda</button>
+    <div id="jobList"></div>
+  </section>
+
+  <section class="view guide" id="v-guia"></section>
+</div>
+
+<nav class="bnav" id="bnav" style="display:none"><div>
+  <button data-v="cand" class="on"><b>👩</b>Candidatas</button>
+  <button data-v="preg"><b>💬</b>Preguntas<span class="dot" id="pregDot" style="display:none"></span></button>
+  <button data-v="bus"><b>📣</b>Búsquedas</button>
+  <button data-v="guia"><b>🧭</b>Cómo elegir</button>
+</div></nav>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="big" id="big"><img id="bigImg" alt="Foto"></div>
+<div class="toast" id="toast"></div>
+<div id="report"></div>
+
+<script src="../config.js"></script>
+<script>
+var U = '', P = '', D = {busquedas: [], candidatas: []}, tab = 'todas', job = '', fotos = {};
+var ROOT = new URL('../', location.href).href;
+var ESTADOS = ['Nueva', 'Contactada', 'Entrevista', 'En prueba', 'Elegida', 'Descartada'];
+var EN_PROCESO = ['Contactada', 'Entrevista', 'En prueba'];
+var FTABS = [['todas', 'Todas'], ['LLAMAR', 'Para llamar'], ['proceso', 'En proceso'], ['RESERVA', 'Reserva'], ['BAJA', 'Baja'], ['DESCARTADA', 'Descartadas']];
+var PASOS = [['llamada', 'Llamada de 10 minutos', 'Cómo habla, si es clara y puntual'], ['video', 'Videollamada', '20 minutos para conocerla mejor'], ['refs', 'Llamé a las referencias', '¿La volverían a contratar?'], ['dni', 'Vi el DNI', 'Coincide con la foto y el nombre'], ['antec', 'Trajo antecedentes penales', 'Certificado sin registros'], ['entrevista', 'Entrevista en casa', 'Con otra persona presente'], ['prueba', 'Prueba paga', '1 o 2 días haciendo el trabajo']];
+var CAMPOS = [['dni', 'DNI'], ['wa', 'WhatsApp'], ['dir', 'Barrio'], ['viaje', 'Tiempo de viaje'], ['horario', 'Horario'], ['sueldo', 'Sueldo y prueba'], ['antec', 'Antecedentes'], ['nivel', 'Se pone (1 a 5)'], ['habilidades', 'Le sale bien'], ['exp', 'Experiencia en algo parecido'], ['extra1', null], ['refs', 'Referencias'], ['comentario', 'Comentario']];
+var PLANTILLAS = {
+  casa: {ic: '🏡', n: 'Limpieza y cocina', titulo: 'Limpieza y cocina en casa de familia', lugar: 'La Plata', horario: 'Lunes a viernes de 8 a 17 hs', sueldo: '', descripcion: 'Buscamos una persona responsable y prolija para una casa de familia.', tareas: 'Dejar la casa limpia y en orden\nPreparar 2 comidas caseras por día', habilidades: 'Limpieza a fondo, Orden y organización, Guisos, Milanesas, Pastas caseras, Tartas y empanadas, Comida liviana', pregunta_extra: 'Contanos 3 comidas que harías en una semana normal'},
+  obra: {ic: '🔨', n: 'Ayudante de obra', titulo: 'Ayudante para techos e impermeabilizaciones', lugar: 'La Plata y alrededores', horario: 'Lunes a viernes de 8 a 17 hs', sueldo: '', descripcion: 'La Plata Techos busca ayudante para obras de techos, zinguería e impermeabilización.', tareas: 'Asistir al techista en obra\nCargar y ordenar materiales\nLimpieza de obra', habilidades: 'Trabajo en altura, Membrana, Chapa, Zinguería, Albañilería, Manejo de herramientas, Tengo moto o auto', pregunta_extra: 'Contanos la última obra en la que trabajaste'},
+  ninera: {ic: '🧸', n: 'Cuidado de personas', titulo: 'Cuidado de personas', lugar: 'La Plata', horario: '', sueldo: '', descripcion: '', tareas: 'Acompañar y cuidar\nAyudar con las comidas', habilidades: 'Paciencia, Primeros auxilios, Cocina, Acompañamiento escolar', pregunta_extra: '¿Por qué te gusta este trabajo?'},
+  vacia: {ic: '✏️', n: 'En blanco', titulo: '', lugar: 'La Plata', horario: '', sueldo: '', descripcion: '', tareas: '', habilidades: '', pregunta_extra: ''}
+};
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function toast(t) { var x = $('toast'); x.textContent = t; x.style.display = 'block'; clearTimeout(x._t); x._t = setTimeout(function () { x.style.display = 'none'; }, 1800); }
+function copy(t, msg) { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast(msg || 'Copiado ✓'); }).catch(function () { prompt('Copiá este texto:', t); }); }
+function val(r, k) { var v = r.datos[k]; return Array.isArray(v) ? v.join(', ') : (v == null ? '' : String(v)); }
+function jobOf(id) { return D.busquedas.filter(function (b) { return b.id === id; })[0]; }
+function linkOf(b) { return ROOT + '?b=' + encodeURIComponent(b.slug); }
+function waLink(n, txt) {
+  var d = String(n || '').replace(/\D/g, '').replace(/^0/, '');
+  if (d.length === 10) d = '549' + d;
+  return 'https://wa.me/' + d + '?text=' + encodeURIComponent(txt);
+}
+function checks(r) { var c = r.datos._checks; return c && typeof c === 'object' ? c : {}; }
+function consultas(r) {
+  var out = [];
+  ['horario', 'sueldo', 'antec'].forEach(function (k) { var v = val(r, k); if (/^Tengo una consulta/.test(v)) out.push(v.replace(/^Tengo una consulta:\s*/, '')); });
+  if (r.datos.preguntas) out.push(r.datos.preguntas);
+  return out;
+}
+function aviso(b) {
+  var t = arr(b.tareas);
+  return '✨ ' + b.titulo.toUpperCase() + (b.lugar ? ' – ' + b.lugar : '') + ' ✨\n\n' + (b.descripcion ? b.descripcion + '\n\n' : '') +
+    (t.length ? t.map(function (x) { return '✔️ ' + x; }).join('\n') + '\n' : '') +
+    (b.horario ? '🕗 ' + b.horario + '\n' : '') + (b.sueldo ? '💰 ' + b.sueldo + '\n' : '') +
+    '\n👉 Postulate en 3 minutos desde el celular:\n' + linkOf(b) + '\n\nSolo se toman postulaciones desde el link. ¡Gracias!';
+}
+function arr(x) { return Array.isArray(x) ? x : []; }
+
+// ---------- login ----------
+function login(u, p, quiet) {
+  $('le').textContent = ''; $('lb').disabled = true; $('lb').textContent = 'Entrando…';
+  return rpc('personal_listar', {u: u, p: p}).then(function (r) {
+    U = u; P = p; store('rec_u', u); store('rec_p', p);
+    D = r || D;
+    $('loginV').style.display = 'none'; $('appV').style.display = 'block'; $('bnav').style.display = 'flex';
+    renderAll();
+  }).catch(function (e) {
+    $('loginV').style.display = 'block'; $('appV').style.display = 'none'; $('bnav').style.display = 'none';
+    if (!quiet) $('le').textContent = /incorrect/i.test(e.message) ? 'Usuario o contraseña incorrectos.' : 'No hay conexión. Probá de nuevo.';
+  }).then(function () { $('lb').disabled = false; $('lb').textContent = 'Entrar'; });
+}
+$('lf').onsubmit = function (e) { e.preventDefault(); login($('lu').value.trim(), $('lp').value, false); };
+$('out').onclick = function () { store('rec_u', null); store('rec_p', null); U = P = ''; $('appV').style.display = 'none'; $('bnav').style.display = 'none'; $('loginV').style.display = 'block'; };
+$('ref').onclick = function () { login(U, P, true).then(function () { toast('Actualizado ✓'); }); };
+
+// ---------- navegación ----------
+var TITULOS = {cand: 'Candidatas', preg: 'Preguntas', bus: 'Búsquedas', guia: 'Cómo elegir'};
+$('bnav').onclick = function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  [].forEach.call(this.querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); });
+  [].forEach.call(document.querySelectorAll('.view'), function (v) { v.classList.toggle('on', v.id === 'v-' + b.dataset.v); });
+  $('vt').textContent = TITULOS[b.dataset.v]; window.scrollTo(0, 0);
+};
+
+function renderAll() { renderCand(); renderPreg(); renderJobs(); }
+
+// ---------- candidatas ----------
+function pasa(r, t) {
+  if (job && String(r.busqueda_id) !== job) return false;
+  t = t || tab;
+  if (t === 'todas') return true;
+  if (t === 'proceso') return EN_PROCESO.indexOf(r.estado) >= 0;
+  return r.filtro === t;
+}
+function renderCand() {
+  var C = D.candidatas;
+  $('fJob').innerHTML = '<option value="">Todas las búsquedas</option>' + D.busquedas.map(function (b) { return '<option value="' + b.id + '"' + (String(b.id) === job ? ' selected' : '') + '>' + esc(b.titulo) + '</option>'; }).join('');
+  var mine = C.filter(function (r) { return pasa(r, 'todas'); });
+  $('sTot').textContent = mine.length;
+  $('sLla').textContent = mine.filter(function (r) { return r.filtro === 'LLAMAR' && r.estado === 'Nueva'; }).length;
+  $('sPro').textContent = mine.filter(function (r) { return EN_PROCESO.indexOf(r.estado) >= 0; }).length;
+  $('fTabs').innerHTML = FTABS.map(function (t) {
+    return '<button data-t="' + t[0] + '" class="' + (t[0] === tab ? 'on' : '') + '">' + t[1] + ' · ' + C.filter(function (r) { return pasa(r, t[0]); }).length + '</button>';
+  }).join('');
+  var q = $('q').value.toLowerCase().trim();
+  var vis = C.filter(function (r) { return pasa(r); }).filter(function (r) { return !q || (val(r, 'nombre') + ' ' + val(r, 'dir')).toLowerCase().indexOf(q) >= 0; });
+  var L = $('list');
+  if (!vis.length) { L.innerHTML = '<div class="empty">' + (C.length ? 'No hay candidatas en esta lista.' : '🌷<br>Todavía no se postuló nadie.<br>Andá a <b>Búsquedas</b> y compartí el link.') + '</div>'; return; }
+  L.innerHTML = vis.map(cardHtml).join('');
+  [].forEach.call(L.querySelectorAll('.av'), cargarFoto);
+}
+function cardHtml(r) {
+  var n = +r.datos.nivel || 0, ck = checks(r), hechos = PASOS.filter(function (p) { return ck[p[0]]; }).length, b = jobOf(r.busqueda_id), cons = consultas(r);
+  var extraLab = r.datos.extra1_pregunta || 'Respuesta';
+  return '<div class="c" data-id="' + r.id + '">' +
+    '<div class="top"><div class="av" data-id="' + (r.tieneFoto ? r.id : '') + '">👤</div>' +
+    '<div class="who"><h3>' + esc(val(r, 'nombre')) + '</h3><p>' + esc(val(r, 'dir')) + ' · ' + esc(r.fecha) + (b ? '<br>' + esc(b.titulo) : '') + '</p></div>' +
+    '<div class="score s-' + esc(r.filtro) + '"><b>' + r.puntaje + '</b><span>' + esc(r.filtro) + '</span></div></div>' +
+    '<div class="tags"><span>' + '★★★★★'.slice(0, n) + '<span style="color:#e6dcd2;background:none;padding:0">' + '★★★★★'.slice(n) + '</span></span>' +
+    '<span>Exp: ' + esc(val(r, 'exp')) + '</span>' + (r.datos.refs ? '<span>Con referencias</span>' : '<span>Sin referencias</span>') +
+    (r.tieneCv ? '<span>📄 CV</span>' : '') + (cons.length ? '<span class="q">💬 Tiene preguntas</span>' : '') + (ck.fav ? '<span style="background:#fde4ec;color:#c0476a">💖 Mi favorita</span>' : '') +
+    ETAPAS.map(function (et) { var p = etapaPts(r, et.k); return p == null ? '' : '<span>' + et.ic + ' ' + p + '</span>'; }).join('') + '</div>' +
+    '<div class="prog" title="Verificación"><i style="width:' + Math.round(hechos / PASOS.length * 100) + '%"></i></div>' +
+    '<div class="row"><a class="btn wa sm" target="_blank" rel="noopener" href="' + waLink(r.datos.wa, 'Hola ' + val(r, 'nombre').split(' ')[0] + '! Te escribo por tu postulación' + (b ? ' para ' + b.titulo : '') + '.') + '">WhatsApp</a>' +
+    '<select class="est" aria-label="Estado">' + ESTADOS.map(function (e) { return '<option' + (e === r.estado ? ' selected' : '') + '>' + e + '</option>'; }).join('') + '</select>' +
+    '<button class="btn sm entb">🎤 Entrevistas</button><button class="btn gray sm more">Ver ficha</button><span class="saved"></span></div>' +
+    '<div class="det">' +
+      (cons.length ? '<h4>💬 Sus preguntas</h4><div class="tip" style="background:var(--lav);color:var(--lav-d);margin:0 0 6px">' + cons.map(esc).join('<br>') + '</div>' : '') +
+      '<h4>✅ Verificación (' + hechos + ' de ' + PASOS.length + ')</h4><div class="checks">' + PASOS.map(function (p) {
+        return '<label class="' + (ck[p[0]] ? 'done' : '') + '"><input type="checkbox" data-ck="' + p[0] + '"' + (ck[p[0]] ? ' checked' : '') + '><span>' + p[1] + '<small>' + p[2] + '</small></span></label>';
+      }).join('') + '</div>' +
+      '<h4>📋 Sus respuestas</h4><dl>' + CAMPOS.map(function (c) { var v = val(r, c[0]); return v ? '<div><dt>' + esc(c[1] || extraLab) + '</dt><dd>' + esc(v) + '</dd></div>' : ''; }).join('') + '</dl>' +
+      (r.tieneCv ? '<div style="margin-top:12px"><button class="btn lav sm cvb">📄 Ver currículum</button></div>' : '') +
+      '<h4>📝 Mis notas</h4><textarea class="in notas" placeholder="Qué dijeron las referencias, cómo fue la entrevista…">' + esc(r.notas) + '</textarea>' +
+    '</div></div>';
+}
+function cargarFoto(el) {
+  var id = el.dataset.id; if (!id) return;
+  var put = function (u) { el.style.backgroundImage = 'url("' + u + '")'; el.classList.add('has'); el.onclick = function () { $('bigImg').src = u; $('big').style.display = 'flex'; }; };
+  if (fotos[id]) return put(fotos[id]);
+  rpc('personal_foto', {u: U, p: P, cid: +id}).then(function (u) { if (u && /^data:image\//.test(u)) { fotos[id] = u; put(u); } }).catch(function () {});
+}
+$('big').onclick = function () { this.style.display = 'none'; };
+function rowOf(card) { return D.candidatas.filter(function (x) { return String(x.id) === card.dataset.id; })[0]; }
+function guardar(card) { guardarR(rowOf(card), card.querySelector('.saved')); }
+function guardarR(r, s) {
+  s.textContent = 'Guardando…';
+  rpc('personal_guardar', {u: U, p: P, cid: r.id, est: r.estado, nota: r.notas, chk: checks(r)}).then(function () {
+    s.textContent = 'Guardado ✓'; setTimeout(function () { s.textContent = ''; }, 1500);
+  }).catch(function () { s.textContent = 'No se guardó, probá de nuevo'; });
+}
+$('fTabs').onclick = function (e) { var t = e.target.closest('button'); if (t) { tab = t.dataset.t; renderCand(); } };
+$('fJob').onchange = function () { job = this.value; renderCand(); };
+$('q').oninput = renderCand;
+$('list').addEventListener('click', function (e) {
+  var card = e.target.closest('.c'); if (!card) return;
+  if (e.target.classList.contains('more')) { var d = card.querySelector('.det'); d.classList.toggle('on'); e.target.textContent = d.classList.contains('on') ? 'Cerrar ficha' : 'Ver ficha'; }
+  if (e.target.classList.contains('entb')) { entK = 'llamada'; abrirEnt(rowOf(card)); }
+  if (e.target.classList.contains('cvb')) {
+    e.target.textContent = 'Abriendo…';
+    rpc('personal_cv', {u: U, p: P, cid: rowOf(card).id}).then(function (u) {
+      e.target.textContent = '📄 Ver currículum'; if (!u) return;
+      fetch(u).then(function (x) { return x.blob(); }).then(function (bl) { window.open(URL.createObjectURL(bl), '_blank'); });
+    });
+  }
+});
+$('list').addEventListener('change', function (e) {
+  var card = e.target.closest('.c'); if (!card) return; var r = rowOf(card);
+  if (e.target.classList.contains('est')) { r.estado = e.target.value; guardar(card); }
+  if (e.target.classList.contains('notas')) { r.notas = e.target.value; guardar(card); }
+  if (e.target.dataset.ck) {
+    var ck = checks(r); ck[e.target.dataset.ck] = e.target.checked; r.datos._checks = ck;
+    e.target.closest('label').classList.toggle('done', e.target.checked);
+    var h = PASOS.filter(function (p) { return ck[p[0]]; }).length;
+    card.querySelector('.prog i').style.width = Math.round(h / PASOS.length * 100) + '%';
+    card.querySelector('.det h4:nth-of-type(' + (consultas(r).length ? 2 : 1) + ')').textContent = '✅ Verificación (' + h + ' de ' + PASOS.length + ')';
+    guardar(card);
+  }
+});
+
+// ---------- preguntas ----------
+function renderPreg() {
+  var con = D.candidatas.filter(function (r) { return consultas(r).length; });
+  var dot = $('pregDot'); dot.style.display = con.length ? '' : 'none'; dot.textContent = con.length;
+  $('pregList').innerHTML = con.length ? con.map(function (r) {
+    var b = jobOf(r.busqueda_id);
+    return '<div class="c"><div class="row" style="justify-content:space-between"><div><b style="font-size:16px">' + esc(val(r, 'nombre')) + '</b><div style="color:var(--muted);font-size:13px;font-weight:700">' + esc(b ? b.titulo : '') + ' · ' + esc(r.fecha) + '</div></div>' +
+      '<a class="btn wa sm" target="_blank" rel="noopener" href="' + waLink(r.datos.wa, 'Hola ' + val(r, 'nombre').split(' ')[0] + '! Te respondo la consulta que dejaste en la postulación: ') + '">Responder</a></div>' +
+      '<div class="tip" style="background:var(--lav);color:var(--lav-d)">' + consultas(r).map(esc).join('<br>') + '</div></div>';
+  }).join('') : '<div class="empty">💬<br>Nadie dejó preguntas todavía.</div>';
+}
+
+// ---------- búsquedas ----------
+function renderJobs() {
+  $('jobList').innerHTML = D.busquedas.length ? D.busquedas.map(function (b) {
+    var n = D.candidatas.filter(function (r) { return r.busqueda_id === b.id; }).length;
+    return '<div class="c job" data-id="' + b.id + '"><h3>' + esc(b.titulo) + '</h3>' +
+      '<div class="meta"><span class="badge ' + (b.activa ? 'b-on' : 'b-off') + '">' + (b.activa ? 'Abierta' : 'Pausada') + '</span> · ' + n + (n === 1 ? ' postulante' : ' postulantes') + (b.horario ? ' · ' + esc(b.horario) : '') + '</div>' +
+      '<div class="link"><code>' + esc(linkOf(b)) + '</code><button class="btn soft sm" data-a="link">Copiar</button></div>' +
+      '<div class="row"><button class="btn sm" data-a="aviso">📋 Copiar aviso</button>' +
+      '<a class="btn wa sm" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(aviso(b)) + '">WhatsApp</a>' +
+      '<a class="btn lav sm" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(linkOf(b)) + '">Facebook</a>' +
+      '<a class="btn gray sm" target="_blank" rel="noopener" href="' + esc(linkOf(b)) + '">Ver como postulante</a>' +
+      '<button class="btn gray sm" data-a="edit">Editar</button><button class="btn gray sm" data-a="toggle">' + (b.activa ? 'Pausar' : 'Abrir') + '</button></div></div>';
+  }).join('') : '<div class="empty">📣<br>Creá tu primera búsqueda.</div>';
+}
+$('jobList').addEventListener('click', function (e) {
+  var a = e.target.dataset.a; if (!a) return;
+  var b = jobOf(+e.target.closest('.job').dataset.id);
+  if (a === 'link') copy(linkOf(b), 'Link copiado ✓');
+  if (a === 'aviso') copy(aviso(b), 'Aviso copiado, pegalo en Facebook ✓');
+  if (a === 'edit') editor(b);
+  if (a === 'toggle') saveJob(Object.assign({}, b, {activa: !b.activa}));
+});
+$('newJob').onclick = function () {
+  $('sheet').innerHTML = '<h2>Nueva búsqueda</h2><p style="color:var(--muted);margin:0 0 14px">Elegí un modelo para empezar. Después lo cambiás como quieras.</p><div class="tpls">' +
+    Object.keys(PLANTILLAS).map(function (k) { return '<button data-t="' + k + '"><b>' + PLANTILLAS[k].ic + '</b>' + PLANTILLAS[k].n + '</button>'; }).join('') +
+    '</div><button class="btn gray full" style="margin-top:4px" data-close>Cancelar</button>';
+  $('modal').classList.add('on');
+};
+$('modal').addEventListener('click', function (e) {
+  if (e.target === this || e.target.hasAttribute('data-close')) { this.classList.remove('on'); entR = null; return; }
+  if (entR) return;
+  var t = e.target.closest('[data-t]'); if (t) { var p = PLANTILLAS[t.dataset.t]; editor({titulo: p.titulo, lugar: p.lugar, horario: p.horario, sueldo: p.sueldo, descripcion: p.descripcion, tareas: p.tareas.split('\n').filter(Boolean), habilidades: p.habilidades.split(',').map(function (x) { return x.trim(); }).filter(Boolean), pregunta_extra: p.pregunta_extra}); }
+});
+function editor(b) {
+  var f = function (k, lab, help, area, v) {
+    return '<label class="l" for="e-' + k + '">' + lab + '</label>' + (help ? '<div style="color:var(--muted);font-size:13px;font-weight:600;margin:-2px 0 6px">' + help + '</div>' : '') +
+      (area ? '<textarea class="in" id="e-' + k + '">' + esc(v) + '</textarea>' : '<input class="in" id="e-' + k + '" value="' + esc(v) + '">');
+  };
+  $('sheet').innerHTML = '<h2>' + (b.id ? 'Editar búsqueda' : 'Nueva búsqueda') + '</h2>' +
+    f('titulo', 'Título del puesto', '', false, b.titulo) + f('lugar', 'Lugar', '', false, b.lugar) +
+    f('horario', 'Horario', 'Ej: Lunes a viernes de 8 a 17 hs', false, b.horario) + f('sueldo', 'Sueldo', 'Ej: $600.000 por mes', false, b.sueldo) +
+    f('descripcion', 'Descripción corta', '', true, b.descripcion) + f('tareas', 'Tareas', 'Una por renglón', true, arr(b.tareas).join('\n')) +
+    f('habilidades', 'Opciones de "¿Qué te sale bien?"', 'Separadas por coma', true, arr(b.habilidades).join(', ')) +
+    f('pregunta_extra', 'Pregunta especial (opcional)', '', false, b.pregunta_extra) +
+    '<div class="lerr" id="eErr"></div><div class="row" style="margin-top:10px"><button class="btn gray" data-close style="flex:1">Cancelar</button><button class="btn" id="eSave" style="flex:2">Guardar</button></div>';
+  $('modal').classList.add('on');
+  $('eSave').onclick = function () {
+    var g = function (k) { return $('e-' + k).value.trim(); };
+    if (!g('titulo')) { $('eErr').textContent = 'Poné un título'; return; }
+    var nb = {id: b.id, activa: b.id ? b.activa : true, titulo: g('titulo'), lugar: g('lugar'), horario: g('horario'), sueldo: g('sueldo'), descripcion: g('descripcion'),
+      tareas: g('tareas').split('\n').map(function (x) { return x.trim(); }).filter(Boolean),
+      habilidades: g('habilidades').split(',').map(function (x) { return x.trim(); }).filter(Boolean), pregunta_extra: g('pregunta_extra'),
+      slug: g('titulo').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30)};
+    this.disabled = true; this.textContent = 'Guardando…';
+    saveJob(nb).then(function () { $('modal').classList.remove('on'); });
+  };
+}
+function saveJob(b) {
+  return rpc('personal_busqueda_guardar', {u: U, p: P, b: b}).then(function (r) {
+    var i = D.busquedas.map(function (x) { return x.id; }).indexOf(r.id);
+    if (i >= 0) D.busquedas[i] = r; else D.busquedas.unshift(r);
+    renderJobs(); renderCand(); toast('Búsqueda guardada ✓');
+  }).catch(function (e) { toast('No se pudo guardar'); var x = $('eSave'); if (x) { x.disabled = false; x.textContent = 'Guardar'; } });
+}
+
+// ---------- guía ----------
+var GUIA = [
+  ['1', 'Mirá la lista "Para llamar"', 'Puntaje de 60 o más', '<ul><li>El puntaje ordena, no decide. Mirá la foto, las respuestas y cómo escribe.</li><li>Si cambió mucho de trabajo (varios de menos de 6 meses), bajala de prioridad.</li><li>Esperá 4 o 5 días de postulaciones antes de elegir.</li></ul>'],
+  ['2', 'Llamada de 10 minutos', 'Las 5 mejores', '<ul><li>Abrí la ficha y tocá <b>🎤 Entrevistas</b>: tenés el guion para leer y las preguntas para puntuar del 1 al 5.</li><li>"¿Por qué terminó tu último trabajo?" Si le echa la culpa a todos los empleadores, es una alerta.</li><li>Confirmá horario, sueldo y antecedentes. Si duda, no avances.</li></ul>'],
+  ['3', 'Videollamada de 20 minutos', 'Las 3 mejores', '<ul><li>Por WhatsApp, con cámara. Usá la pestaña <b>Videollamada</b> del guion.</li><li>Mirá puntualidad, cómo se presenta y si hace preguntas.</li><li>Al final, decile que vas a llamar a sus referencias.</li></ul>'],
+  ['4', 'Llamá a las referencias', 'El paso más importante', '<ul><li>"¿Trabajó en tu casa? ¿Desde cuándo hasta cuándo?" Tiene que coincidir con lo que dijo ella.</li><li>"¿Le dejabas la casa sola? ¿Alguna vez faltó algo?"</li><li>"¿Era puntual? ¿Cuántas veces faltaba por mes?"</li><li>"¿La volverías a contratar?" Si dudan, descartá.</li></ul><div class="tip">Llamá vos, no mandes mensaje. Si la referencia no atiende nunca o suena a pariente, es alerta.</div>'],
+  ['5', 'DNI y antecedentes', 'Antes de que entre a tu casa', '<ul><li>Pedile foto del DNI de frente y dorso. Compará con la foto y el nombre.</li><li>El certificado de antecedentes se saca online en argentina.gob.ar/justicia/reincidencia.</li></ul>'],
+  ['6', 'Entrevista en casa', 'Las 2 finalistas, 30 minutos', '<ul><li>Hacela con otra persona presente.</li><li>Mostrale la casa y explicale las tareas. Mirá cómo reacciona.</li><li>"¿Qué hacés si se rompe algo mientras limpiás?" Lo correcto es avisar en el momento.</li><li>"¿Qué te haría dejar un trabajo?"</li></ul>'],
+  ['7', 'Prueba paga', '1 o 2 días', '<ul><li>Que haga el trabajo real: las comidas y la limpieza.</li><li>Pagá el día aunque no quede.</li></ul><div class="tip">Primer mes: no dejes plata, joyas ni llaves extra a mano. Registrala en ARCA (Casas Particulares) desde el primer día.</div>']
+];
+$('v-guia').innerHTML = '<p style="margin:0 0 12px;color:var(--muted);font-weight:700">Es una persona que va a estar en tu casa. Seguí estos pasos y marcalos en la ficha de cada candidata. Cuando tengas entrevistas, tocá <b>📄 PDF</b> arriba y mandame el informe: te digo cuál me parece mejor.</p>' +
+  GUIA.map(function (g, i) { return '<details' + (i === 0 ? ' open' : '') + '><summary><i>' + g[0] + '</i><span>' + g[1] + '<small>' + g[2] + '</small></span></summary><div class="gb">' + g[3] + '</div></details>'; }).join('');
+
+// ---------- entrevistas ----------
+var ETAPAS = [
+  {k: 'llamada', ic: '📞', n: 'Llamada', dur: '10 minutos por WhatsApp',
+    open: 'Hola {nombre}, ¿cómo estás? Soy Rafael. Te llamo por la postulación que completaste para {puesto}. ¿Tenés 10 minutos para charlar ahora?',
+    explain: 'Te cuento rápido cómo es: {tareas}. {horario}. {sueldo}. Al principio hacemos unos días de prueba pagos, para ver si estamos cómodos los dos.',
+    qs: ['Contame cómo era un día normal en tu último trabajo.', '¿Por qué terminó ese trabajo?', '¿Cuánto tardás en llegar y cómo viajás? ¿Te complica algún día?', '¿Qué es lo que mejor te sale de este trabajo?', '¿Tenés otro trabajo o compromiso en ese horario?'],
+    close: 'Gracias, {nombre}. Si seguimos, el próximo paso es una videollamada de 20 minutos para conocernos mejor. ¿Qué día y horario te queda cómodo?',
+    obs: 'Si atiende o devuelve el llamado, si habla claro, si responde concreto o da vueltas.'},
+  {k: 'video', ic: '🎥', n: 'Videollamada', dur: '20 minutos por WhatsApp',
+    open: 'Hola {nombre}, gracias por conectarte. La idea es conocernos un poco más, son unos 20 minutos. Preguntame lo que quieras en cualquier momento.',
+    explain: 'Te repaso: {tareas}. {horario}. {sueldo}. Es una casa de familia, buscamos a alguien de confianza para mucho tiempo.',
+    qs: ['¿Qué es lo que más te gusta de este trabajo y lo que menos?', 'Si llegás y la casa está muy desordenada, ¿por dónde empezás?', '¿Cómo organizarías las comidas de la semana? ¿Hacés lista de compras?', 'Si se te rompe algo mientras limpiás, ¿qué hacés?', 'Contame de una vez que tuviste un problema en un trabajo y cómo lo resolviste.', '¿Qué te haría dejar un trabajo?', '¿Tus referencias saben que las vamos a llamar? ¿Podés traer DNI y certificado de antecedentes a la entrevista en casa?'],
+    close: 'Gracias, {nombre}. En estos días hablo con tus referencias y te aviso en 2 o 3 días cómo seguimos.',
+    obs: 'Puntualidad para conectarse, cómo se presenta, si sonríe y mira a cámara, si hace preguntas. Lo correcto si rompe algo es avisar en el momento.'},
+  {k: 'casa', ic: '🏡', n: 'En casa', dur: '30 minutos, con otra persona presente',
+    open: 'Bienvenida, {nombre}. Te muestro la casa y te explico cómo funcionamos. Cualquier duda, preguntame.',
+    explain: 'Recorré la casa con ella y mostrale dónde están las cosas, qué se limpia y qué se cocina.',
+    qs: ['Trajo DNI y certificado de antecedentes (y coinciden con sus datos).', 'Durante el recorrido, ¿hace preguntas y se interesa?', '"¿Qué limpiarías primero acá? ¿Cada cuánto el baño y la cocina?"', '"¿Qué cocinarías esta semana con lo que hay en la heladera?"', 'Acordaron horario, día de pago, qué pasa si falta y el período de prueba.', '"¿Tenés alguna duda o algo que te preocupe?"'],
+    close: 'Te propongo 1 o 2 días de prueba pagos. ¿Qué día podés empezar?',
+    obs: 'Cómo trata a las personas de la casa, si llegó puntual, cómo está presentada, si se la ve cómoda.'}
+];
+function ent(r) { var c = checks(r); if (!c.ent || typeof c.ent !== 'object') c.ent = {}; r.datos._checks = c; return c.ent; }
+function etapaPts(r, k) {
+  var e = (checks(r).ent || {})[k]; if (!e || !e.p) return null;
+  var v = e.p.filter(function (x) { return x > 0; }); if (!v.length) return null;
+  return Math.round(v.reduce(function (a, b) { return a + b; }, 0) / v.length * 20);
+}
+function fill(t, r) {
+  var b = jobOf(r.busqueda_id) || {}, tareas = arr(b.tareas).map(function (x) { return x.charAt(0).toLowerCase() + x.slice(1); });
+  return t.replace(/\{nombre\}/g, val(r, 'nombre').split(' ')[0]).replace(/\{puesto\}/g, b.titulo || 'el trabajo')
+    .replace(/\{tareas\}/g, tareas.length ? tareas.join(', ') : 'las tareas del puesto')
+    .replace(/\{horario\}/g, b.horario ? 'El horario es ' + b.horario.charAt(0).toLowerCase() + b.horario.slice(1) : 'El horario lo charlamos')
+    .replace(/\{sueldo\}/g, b.sueldo ? 'El sueldo es ' + b.sueldo : 'El sueldo lo charlamos');
+}
+var entR = null, entK = 'llamada', saveT = null;
+function abrirEnt(r) { entR = r; renderEnt(); $('modal').classList.add('on'); }
+function renderEnt() {
+  var r = entR, E = ETAPAS.filter(function (x) { return x.k === entK; })[0], e = ent(r)[entK] || {p: [], n: []}, c = checks(r), cons = consultas(r);
+  $('sheet').innerHTML = '<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">🎤 ' + esc(val(r, 'nombre')) + '</h2><button class="btn gray sm" data-close>Cerrar</button></div>' +
+    '<div class="etabs">' + ETAPAS.map(function (x, i) { var p = etapaPts(r, x.k); return '<button data-e="' + x.k + '" class="' + (x.k === entK ? 'on' : '') + '"><b>' + x.ic + '</b>' + (i + 1) + '. ' + x.n + '<small>' + (p == null ? 'sin puntaje' : p + '/100') + '</small></button>'; }).join('') + '</div>' +
+    '<div class="meta" style="margin:10px 0">⏱ ' + E.dur + '</div>' +
+    '<div class="say"><b>Para empezar, decile:</b>' + esc(fill(E.open, r)) + '</div>' +
+    '<div class="say"><b>' + (entK === 'casa' ? 'Qué hacer:' : 'Contale el trabajo:') + '</b>' + esc(fill(E.explain, r)) + '</div>' +
+    (cons.length && entK !== 'casa' ? '<div class="tip" style="background:var(--lav);color:var(--lav-d)">💬 Respondé lo que preguntó: ' + cons.map(esc).join(' · ') + '</div>' : '') +
+    '<h4 class="eh">Preguntas · tocá del 1 al 5</h4>' +
+    E.qs.map(function (q, i) {
+      var s = e.p && e.p[i] || 0;
+      return '<div class="eq"><div class="eqt">' + (i + 1) + '. ' + esc(q) + '</div><div class="sc" data-i="' + i + '">' +
+        [1, 2, 3, 4, 5].map(function (n) { return '<button class="' + (n === s ? 'on s' + n : '') + '" data-n="' + n + '">' + n + '</button>'; }).join('') +
+        '</div><input class="in en" data-i="' + i + '" placeholder="Qué respondió (opcional)" value="' + esc(e.n && e.n[i] || '') + '"></div>';
+    }).join('') +
+    '<div class="say"><b>Para cerrar:</b>' + esc(fill(E.close, r)) + '</div>' +
+    '<div class="tip">👀 Qué observar: ' + esc(E.obs) + '</div>' +
+    '<label class="l" for="eGen">Mi impresión de esta etapa</label><textarea class="in" id="eGen" placeholder="Lo que te gustó y lo que no">' + esc(e.gen || '') + '</textarea>' +
+    '<div class="etot">Puntaje de esta etapa: <b id="eTot">' + (etapaPts(r, entK) == null ? '–' : etapaPts(r, entK) + '/100') + '</b></div>' +
+    '<h4 class="eh">Mi opinión general</h4><div class="sc big2" id="impSc">' + [1, 2, 3, 4, 5].map(function (n) { return '<button class="' + (n === c.imp ? 'on s' + n : '') + '" data-n="' + n + '">' + n + '</button>'; }).join('') + '</div>' +
+    '<button class="favb ' + (c.fav ? 'on' : '') + '" id="favB">' + (c.fav ? '💖 Es mi favorita' : '🤍 Marcar como mi favorita') + '</button>' +
+    '<div class="saved" id="entSaved" style="text-align:center;margin-top:10px"></div>';
+}
+function entSave() {
+  clearTimeout(saveT); $('entSaved').textContent = 'Guardando…';
+  saveT = setTimeout(function () {
+    guardarR(entR, $('entSaved'));
+    var card = document.querySelector('.c[data-id="' + entR.id + '"]'); if (card) { var nc = document.createElement('div'); nc.innerHTML = cardHtml(entR); var open = card.querySelector('.det.on'); card.replaceWith(nc.firstChild); var c2 = document.querySelector('.c[data-id="' + entR.id + '"]'); cargarFoto(c2.querySelector('.av')); if (open) { c2.querySelector('.det').classList.add('on'); c2.querySelector('.more').textContent = 'Cerrar ficha'; } }
+  }, 600);
+}
+$('sheet').addEventListener('click', function (e) {
+  if (!entR || !$('sheet').querySelector('.etabs')) return;
+  var t = e.target.closest('[data-e]'); if (t) { entK = t.dataset.e; renderEnt(); $('sheet').scrollTop = 0; return; }
+  var b = e.target.closest('.sc button'); if (b) {
+    var n = +b.dataset.n, box = b.parentNode;
+    if (box.id === 'impSc') { checks(entR).imp = n; }
+    else { var E = ent(entR); E[entK] = E[entK] || {p: [], n: []}; E[entK].p = E[entK].p || []; E[entK].p[+box.dataset.i] = n; }
+    [].forEach.call(box.children, function (x) { x.className = +x.dataset.n === n ? 'on s' + n : ''; });
+    var p = etapaPts(entR, entK); $('eTot').textContent = p == null ? '–' : p + '/100';
+    var tb = $('sheet').querySelector('.etabs button.on small'); if (tb) tb.textContent = p == null ? 'sin puntaje' : p + '/100';
+    entSave(); return;
+  }
+  if (e.target.id === 'favB') { var c = checks(entR); c.fav = !c.fav; e.target.classList.toggle('on', c.fav); e.target.textContent = c.fav ? '💖 Es mi favorita' : '🤍 Marcar como mi favorita'; entSave(); }
+});
+$('sheet').addEventListener('input', function (e) {
+  if (!entR || !$('sheet').querySelector('.etabs')) return;
+  var E = ent(entR); E[entK] = E[entK] || {p: [], n: []}; E[entK].n = E[entK].n || [];
+  if (e.target.classList.contains('en')) { E[entK].n[+e.target.dataset.i] = e.target.value; entSave(); }
+  if (e.target.id === 'eGen') { E[entK].gen = e.target.value; entSave(); }
+});
+
+// ---------- informe PDF ----------
+function exportar() {
+  var lista = D.candidatas.filter(function (r) { return (!job || String(r.busqueda_id) === job) && r.filtro !== 'DESCARTADA' && r.estado !== 'Descartada'; });
+  var conEnt = lista.filter(function (r) { var c = checks(r); return c.ent && Object.keys(c.ent).length || c.imp || c.fav || EN_PROCESO.indexOf(r.estado) >= 0 || r.estado === 'Elegida'; });
+  if (conEnt.length) lista = conEnt;
+  lista = lista.slice(0, 12);
+  if (!lista.length) { toast('No hay candidatas para el informe'); return; }
+  toast('Armando el informe…');
+  Promise.all(lista.map(function (r) {
+    if (!r.tieneFoto || fotos[r.id]) return Promise.resolve();
+    return rpc('personal_foto', {u: U, p: P, cid: r.id}).then(function (u) { if (u) fotos[r.id] = u; }).catch(function () {});
+  })).then(function () {
+    var b = job ? jobOf(+job) : null, hoy = new Date().toLocaleDateString('es-AR');
+    var fmt = function (v) { return v == null ? '–' : v; };
+    var h = '<h1>Informe de candidatas</h1><div class="rmeta">' + esc(b ? b.titulo : 'Todas las búsquedas') + ' · ' + hoy + ' · ' + lista.length + ' candidatas</div>' +
+      '<table><tr><th>Candidata</th><th>Form.</th><th>Llamada</th><th>Video</th><th>Casa</th><th>Verif.</th><th>Mi opinión</th></tr>' +
+      lista.map(function (r) { var c = checks(r); return '<tr><td>' + (c.fav ? '💖 ' : '') + esc(val(r, 'nombre')) + '</td><td>' + r.puntaje + '</td><td>' + fmt(etapaPts(r, 'llamada')) + '</td><td>' + fmt(etapaPts(r, 'video')) + '</td><td>' + fmt(etapaPts(r, 'casa')) + '</td><td>' + PASOS.filter(function (p) { return c[p[0]]; }).length + '/' + PASOS.length + '</td><td>' + (c.imp ? c.imp + '/5' : '–') + '</td></tr>'; }).join('') + '</table>' +
+      lista.map(function (r) {
+        var c = checks(r), E = c.ent || {};
+        return '<div class="rc"><div class="rh">' + (fotos[r.id] ? '<img src="' + fotos[r.id] + '">' : '') + '<div><h2>' + (c.fav ? '💖 ' : '') + esc(val(r, 'nombre')) + '</h2><div class="rmeta">' + esc(val(r, 'dir')) + ' · Estado: ' + esc(r.estado) + ' · Formulario ' + r.puntaje + '/100' + (c.imp ? ' · Mi opinión ' + c.imp + '/5' : '') + '</div></div></div>' +
+          '<p><b>Experiencia:</b> ' + esc(val(r, 'exp')) + ' · <b>Se pone:</b> ' + esc(val(r, 'nivel')) + '/5 · <b>Le sale bien:</b> ' + esc(val(r, 'habilidades')) + '</p>' +
+          (r.datos.extra1 ? '<p><b>' + esc(r.datos.extra1_pregunta || 'Respuesta') + ':</b> ' + esc(r.datos.extra1) + '</p>' : '') +
+          '<p><b>Referencias:</b> ' + esc(val(r, 'refs') || 'No dejó') + '</p>' +
+          '<p><b>Verificación:</b> ' + PASOS.map(function (p) { return (c[p[0]] ? '✔ ' : '✘ ') + p[1]; }).join(' · ') + '</p>' +
+          ETAPAS.map(function (et) {
+            var e = E[et.k]; if (!e) return '';
+            var qs = et.qs.map(function (q, i) { var s = e.p && e.p[i], n = e.n && e.n[i]; return (s || n) ? '<li>' + esc(q) + ' <b>' + (s || '–') + '/5</b>' + (n ? ' — ' + esc(n) : '') + '</li>' : ''; }).join('');
+            return '<h3>' + et.ic + ' ' + et.n + ' · ' + fmt(etapaPts(r, et.k)) + '/100</h3>' + (qs ? '<ul>' + qs + '</ul>' : '') + (e.gen ? '<p><i>' + esc(e.gen) + '</i></p>' : '');
+          }).join('') +
+          (r.notas ? '<p><b>Mis notas:</b> ' + esc(r.notas) + '</p>' : '') + '</div>';
+      }).join('');
+    $('report').innerHTML = h;
+    document.body.classList.add('printing');
+    setTimeout(function () { window.print(); }, 300);
+  });
+}
+window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); });
+$('exp').onclick = exportar;
+
+var su = read('rec_u'), sp = read('rec_p');
+if (su && sp) { $('lu').value = su; login(su, sp, true); } else { $('loginV').style.display = 'block'; }
+</script>
+</body>
+</html>
