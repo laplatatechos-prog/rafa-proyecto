@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Panel de reclutamiento</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d46a6a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Candidatas">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -29,6 +34,9 @@ textarea.in{min-height:80px;resize:vertical}
 .btn.wa{background:#25a35a;color:#fff;text-decoration:none;display:inline-block}
 .btn.sm{padding:8px 12px;font-size:14px;border-radius:11px}
 .pw{position:relative}.pw .in{padding-right:52px}.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;padding:8px;cursor:pointer}
+.rem{display:flex;gap:10px;align-items:center;margin-top:14px;font-weight:800;cursor:pointer}.rem input{width:20px;height:20px;accent-color:var(--acc)}
+.inst{display:none;background:var(--lav);color:var(--lav-d);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-weight:800;align-items:center;gap:10px}
+.inst.on{display:flex}.inst span{flex:1}
 .lerr{color:var(--warn);font-weight:800;margin-top:10px;min-height:20px}
 header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
 header h1{margin:0;font-size:24px;font-weight:900}
@@ -159,12 +167,15 @@ select.est{font-weight:800;border:1.5px solid var(--line);border-radius:11px;pad
     <p>Solo para administrador.</p>
     <label class="l" for="lu">Usuario</label><input class="in" id="lu" autocomplete="username" autocapitalize="none">
     <label class="l" for="lp">Contraseña</label><div class="pw"><input class="in" id="lp" type="password" autocomplete="current-password"><button type="button" class="eye" data-eye="lp" aria-label="Mostrar contraseña">👁️</button></div>
+    <label class="rem"><input type="checkbox" id="rem" checked> Recordarme en este celular</label>
     <button type="submit" class="btn full" id="lb">Entrar</button>
     <div class="lerr" id="le"></div>
+    <div class="inst" id="inst1"><span>📲 Instalá el panel como app en tu celular</span><button type="button" class="btn sm" data-inst>Instalar</button></div>
   </form>
 </div>
 
 <div id="appV" class="wrap" style="display:none">
+  <div class="inst" id="inst2"><span>📲 Instalá el panel como app</span><button type="button" class="btn sm" data-inst>Instalar</button><button type="button" class="btn gray sm" id="instX" aria-label="Cerrar">✕</button></div>
   <header><div><small>Panel de reclutamiento</small><h1 id="vt">Candidatas</h1></div><div class="row"><button class="btn lav sm" id="exp">📄 PDF</button><button class="btn soft sm" id="ref" title="Actualizar" aria-label="Actualizar">↻</button><button class="btn gray sm" id="cfg" title="Cambiar contraseña" aria-label="Cambiar contraseña">⚙️</button><button class="btn gray sm" id="out">Salir</button></div></header>
 
   <section class="view on" id="v-cand">
@@ -271,7 +282,10 @@ function login(u, p, quiet) {
   u = String(u || '').trim().toLowerCase();
   $('le').textContent = ''; $('lb').disabled = true; $('lb').textContent = 'Entrando…';
   return rpc('personal_listar', {u: u, p: p}).then(function (r) {
-    U = u; P = p; store('rec_u', u); store('rec_p', p);
+    U = u; P = p;
+    var rem = $('rem').checked; store('rec_rem', rem ? '1' : '0');
+    if (rem) { store('rec_u', u); store('rec_p', p); } else { store('rec_u', null); store('rec_p', null); }
+    if (!quiet && window.PasswordCredential && navigator.credentials) { try { navigator.credentials.store(new PasswordCredential({id: u, password: p, name: 'Panel de reclutamiento'})).catch(function () {}); } catch (e) {} }
     D = r || D;
     $('loginV').style.display = 'none'; $('appV').style.display = 'block'; $('bnav').style.display = 'flex';
     renderAll();
@@ -281,6 +295,21 @@ function login(u, p, quiet) {
   }).then(function () { $('lb').disabled = false; $('lb').textContent = 'Entrar'; });
 }
 $('lf').onsubmit = function (e) { e.preventDefault(); login($('lu').value.trim(), $('lp').value, false); };
+// instalar como app
+var instEvt = null, isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+function showInst() { if (standalone || read('rec_instx') === '1') return; ['inst1', 'inst2'].forEach(function (id) { $(id).classList.add('on'); }); }
+window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); instEvt = e; showInst(); });
+if (isIOS && !standalone) showInst();
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('[data-inst]')) return;
+  if (instEvt) { instEvt.prompt(); instEvt.userChoice.then(function (c) { if (c.outcome === 'accepted') ['inst1', 'inst2'].forEach(function (id) { $(id).classList.remove('on'); }); instEvt = null; }); }
+  else if (isIOS) alert('En iPhone: tocá el botón Compartir (el cuadrado con la flecha) y elegí "Agregar a inicio".');
+  else alert('Abrí el menú del navegador (⋮) y elegí "Instalar app" o "Agregar a la pantalla principal".');
+});
+$('instX').onclick = function () { store('rec_instx', '1'); $('inst2').classList.remove('on'); };
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+if (read('rec_rem') === '0') $('rem').checked = false;
+
 $('out').onclick = function () { store('rec_u', null); store('rec_p', null); U = P = ''; $('appV').style.display = 'none'; $('bnav').style.display = 'none'; $('loginV').style.display = 'block'; };
 $('ref').onclick = function () { login(U, P, true).then(function () { toast('Actualizado ✓'); }); };
 
