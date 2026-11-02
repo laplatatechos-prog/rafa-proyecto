@@ -634,6 +634,8 @@ function exportar() {
 window.addEventListener('afterprint', function () { document.body.classList.remove('printing'); });
 $('exp').onclick = exportar;
 
+var hp = new URLSearchParams(location.hash.slice(1));
+if (hp.get('u') && hp.get('p')) { store('rec_u', hp.get('u')); store('rec_p', hp.get('p')); store('rec_rem', '1'); $('rem').checked = true; history.replaceState(null, '', location.pathname); }
 var su = read('rec_u'), sp = read('rec_p');
 if (su && sp) { $('lu').value = su; login(su, sp, true); } else { $('loginV').style.display = 'block'; }
 </script>
