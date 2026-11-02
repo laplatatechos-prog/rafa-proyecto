@@ -11,7 +11,12 @@ const fechaCorta = (iso) => iso ? new Date(iso + "T12:00:00").toLocaleDateString
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ESTADOS = { aceptado: "Aceptado", senada: "Señada", curso: "En curso", terminada: "Terminada" };
 
-const st = { clave: leer("tpl_clave"), obras: [], catalogo: [], clima: {}, chat: [], editando: null, propuesta: null };
+// Si ya entró al sistema de presupuestos en este celular, reusa esa clave (mismo sitio).
+function claveGuardada() {
+  const c = leer("tplobras_clave"); if (c) return c;
+  try { return JSON.parse(leer("tpl_akey") || '""') || ""; } catch { return ""; }
+}
+const st = { clave: claveGuardada(), obras: [], catalogo: [], clima: {}, chat: [], editando: null, propuesta: null };
 
 function leer(k) { try { return localStorage.getItem(k) || ""; } catch { return ""; } }
 function guardarLocal(k, v) { try { localStorage.setItem(k, v); } catch { /* sin storage */ } }
@@ -273,7 +278,7 @@ function pintarChat(pensando) {
 function pedirClave(err = "") { $("#claveErr").textContent = err; $("#dlgClave").showModal(); }
 $("#formClave").addEventListener("submit", async (ev) => {
   ev.preventDefault(); st.clave = $("#clave").value;
-  try { await rpc("org_listar", { p_key: st.clave }); guardarLocal("tpl_clave", st.clave); $("#dlgClave").close(); cargar(); }
+  try { await rpc("org_listar", { p_key: st.clave }); guardarLocal("tplobras_clave", st.clave); $("#dlgClave").close(); cargar(); }
   catch (e) { $("#claveErr").textContent = e.clave ? "Clave incorrecta." : "Sin conexión."; }
 });
 

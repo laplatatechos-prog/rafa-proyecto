@@ -16,5 +16,5 @@ Tres piezas que comparten la misma base de datos (Supabase `tpl-presupuestos`):
 - Pronóstico: Open-Meteo (gratis, sin clave).
 
 ## Publicación
-- Tablero: GitHub Pages, se publica solo al hacer push a `main` (`.github/workflows/pages.yml`).
+- Tablero: carpeta `obras/` de la rama `gh-pages` (https://laplatatechos-prog.github.io/rafa-proyecto/obras/), se publica sola al hacer push a `main`. No toca el resto del sitio, donde está el sistema de presupuestos.
 - APK: se compila sola en GitHub Actions y queda en la release `burbuja-latest` (`.github/workflows/android.yml`).

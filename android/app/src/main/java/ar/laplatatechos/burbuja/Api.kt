@@ -9,7 +9,7 @@ import java.net.URL
 object Api {
     const val SUPABASE = "https://hvgwikhzxxkhmbjnyohl.supabase.co"
     const val PUBLISHABLE = "sb_publishable_xUj53gV1c6xo6Y6t52R-Vw_hTS-P29s"
-    const val TABLERO = "https://laplatatechos-prog.github.io/rafa-proyecto/"
+    const val TABLERO = "https://laplatatechos-prog.github.io/rafa-proyecto/obras/"
 
     fun clave(ctx: Context): String =
         ctx.getSharedPreferences("tpl", Context.MODE_PRIVATE).getString("clave", "") ?: ""
