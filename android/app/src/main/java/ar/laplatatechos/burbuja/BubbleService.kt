@@ -246,13 +246,12 @@ class BubbleService : Service() {
         estado.text = "Claude está ordenando los datos…"
         bCargar.isEnabled = false; bCargar.alpha = .5f
         thread {
-            val r = try { Api.asistente(this, JSONObject().put("modo", "dictado").put("texto", t)) }
-                    catch (e: Exception) { JSONObject().put("error", "Sin conexión") }
+            var p: JSONObject? = null
+            val err = try { p = Api.dictado(this, t); "" } catch (e: Api.Error) { e.message ?: "Error" } catch (e: Exception) { "Sin conexión" }
             ui.post {
                 if (panel == null) return@post
-                val err = r.optString("error", "")
-                if (err.isNotEmpty()) { estado.text = "Error: $err"; return@post }
-                propuesta = r.getJSONObject("propuesta")
+                if (err.isNotEmpty() || p == null) { estado.text = "Error: $err"; return@post }
+                propuesta = p
                 resumen.text = describir(propuesta!!)
                 estado.text = "Revisá y tocá Cargar."
                 bCargar.isEnabled = true; bCargar.alpha = 1f
@@ -283,10 +282,8 @@ class BubbleService : Service() {
         bCargar.isEnabled = false; bCargar.alpha = .5f
         estado.text = "Guardando…"
         thread {
-            val r = try { Api.asistente(this, JSONObject().put("modo", "confirmar").put("propuesta", p)) }
-                    catch (e: Exception) { JSONObject().put("error", "Sin conexión") }
+            val err = try { Api.confirmar(this, p); "" } catch (e: Api.Error) { e.message ?: "Error" } catch (e: Exception) { "Sin conexión" }
             ui.post {
-                val err = r.optString("error", "")
                 if (err.isNotEmpty()) { estado.text = "Error: $err"; bCargar.isEnabled = true; bCargar.alpha = 1f; return@post }
                 estado.text = "Cargado ✔"
                 ui.postDelayed({ cerrarPanel() }, 900)

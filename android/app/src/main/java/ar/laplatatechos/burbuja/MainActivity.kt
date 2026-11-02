@@ -16,13 +16,13 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import org.json.JSONObject
 import kotlin.concurrent.thread
 
 /** Pantalla de configuración: clave, permisos y encender la burbuja. */
 class MainActivity : Activity() {
     private lateinit var estado: TextView
     private lateinit var clave: EditText
+    private lateinit var claveClaude: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +45,12 @@ class MainActivity : Activity() {
             setText(Api.clave(this@MainActivity))
         }
         root.addView(clave)
+        claveClaude = EditText(this).apply {
+            hint = "Clave de la API de Claude (sk-ant-...)"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            setText(Api.claveClaude(this@MainActivity))
+        }
+        root.addView(claveClaude)
         estado = TextView(this).apply { textSize = 15f; setPadding(0, pad / 2, 0, pad / 2) }
         root.addView(estado)
         root.addView(boton("Encender burbuja") { encender() })
@@ -67,12 +73,14 @@ class MainActivity : Activity() {
         if (!Settings.canDrawOverlays(this)) faltan += "mostrar sobre otras apps"
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) faltan += "micrófono"
         if (Api.clave(this).isEmpty()) faltan += "clave"
+        if (Api.claveClaude(this).isEmpty()) faltan += "clave de Claude"
         estado.text = if (faltan.isEmpty()) "Todo listo." else "Falta: " + faltan.joinToString(", ")
     }
 
     private fun encender() {
         val k = clave.text.toString().trim()
-        if (k.isEmpty()) { toast("Poné la clave"); return }
+        val kc = claveClaude.text.toString().trim()
+        if (k.isEmpty() || kc.isEmpty()) { toast("Poné las dos claves"); return }
         if (!Settings.canDrawOverlays(this)) {
             toast("Activá \"Mostrar sobre otras apps\" para TPL Burbuja y volvé")
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
@@ -84,12 +92,11 @@ class MainActivity : Activity() {
         if (pedir.isNotEmpty()) { requestPermissions(pedir.toTypedArray(), 1); return }
         // Verifica la clave contra el servidor antes de guardarla.
         estado.text = "Verificando clave…"
-        Api.guardarClave(this, k)
+        Api.guardarClaves(this, k, kc)
         thread {
-            val r = try { Api.asistente(this, JSONObject().put("modo", "ping")) } catch (e: Exception) { JSONObject().put("error", "Sin conexión") }
+            val err = try { Api.obras(this); "" } catch (e: Api.Error) { e.message ?: "Error" } catch (e: Exception) { "Sin conexión" }
             runOnUiThread {
-                val err = r.optString("error", "")
-                if (err.contains("Clave", true)) { estado.text = "Clave incorrecta."; return@runOnUiThread }
+                if (err.contains("Clave", true)) { estado.text = err; return@runOnUiThread }
                 startForegroundService(Intent(this, BubbleService::class.java))
                 toast("Burbuja encendida"); refrescar()
                 if (err.isNotEmpty()) estado.text = "Burbuja encendida. Aviso del servidor: $err"

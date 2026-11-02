@@ -5,14 +5,14 @@ Tres piezas que comparten la misma base de datos (Supabase `tpl-presupuestos`):
 | Pieza | Carpeta | Qué hace |
 |---|---|---|
 | Tablero web (PWA) | `web/` | Obras por cliente: trabajo, estado, materiales con precio, pedido hecho/pagado, cobros y saldo, fecha, pronóstico de La Plata, chat con Claude y dictado. Se instala en el celular desde Chrome ("Agregar a pantalla principal"). |
-| Asistente Claude | `supabase/functions/asistente/` | `analizar`: razona sobre todas las obras + pronóstico. `dictado`: convierte lo dictado en una propuesta. `confirmar`: guarda la propuesta que Rafael aprobó. |
+| Asistente Claude | `web/claude.js` y `android/.../Api.kt` | Llama a Claude directo desde el celular. `analizar`: razona sobre todas las obras + pronóstico y ordena prioridades. `dictado`: convierte lo dictado en una propuesta. `confirmar`: guarda la propuesta que Rafael aprobó. |
 | Burbuja Android | `android/` | Burbuja flotante sobre cualquier app. Tocás, dictás, Claude ordena, confirmás y se carga. |
 
 ## Base de datos
 `supabase/migrations/001_organizador.sql` agrega `obra_detalle`, `obra_materiales` y `obra_cobros` a la tabla `obras` existente, sin modificar lo que ya existe. Todo se lee y escribe con las funciones `org_*`, que piden la clave de administrador del sistema de presupuestos.
 
 ## Configuración
-- La clave de la API de Claude va como secret `ANTHROPIC_API_KEY` en Supabase → Edge Functions → Secrets. Nunca en el código.
+- La clave de la API de Claude se pega una vez en el tablero (o en la app Android) y queda guardada solo en ese celular. Nunca en el código.
 - Pronóstico: Open-Meteo (gratis, sin clave).
 
 ## Publicación

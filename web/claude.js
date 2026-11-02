@@ -1,47 +1,7 @@
-// Asistente de La Plata Techos.
-// POST {modo:"analizar", key, pregunta, historial?}  -> {texto}
-// POST {modo:"dictado",  key, texto}                  -> {propuesta}  (no guarda nada)
-// POST {modo:"confirmar", key, propuesta}             -> {ok, obra_id}  (guarda la propuesta que Rafael confirmó)
-// La clave de administrador es la misma del sistema de presupuestos.
-import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
-
-const SB = Deno.env.get("SUPABASE_URL")!;
-const SK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const MODEL = "claude-opus-5-5";
-const LAT = -34.9214, LON = -57.9545; // La Plata
-
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-const json = (b: unknown, s = 200) =>
-  new Response(JSON.stringify(b), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
-
-async function rpc(fn: string, args: unknown) {
-  const r = await fetch(`${SB}/rest/v1/rpc/${fn}`, {
-    method: "POST",
-    headers: { apikey: SK, Authorization: `Bearer ${SK}`, "Content-Type": "application/json" },
-    body: JSON.stringify(args),
-  });
-  if (!r.ok) throw new Error(`${fn}: ${r.status} ${await r.text()}`);
-  return r.json();
-}
-
-async function pronostico() {
-  const u = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}` +
-    `&daily=precipitation_sum,precipitation_probability_max,wind_speed_10m_max,temperature_2m_max` +
-    `&timezone=America%2FArgentina%2FBuenos_Aires&forecast_days=16`;
-  try {
-    const d = (await (await fetch(u)).json()).daily;
-    return d.time.map((t: string, i: number) => ({
-      fecha: t, lluvia_mm: d.precipitation_sum[i], prob_lluvia: d.precipitation_probability_max[i],
-      viento_kmh: d.wind_speed_10m_max[i], tmax: d.temperature_2m_max[i],
-    }));
-  } catch { return []; }
-}
-
-const hoy = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Argentina/Buenos_Aires" });
+// Claude desde el navegador: la clave de la API queda guardada solo en este celular.
+// Mismos modos que antes tenía la función del servidor: analizar, dictado, confirmar.
+"use strict";
+const CLAUDE_MODEL = "claude-opus-5-5";
 
 const SISTEMA_ANALISIS = `Sos el asistente operativo de Rafael, dueño de La Plata Techos (techos, impermeabilizaciones, zinguería, estructuras en La Plata).
 Hablás en español rioplatense, directo, como jefe de operaciones: sin rodeos, sin frases de cortesía.
@@ -112,91 +72,72 @@ const ESQUEMA_DICTADO = {
   },
 };
 
-function textoDe(msg: Anthropic.Message) {
-  return msg.content.filter((b) => b.type === "text").map((b) => (b as Anthropic.TextBlock).text).join("\n");
+function claudeKey() { try { return localStorage.getItem("tplobras_claude") || ""; } catch { return ""; } }
+
+async function llamarClaude(payload) {
+  let key = claudeKey();
+  if (!key) {
+    key = (prompt("Pegá tu clave de la API de Claude (empieza con sk-ant-). Queda guardada solo en este celular.") || "").trim();
+    if (!key) throw new Error("Falta la clave de Claude");
+    try { localStorage.setItem("tplobras_claude", key); } catch { }
+  }
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({ model: CLAUDE_MODEL, ...payload }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401) { try { localStorage.removeItem("tplobras_claude"); } catch { } throw new Error("Clave de Claude inválida. Tocá de nuevo y pegala otra vez."); }
+  if (!r.ok) throw new Error(j.error?.message || ("Claude respondió " + r.status));
+  if (j.stop_reason === "refusal") throw new Error("Claude no procesó ese pedido.");
+  return (j.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+}
+
+function climaParaClaude(clima) {
+  return Object.values(clima).map((d) => ({ fecha: d.fecha, lluvia_mm: d.mm, prob_lluvia: d.prob, viento_kmh: d.viento, tmax: d.max }));
 }
 
 // Combina la propuesta del dictado con la obra existente y la guarda.
-async function confirmar(key: string, p: any, obras: any[]) {
-  if (p?.accion === "cobro" && p.cobro) {
-    await rpc("org_cobro", { p_key: key, p: p.cobro });
-    return p.cobro.obra_id;
-  }
+async function confirmarPropuestaLocal(p, obras, rpc, clave, hoy) {
+  if (p?.accion === "cobro" && p.cobro) { await rpc("org_cobro", { p_key: clave, p: p.cobro }); return p.cobro.obra_id; }
   const n = p?.obra ?? {};
   const ex = obras.find((o) => o.id && o.id === n.id) ?? null;
-  const base = ex ?? { id: "", fecha: hoy(), dias: 1, estado: "aceptado", detalle: {}, materiales: [] };
-  const pick = (v: unknown, w: unknown) => (v === null || v === undefined ? w : v);
-  const det: Record<string, unknown> = { ...(base.detalle ?? {}) };
+  const base = ex ?? { id: "", fecha: hoy, dias: 1, estado: "aceptado", detalle: {}, materiales: [] };
+  const pick = (v, w) => (v === null || v === undefined ? w : v);
+  const det = { ...(base.detalle ?? {}) };
   for (const k of ["trabajo", "situacion", "pedido_estado", "pedido_pagado", "urgencia", "cliente_desde", "esperando_desde"]) if (n[k] !== null && n[k] !== undefined) det[k] = n[k];
-  const out: Record<string, unknown> = {
+  const out = {
     id: ex ? ex.id : "", cliente: pick(n.cliente, base.cliente), tel: pick(n.tel, base.tel), dir: pick(n.dir, base.dir),
     fecha: pick(n.fecha, base.fecha), dias: pick(n.dias, base.dias), estado: pick(n.estado, base.estado),
     total: pick(n.total, base.total), cuadrilla: base.cuadrilla ?? null,
     notas: [base.notas, n.notas].filter(Boolean).join("\n") || null, detalle: det,
   };
-  if (n.materiales?.length) {
-    out.materiales = [...(ex ? base.materiales : []), ...n.materiales.map((m: any) => ({ ...m, precio_unit: m.precio_unit ?? 0 }))];
-  }
-  return await rpc("org_guardar", { p_key: key, p: out });
+  if (n.materiales?.length) out.materiales = [...(ex ? base.materiales : []), ...n.materiales.map((m) => ({ ...m, precio_unit: m.precio_unit ?? 0 }))];
+  return rpc("org_guardar", { p_key: clave, p: out });
 }
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
-  if (req.method !== "POST") return json({ error: "solo POST" }, 405);
-
-  let body: any;
-  try { body = await req.json(); } catch { return json({ error: "JSON inválido" }, 400); }
-
-  let obras: any[];
-  try { obras = await rpc("org_listar", { p_key: body.key ?? "" }); }
-  catch (e) {
-    return String(e).includes("clave incorrecta") ? json({ error: "Clave incorrecta" }, 401) : json({ error: String(e) }, 500);
+// ctx: {obras, catalogo, clima, rpc, clave, hoy}
+async function asistenteLocal(body, ctx) {
+  if (body.modo === "confirmar") return { ok: true, obra_id: await confirmarPropuestaLocal(body.propuesta, ctx.obras, ctx.rpc, ctx.clave, ctx.hoy) };
+  if (body.modo === "dictado") {
+    const lista = ctx.obras.map((o) => ({ id: o.id, cliente: o.cliente, dir: o.dir, fecha: o.fecha, estado: o.estado }));
+    const cat = ctx.catalogo.map((c) => ({ id: c.id, nom: c.nom, uni: c.uni, pre: c.pre }));
+    const txt = await llamarClaude({
+      max_tokens: 4000, system: SISTEMA_DICTADO,
+      output_config: { effort: "low", format: { type: "json_schema", schema: ESQUEMA_DICTADO } },
+      messages: [{ role: "user", content: `Hoy: ${ctx.hoy}\nObras existentes: ${JSON.stringify(lista)}\nCatálogo: ${JSON.stringify(cat)}\n\nDictado:\n${body.texto}` }],
+    });
+    return { propuesta: JSON.parse(txt) };
   }
-  if (body.modo === "ping") return json({ ok: true, obras: obras.length });
-
-  try {
-    if (body.modo === "confirmar") {
-      const id = await confirmar(body.key, body.propuesta, obras);
-      return json({ ok: true, obra_id: id });
-    }
-  } catch (e) { return json({ error: String(e) }, 500); }
-
-  if (!Deno.env.get("ANTHROPIC_API_KEY")) return json({ error: "Falta cargar ANTHROPIC_API_KEY en los secrets de Supabase." }, 500);
-  const client = new Anthropic();
-  try {
-    if (body.modo === "dictado") {
-      const texto = String(body.texto ?? "").slice(0, 4000);
-      if (!texto.trim()) return json({ error: "No llegó texto" }, 400);
-      const catalogo = await (await fetch(`${SB}/rest/v1/catalogo?select=id,nom,uni,pre`, {
-        headers: { apikey: SK, Authorization: `Bearer ${SK}` },
-      })).json();
-      const lista = obras.map((o) => ({ id: o.id, cliente: o.cliente, dir: o.dir, fecha: o.fecha, estado: o.estado }));
-      const msg = await client.messages.create({
-        model: MODEL, max_tokens: 4000,
-        output_config: { effort: "low", format: { type: "json_schema", schema: ESQUEMA_DICTADO } },
-        system: SISTEMA_DICTADO,
-        messages: [{ role: "user", content:
-          `Hoy: ${hoy()}\nObras existentes: ${JSON.stringify(lista)}\nCatálogo: ${JSON.stringify(catalogo)}\n\nDictado:\n${texto}` }],
-      } as any);
-      if (msg.stop_reason === "refusal") return json({ error: "Claude no pudo procesar ese dictado." }, 422);
-      return json({ propuesta: JSON.parse(textoDe(msg)) });
-    }
-
-    // modo analizar (por defecto)
-    const pregunta = String(body.pregunta ?? "Dame el panorama: prioridades de esta semana, riesgos por lluvia, pedidos de materiales y cobros pendientes.").slice(0, 4000);
-    const historial = Array.isArray(body.historial) ? body.historial.slice(-10) : [];
-    const clima = await pronostico();
-    const contexto = `Hoy: ${hoy()}\nPronóstico La Plata (16 días): ${JSON.stringify(clima)}\nObras: ${JSON.stringify(obras)}`;
-    const msg = await client.messages.create({
-      model: MODEL, max_tokens: 8000,
-      output_config: { effort: "medium" },
-      system: [{ type: "text", text: SISTEMA_ANALISIS }, { type: "text", text: contexto }],
-      messages: [...historial.map((h: any) => ({ role: h.role === "assistant" ? "assistant" : "user", content: String(h.content) })),
-                 { role: "user", content: pregunta }],
-    } as any);
-    if (msg.stop_reason === "refusal") return json({ error: "Claude no respondió esa consulta." }, 422);
-    return json({ texto: textoDe(msg) });
-  } catch (e) {
-    return json({ error: String(e) }, 500);
-  }
-});
+  const contexto = `Hoy: ${ctx.hoy}\nPronóstico La Plata (16 días): ${JSON.stringify(climaParaClaude(ctx.clima))}\nObras: ${JSON.stringify(ctx.obras)}`;
+  const historial = (body.historial || []).slice(-10).map((h) => ({ role: h.role === "assistant" ? "assistant" : "user", content: String(h.content) }));
+  const texto = await llamarClaude({
+    max_tokens: 8000, output_config: { effort: "medium" },
+    system: [{ type: "text", text: SISTEMA_ANALISIS }, { type: "text", text: contexto }],
+    messages: [...historial, { role: "user", content: body.pregunta }],
+  });
+  return { texto };
+}

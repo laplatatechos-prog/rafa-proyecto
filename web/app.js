@@ -33,13 +33,7 @@ async function rpc(fn, args) {
   return txt ? JSON.parse(txt) : null;
 }
 async function asistente(body) {
-  const r = await fetch(`${SB}/functions/v1/asistente`, {
-    method: "POST", headers: { apikey: PK, Authorization: `Bearer ${PK}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ ...body, key: st.clave }),
-  });
-  const j = await r.json().catch(() => ({ error: "Respuesta inválida" }));
-  if (!r.ok || j.error) throw new Error(j.error || r.status);
-  return j;
+  return asistenteLocal(body, { obras: st.obras, catalogo: st.catalogo, clima: st.clima, rpc, clave: st.clave, hoy: hoyISO() });
 }
 
 async function cargar() {

@@ -1,0 +1,267 @@
+{
+ "system": "Convertís lo que Rafael dicta (techista de La Plata, habla rápido y coloquial) en datos para su sistema de obras.\nElegí una acción: \"nueva\" (cliente u obra nueva), \"actualizar\" (cambios a una obra existente: identificála por nombre de cliente o dirección en la lista y poné su id), o \"cobro\" (registró un pago de un cliente).\nCompletá solo lo que se dijo; lo que no se dijo va como null (no inventes). Fechas en formato AAAA-MM-DD; \"el martes\" o \"mañana\" se calculan desde la fecha de hoy que te paso.\nMontos en pesos argentinos sin puntos (\"dos palos\" = 2000000, \"500 lucas\" = 500000).\nMateriales: si coinciden con el catálogo, usá su precio y su id; si no, precio_unit null.\nUrgencia: \"se le llueve\", \"filtración\" = urgente; \"cuando puedas\" = baja. cliente_desde: si dice que es cliente de hace años, estimá la fecha; esperando_desde: desde cuándo espera el trabajo, si lo dice.\n\"resumen\" es una confirmación de 1 a 3 líneas para leer en una burbuja del celular.",
+ "schema": {
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+   "accion",
+   "resumen",
+   "obra",
+   "cobro"
+  ],
+  "properties": {
+   "accion": {
+    "type": "string",
+    "enum": [
+     "nueva",
+     "actualizar",
+     "cobro"
+    ]
+   },
+   "resumen": {
+    "type": "string"
+   },
+   "obra": {
+    "anyOf": [
+     {
+      "type": "null"
+     },
+     {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "id",
+       "cliente",
+       "tel",
+       "dir",
+       "fecha",
+       "dias",
+       "estado",
+       "total",
+       "notas",
+       "trabajo",
+       "situacion",
+       "pedido_estado",
+       "pedido_pagado",
+       "urgencia",
+       "cliente_desde",
+       "esperando_desde",
+       "materiales"
+      ],
+      "properties": {
+       "id": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "cliente": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "tel": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "dir": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "fecha": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "dias": {
+        "type": [
+         "integer",
+         "null"
+        ]
+       },
+       "estado": {
+        "anyOf": [
+         {
+          "type": "null"
+         },
+         {
+          "type": "string",
+          "enum": [
+           "aceptado",
+           "senada",
+           "curso",
+           "terminada"
+          ]
+         }
+        ]
+       },
+       "total": {
+        "type": [
+         "number",
+         "null"
+        ]
+       },
+       "notas": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "trabajo": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "situacion": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "pedido_estado": {
+        "anyOf": [
+         {
+          "type": "null"
+         },
+         {
+          "type": "string",
+          "enum": [
+           "pendiente",
+           "hecho",
+           "recibido"
+          ]
+         }
+        ]
+       },
+       "pedido_pagado": {
+        "type": [
+         "boolean",
+         "null"
+        ]
+       },
+       "urgencia": {
+        "anyOf": [
+         {
+          "type": "null"
+         },
+         {
+          "type": "string",
+          "enum": [
+           "baja",
+           "media",
+           "alta",
+           "urgente"
+          ]
+         }
+        ]
+       },
+       "cliente_desde": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "esperando_desde": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "materiales": {
+        "anyOf": [
+         {
+          "type": "null"
+         },
+         {
+          "type": "array",
+          "items": {
+           "type": "object",
+           "additionalProperties": false,
+           "required": [
+            "nombre",
+            "unidad",
+            "cantidad",
+            "precio_unit",
+            "catalogo_id"
+           ],
+           "properties": {
+            "nombre": {
+             "type": "string"
+            },
+            "unidad": {
+             "type": [
+              "string",
+              "null"
+             ]
+            },
+            "cantidad": {
+             "type": "number"
+            },
+            "precio_unit": {
+             "type": [
+              "number",
+              "null"
+             ]
+            },
+            "catalogo_id": {
+             "type": [
+              "string",
+              "null"
+             ]
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "cobro": {
+    "anyOf": [
+     {
+      "type": "null"
+     },
+     {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "obra_id",
+       "monto",
+       "medio",
+       "fecha"
+      ],
+      "properties": {
+       "obra_id": {
+        "type": "string"
+       },
+       "monto": {
+        "type": "number"
+       },
+       "medio": {
+        "type": [
+         "string",
+         "null"
+        ]
+       },
+       "fecha": {
+        "type": [
+         "string",
+         "null"
+        ]
+       }
+      }
+     }
+    ]
+   }
+  }
+ }
+}
