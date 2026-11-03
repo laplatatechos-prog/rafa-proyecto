@@ -47,7 +47,7 @@ const DB = (() => {
     }
     let acept = {};
     try { (await rpc("aceptados_resumen", {}) || []).forEach((a) => { acept[a.pres_id] = a; }); } catch { /* opcional */ }
-    return obras.map((o) => {
+    return obras.filter((o) => !(ex[o.id]?.detalle?.borrada)).map((o) => {
       const e = ex[o.id] || {};
       const mats = e.materiales || [], cobros = e.cobros || [];
       const a = o.pres_id && acept[o.pres_id];

@@ -103,3 +103,5 @@ legend { font-weight: 700; color: var(--bordo); padding: 0 4px; }
 #toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 16px;
   border-radius: 99px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; }
 #toast.on { opacity: 1; }
+
+.ghost.borrar { color: var(--mal); border-color: var(--mal); }
