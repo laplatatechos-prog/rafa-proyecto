@@ -1,7 +1,7 @@
 name: App Android (burbuja)
 on:
   push:
-    branches: [main]
+    branches: [main, claude/organizador-obras]
     paths: ["android/**", ".github/workflows/android.yml"]
   pull_request:
     paths: ["android/**", ".github/workflows/android.yml"]
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: tpl-burbuja, path: android/tpl-burbuja.apk }
       - name: Publicar APK para descargar desde el celular
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: burbuja-latest
