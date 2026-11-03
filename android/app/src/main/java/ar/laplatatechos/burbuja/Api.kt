@@ -21,7 +21,6 @@ object Api {
     class Error(msg: String) : Exception(msg)
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences("tpl", Context.MODE_PRIVATE)
-    fun clave(ctx: Context): String = prefs(ctx).getString("clave", "") ?: ""
     fun claveClaude(ctx: Context): String = prefs(ctx).getString("claude", "") ?: ""
     fun guardarClaves(ctx: Context, clave: String, claude: String) =
         prefs(ctx).edit().putString("clave", clave).putString("claude", claude).apply()
@@ -47,14 +46,37 @@ object Api {
         "apikey" to PUBLISHABLE, "Authorization" to "Bearer $PUBLISHABLE", "Content-Type" to "application/json"
     )
 
-    /** Llama una función org_* de la base. Devuelve el JSON crudo. */
-    fun rpc(fn: String, args: JSONObject): String {
-        val (code, txt) = http("$SUPABASE/rest/v1/rpc/$fn", "POST", sbHeaders, args.toString())
-        if (code !in 200..299) throw Error(if (txt.contains("clave incorrecta")) "Clave de administrador incorrecta" else "Base: $code")
+    private fun rest(path: String, metodo: String = "GET", body: String? = null, extra: Map<String, String> = emptyMap()): String {
+        val (code, txt) = http("$SUPABASE/rest/v1/$path", metodo, sbHeaders + extra, body)
+        if (code !in 200..299) throw Error("Base: $code ${txt.take(120)}")
         return txt
     }
 
-    fun obras(ctx: Context): JSONArray = JSONArray(rpc("org_listar", JSONObject().put("p_key", clave(ctx))))
+    private fun enc(s: String) = java.net.URLEncoder.encode(s, "UTF-8")
+
+    /** Datos extra de la obra (detalle, materiales, cobros) guardados en presupuestos con id "org-<obra>". */
+    private fun extra(id: String): JSONObject {
+        val r = JSONArray(rest("presupuestos?select=data&id=eq.${enc("org-$id")}"))
+        return if (r.length() > 0) r.getJSONObject(0).optJSONObject("data") ?: JSONObject() else JSONObject()
+    }
+
+    private fun guardarExtra(obra: JSONObject, det: JSONObject, mats: JSONArray, cobros: JSONArray) {
+        val data = JSONObject().put("org", true).put("cli", obra.optString("cliente")).put("num", "ORG").put("vend", "organizador")
+            .put("fecha", hoy()).put("detalle", det).put("materiales", mats).put("cobros", cobros)
+        val fila = JSONObject().put("id", "org-" + obra.getString("id")).put("num", "ORG").put("vend", "organizador")
+            .put("cli", obra.optString("cliente")).put("total", obra.optDouble("total", 0.0).let { if (it.isNaN()) 0.0 else it })
+            .put("data", data).put("updated_at", java.time.Instant.now().toString())
+        rest("presupuestos?on_conflict=id", "POST", JSONArray().put(fila).toString(),
+            mapOf("Prefer" to "resolution=merge-duplicates,return=minimal"))
+    }
+
+    /** Lista de obras (solo lo que necesita el dictado: id, cliente, dir, fecha, estado + extras). */
+    fun obras(ctx: Context): JSONArray = JSONArray(rest("obras?select=*"))
+
+    private fun obra(id: String): JSONObject? {
+        val r = JSONArray(rest("obras?select=*&id=eq.${enc(id)}"))
+        return if (r.length() > 0) r.getJSONObject(0) else null
+    }
 
     private fun catalogo(): JSONArray {
         val (code, txt) = http("$SUPABASE/rest/v1/catalogo?select=id,nom,uni,pre", "GET", sbHeaders, null)
@@ -103,39 +125,46 @@ object Api {
 
     /** Guarda la propuesta que Rafael confirmó, combinándola con la obra existente. */
     fun confirmar(ctx: Context, p: JSONObject) {
-        val key = clave(ctx)
         if (p.optString("accion") == "cobro" && p.optJSONObject("cobro") != null) {
-            rpc("org_cobro", JSONObject().put("p_key", key).put("p", p.getJSONObject("cobro"))); return
+            val c = p.getJSONObject("cobro")
+            val ob = obra(c.getString("obra_id")) ?: throw Error("No encontré esa obra")
+            val ex = extra(ob.getString("id"))
+            val cobros = ex.optJSONArray("cobros") ?: JSONArray()
+            cobros.put(JSONObject().put("id", java.util.UUID.randomUUID().toString())
+                .put("fecha", if (c.isNull("fecha")) hoy() else c.getString("fecha"))
+                .put("monto", c.getDouble("monto")).put("medio", c.opt("medio")).put("nota", JSONObject.NULL))
+            guardarExtra(ob, ex.optJSONObject("detalle") ?: JSONObject(), ex.optJSONArray("materiales") ?: JSONArray(), cobros)
+            return
         }
         val n = p.optJSONObject("obra") ?: JSONObject()
-        val obras = obras(ctx)
-        var ex: JSONObject? = null
-        if (!n.isNull("id")) for (i in 0 until obras.length()) if (obras.getJSONObject(i).optString("id") == n.optString("id")) ex = obras.getJSONObject(i)
-        val base = ex ?: JSONObject().put("id", "").put("fecha", hoy()).put("dias", 1).put("estado", "aceptado")
-        fun pick(k: String): Any? = if (n.has(k) && !n.isNull(k)) n.get(k) else base.opt(k)
-        val det = base.optJSONObject("detalle")?.let { JSONObject(it.toString()) } ?: JSONObject()
+        val prev = if (!n.isNull("id") && n.optString("id").isNotBlank()) obra(n.getString("id")) else null
+        val id = prev?.getString("id") ?: ("o" + java.util.UUID.randomUUID().toString().replace("-", ""))
+        fun v(k: String, d: Any? = JSONObject.NULL): Any? = if (n.has(k) && !n.isNull(k)) n.get(k) else prev?.opt(k) ?: d
+        val notas = listOf(prev?.optString("notas", "") ?: "", if (n.isNull("notas")) "" else n.optString("notas"))
+            .filter { it.isNotBlank() && it != "null" }.joinToString("\n")
+        val ob = JSONObject().put("id", id)
+            .put("fecha", v("fecha", hoy())).put("dias", v("dias", 1))
+            .put("hora", prev?.opt("hora") ?: JSONObject.NULL).put("hora_fin", prev?.opt("hora_fin") ?: JSONObject.NULL)
+            .put("cliente", v("cliente", "")).put("tel", v("tel")).put("dir", v("dir"))
+            .put("cuadrilla", prev?.opt("cuadrilla") ?: JSONObject.NULL).put("estado", v("estado", "aceptado"))
+            .put("pres_id", prev?.opt("pres_id") ?: JSONObject.NULL).put("pres_num", prev?.opt("pres_num") ?: JSONObject.NULL)
+            .put("total", v("total")).put("notas", if (notas.isEmpty()) JSONObject.NULL else notas)
+            .put("cargo", prev?.opt("cargo") ?: JSONObject.NULL).put("updated_by", "organizador")
+        rest("rpc/guardar_obra", "POST", JSONObject().put("p_obra", ob).toString())
+        val ex = extra(id)
+        val det = ex.optJSONObject("detalle") ?: JSONObject()
         for (k in listOf("trabajo", "situacion", "pedido_estado", "pedido_pagado", "urgencia", "cliente_desde", "esperando_desde"))
             if (n.has(k) && !n.isNull(k)) det.put(k, n.get(k))
-        val notas = listOf(base.optString("notas", ""), if (n.isNull("notas")) "" else n.optString("notas"))
-            .filter { it.isNotBlank() && it != "null" }.joinToString("\n")
-        val out = JSONObject()
-            .put("id", ex?.optString("id") ?: "")
-            .put("cliente", pick("cliente")).put("tel", pick("tel")).put("dir", pick("dir"))
-            .put("fecha", pick("fecha")).put("dias", pick("dias")).put("estado", pick("estado"))
-            .put("total", pick("total")).put("cuadrilla", base.opt("cuadrilla"))
-            .put("notas", if (notas.isEmpty()) JSONObject.NULL else notas)
-            .put("detalle", det)
-        val nm = n.optJSONArray("materiales")
-        if (nm != null && nm.length() > 0) {
-            val mats = JSONArray()
-            base.optJSONArray("materiales")?.let { for (i in 0 until it.length()) mats.put(it.get(i)) }
-            for (i in 0 until nm.length()) {
-                val m = nm.getJSONObject(i)
+        if (prev == null && !det.has("esperando_desde")) det.put("esperando_desde", hoy())
+        val mats = ex.optJSONArray("materiales") ?: JSONArray()
+        n.optJSONArray("materiales")?.let {
+            for (i in 0 until it.length()) {
+                val m = it.getJSONObject(i)
                 if (m.isNull("precio_unit")) m.put("precio_unit", 0)
+                m.put("id", java.util.UUID.randomUUID().toString())
                 mats.put(m)
             }
-            out.put("materiales", mats)
         }
-        rpc("org_guardar", JSONObject().put("p_key", key).put("p", out))
+        guardarExtra(ob, det, mats, ex.optJSONArray("cobros") ?: JSONArray())
     }
 }
