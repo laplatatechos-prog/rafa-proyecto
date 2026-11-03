@@ -1,6 +1,6 @@
 -- Organizador de obras: extiende tpl-presupuestos sin tocar tablas existentes.
--- Las tablas nuevas no se leen ni escriben con la clave pública: todo pasa por
--- funciones que piden la clave de administrador (mismo esquema que admin_upsert_obra).
+-- Sin contraseña (pedido de Rafael 2026-11-03): las funciones org_* no piden clave.
+-- p_key queda en la firma solo por compatibilidad y se ignora.
 
 create table if not exists public.obra_detalle (
   obra_id        text primary key references public.obras(id) on delete cascade,
@@ -50,7 +50,6 @@ alter table public.obra_cobros     enable row level security;
 create or replace function public.org_listar(p_key text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 begin
-  if public.admin_ok(p_key) is not true then raise exception 'clave incorrecta'; end if;
   return coalesce((
     select jsonb_agg(x order by x->>'fecha') from (
       select to_jsonb(o) || jsonb_build_object(
@@ -77,7 +76,6 @@ returns text language plpgsql security definer set search_path = public as $$
 declare v_id text := coalesce(nullif(p->>'id',''), 'o' || replace(gen_random_uuid()::text,'-',''));
         d jsonb := coalesce(p->'detalle','{}');
 begin
-  if public.admin_ok(p_key) is not true then raise exception 'clave incorrecta'; end if;
 
   insert into obras(id, fecha, dias, cliente, tel, dir, cuadrilla, estado, total, notas, updated_by, updated_at)
   values (left(v_id,40), coalesce(nullif(p->>'fecha','')::date, tpl_hoy()), greatest(1,coalesce(nullif(p->>'dias','')::int,1)),
@@ -117,7 +115,6 @@ create or replace function public.org_cobro(p_key text, p jsonb)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare v uuid;
 begin
-  if public.admin_ok(p_key) is not true then raise exception 'clave incorrecta'; end if;
   insert into obra_cobros(obra_id, fecha, monto, medio, nota)
   values (p->>'obra_id', coalesce(nullif(p->>'fecha','')::date, tpl_hoy()), (p->>'monto')::numeric, p->>'medio', p->>'nota')
   returning id into v;
@@ -127,7 +124,6 @@ end $$;
 create or replace function public.org_borrar_cobro(p_key text, p_id uuid)
 returns boolean language plpgsql security definer set search_path = public as $$
 begin
-  if public.admin_ok(p_key) is not true then raise exception 'clave incorrecta'; end if;
   delete from obra_cobros where id = p_id;
   return found;
 end $$;
