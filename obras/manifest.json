@@ -1,0 +1,11 @@
+{
+  "name": "TPL Obras",
+  "short_name": "TPL Obras",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f4f2",
+  "theme_color": "#7a1f2b",
+  "lang": "es-AR",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }],
+  "shortcuts": [{ "name": "Dictar", "url": "./?dictar=1" }]
+}
