@@ -268,14 +268,6 @@ function pintarChat(pensando) {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
-// ---------- clave ----------
-function pedirClave(err = "") { $("#claveErr").textContent = err; $("#dlgClave").showModal(); }
-$("#formClave").addEventListener("submit", async (ev) => {
-  ev.preventDefault(); st.clave = $("#clave").value;
-  try { await rpc("org_listar", { p_key: st.clave }); guardarLocal("tplobras_clave", st.clave); $("#dlgClave").close(); cargar(); }
-  catch (e) { $("#claveErr").textContent = e.clave ? "Clave incorrecta." : "Sin conexión."; }
-});
-
 // ---------- eventos ----------
 $$(".tabs button").forEach((b) => b.addEventListener("click", () => {
   $$(".tabs button").forEach((x) => x.classList.toggle("on", x === b));
