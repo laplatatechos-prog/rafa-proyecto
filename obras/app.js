@@ -23,15 +23,8 @@ function guardarLocal(k, v) { try { localStorage.setItem(k, v); } catch { /* sin
 function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); }
 
 // ---------- API ----------
-async function rpc(fn, args) {
-  const r = await fetch(`${SB}/rest/v1/rpc/${fn}`, {
-    method: "POST", headers: { apikey: PK, Authorization: `Bearer ${PK}`, "Content-Type": "application/json" },
-    body: JSON.stringify(args),
-  });
-  const txt = await r.text();
-  if (!r.ok) { const e = new Error(txt.includes("clave incorrecta") ? "clave" : txt); e.clave = txt.includes("clave incorrecta"); throw e; }
-  return txt ? JSON.parse(txt) : null;
-}
+// Datos: ver db.js (usa las tablas que ya existen, sin contraseña).
+function rpc(fn, args) { return DB.rpc(fn, args); }
 async function asistente(body) {
   return asistenteLocal(body, { obras: st.obras, catalogo: st.catalogo, clima: st.clima, rpc, clave: st.clave, hoy: hoyISO() });
 }
