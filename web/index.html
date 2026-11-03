@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a1f2b">
+<title>TPL Obras</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">TPL <span>Obras</span></div>
+  <button id="btnDictar" class="mic" title="Dictar" aria-label="Dictar">🎤</button>
+</header>
+
+<nav class="tabs">
+  <button data-tab="obras" class="on">Obras</button>
+  <button data-tab="clima">Clima</button>
+  <button data-tab="asistente">Claude</button>
+</nav>
+
+<main>
+  <section id="tab-obras">
+    <div class="kpis" id="kpis"></div>
+    <div class="filtros">
+      <input id="buscar" type="search" placeholder="Buscar cliente o dirección">
+      <select id="filtroEstado">
+        <option value="activas">Activas</option>
+        <option value="">Todas</option>
+        <option value="aceptado">Aceptado</option>
+        <option value="senada">Señada</option>
+        <option value="curso">En curso</option>
+        <option value="terminada">Terminada</option>
+      </select>
+    </div>
+    <div id="lista"></div>
+    <button class="fab" id="btnNueva" aria-label="Nueva obra">＋</button>
+  </section>
+
+  <section id="tab-clima" hidden>
+    <p class="muted">Pronóstico de La Plata, 16 días. Rojo: no se trabaja en techo (lluvia ≥ 60 % o ≥ 2 mm, o viento ≥ 40 km/h).</p>
+    <div id="clima"></div>
+  </section>
+
+  <section id="tab-asistente" hidden>
+    <div class="chips">
+      <button data-q="¿Qué obra hago primero? Ordená todas las obras activas pesando la seña que dejó cada cliente y hace cuánto, cuánto espera, urgencia, margen para nosotros, si es cliente viejo o nuevo, clima y materiales. Explicá cada lugar.">¿Cuál primero?</button>
+      <button data-q="Dame el panorama: prioridades de esta semana, riesgos por lluvia, pedidos de materiales y cobros pendientes.">Panorama semana</button>
+      <button data-q="¿Qué obras chocan con lluvia en los próximos días y a qué fecha las muevo?">Lluvia</button>
+      <button data-q="¿A quién le tengo que cobrar y cuánto? Ordenalo de mayor a menor.">Cobros</button>
+      <button data-q="¿Qué pedidos de materiales tengo que hacer o pagar ya, y por cuánta plata en total?">Pedidos</button>
+    </div>
+    <div id="chat"></div>
+    <form id="formChat" class="chatbar">
+      <input id="pregunta" placeholder="Preguntale a Claude…" autocomplete="off">
+      <button>Enviar</button>
+    </form>
+  </section>
+</main>
+
+<!-- Editor de obra -->
+<dialog id="dlgObra">
+  <form id="formObra" method="dialog">
+    <div class="dlg-head">
+      <h2 id="tituloObra">Obra</h2>
+      <button type="button" class="x" data-close>✕</button>
+    </div>
+    <div class="dlg-body">
+      <fieldset><legend>1 · Cliente</legend>
+        <label>Nombre<input name="cliente" required></label>
+        <label>Teléfono<input name="tel" type="tel" inputmode="tel"></label>
+        <label>Dirección<input name="dir"></label>
+      </fieldset>
+      <fieldset><legend>2 · Trabajo a realizar</legend>
+        <textarea name="trabajo" rows="3"></textarea>
+      </fieldset>
+      <fieldset><legend>3 · Situación</legend>
+        <label>Estado
+          <select name="estado">
+            <option value="aceptado">Aceptado</option>
+            <option value="senada">Señada</option>
+            <option value="curso">En curso</option>
+            <option value="terminada">Terminada</option>
+          </select>
+        </label>
+        <label>Urgencia
+          <select name="urgencia">
+            <option value="baja">Baja</option>
+            <option value="media">Media</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente (se llueve)</option>
+          </select>
+        </label>
+        <div class="row">
+          <label>Cliente desde<input name="cliente_desde" type="date"></label>
+          <label>Esperando desde<input name="esperando_desde" type="date"></label>
+        </div>
+        <label>Detalle<textarea name="situacion" rows="2" placeholder="Ej: falta medir canaleta"></textarea></label>
+      </fieldset>
+      <fieldset><legend>4 · Materiales</legend>
+        <div id="mats"></div>
+        <button type="button" id="btnMat" class="ghost">+ Material</button>
+        <div class="total">Total materiales: <b id="totMat">$0</b></div>
+      </fieldset>
+      <fieldset><legend>5 · Pedido de materiales</legend>
+        <label>Estado
+          <select name="pedido_estado">
+            <option value="pendiente">Pendiente (no se pidió)</option>
+            <option value="hecho">Pedido hecho</option>
+            <option value="recibido">Recibido en obra</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" name="pedido_pagado"> Pedido pagado</label>
+        <label>Proveedor<input name="pedido_proveedor"></label>
+      </fieldset>
+      <fieldset><legend>6 · Plata</legend>
+        <label>Total de la obra ($)<input name="total" type="number" inputmode="decimal" min="0" step="any"></label>
+        <div id="cobros"></div>
+        <div class="row">
+          <input id="cobroMonto" type="number" inputmode="decimal" placeholder="Monto cobrado" step="any">
+          <input id="cobroMedio" placeholder="Medio">
+          <button type="button" id="btnCobro" class="ghost">Cobrar</button>
+        </div>
+        <div class="total">Cobrado: <b id="totCob">$0</b> · Falta: <b id="saldo">$0</b></div>
+      </fieldset>
+      <fieldset><legend>7 · Cuándo</legend>
+        <div class="row">
+          <label>Inicio<input name="fecha" type="date" required></label>
+          <label>Días<input name="dias" type="number" min="1" value="1"></label>
+        </div>
+        <label class="check"><input type="checkbox" name="necesita_seco" checked> Necesita día seco</label>
+        <div id="climaObra" class="muted"></div>
+      </fieldset>
+      <fieldset><legend>Notas</legend>
+        <textarea name="notas" rows="2"></textarea>
+      </fieldset>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" id="btnBorrar" class="ghost borrar">Borrar</button>
+      <a id="btnWa" class="ghost" target="_blank" rel="noopener">WhatsApp</a>
+      <button type="submit" class="primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Confirmación de dictado -->
+<dialog id="dlgDictado">
+  <div class="dlg-head"><h2>Dictado</h2><button type="button" class="x" data-close>✕</button></div>
+  <div class="dlg-body">
+    <p id="dictEstado" class="muted">Hablá ahora…</p>
+    <textarea id="dictTexto" rows="4" placeholder="Lo que dictaste aparece acá. Podés corregirlo."></textarea>
+    <div id="dictPropuesta"></div>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" id="btnInterpretar" class="ghost">Interpretar</button>
+    <button type="button" id="btnConfirmar" class="primary" disabled>Cargar</button>
+  </div>
+</dialog>
+
+
+
+<div id="toast" role="status"></div>
+<script src="config.js?v=5"></script>
+<script src="db.js?v=5"></script>
+<script src="claude.js?v=5"></script>
+<script src="app.js?v=5"></script>
+</body>
+</html>
