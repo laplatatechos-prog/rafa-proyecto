@@ -312,6 +312,13 @@ $("#formObra").addEventListener("submit", async (ev) => {
   try { await guardarObra(datosForm()); $("#dlgObra").close(); toast("Guardado ✔"); cargar(); }
   catch (e) { toast("Error: " + e.message); }
 });
+$("#btnBorrar").addEventListener("click", async () => {
+  const e = st.editando;
+  if (!e.id) { $("#dlgObra").close(); return; }
+  if (!confirm(`¿Borrar la obra de ${e.cliente || "este cliente"}?`)) return;
+  try { await guardarObra({ id: e.id, detalle: { ...(e.detalle || {}), borrada: true } }); $("#dlgObra").close(); toast("Borrada"); cargar(); }
+  catch (err) { toast("Error: " + err.message); }
+});
 $("#btnDictar").addEventListener("click", abrirDictado);
 $("#btnInterpretar").addEventListener("click", interpretar);
 $("#btnConfirmar").addEventListener("click", confirmarPropuesta);
