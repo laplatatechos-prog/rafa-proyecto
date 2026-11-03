@@ -40,7 +40,6 @@ async function cargar() {
   try {
     st.obras = await rpc("org_listar", { p_key: st.clave });
   } catch (e) {
-    if (e.clave) return pedirClave("Clave incorrecta.");
     toast("Sin conexión con la base"); console.error(e);
   }
   render();
@@ -338,7 +337,7 @@ $("#formChat").addEventListener("submit", (ev) => { ev.preventDefault(); const q
 // ---------- arranque ----------
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => { });
 cargarCatalogo(); cargarClima();
-if (!st.clave) pedirClave(); else cargar();
+cargar();
 const qs = new URLSearchParams(location.search);
 if (qs.get("dictar")) setTimeout(abrirDictado, 400);
 if (qs.get("texto")) { setTimeout(() => { abrirDictado(); $("#dictTexto").value = qs.get("texto"); interpretar(); }, 600); }
