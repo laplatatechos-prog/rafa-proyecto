@@ -1,0 +1,701 @@
+<title>Mi Día</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: una sola columna de celular; agenda arriba, barra fija abajo con micrófono central. Paleta: pizarra de obra + amarillo de casco. */
+:root {
+  --bg: #f4f5f2; --surface: #ffffff; --surface-2: #e7e9e3; --fg: #1b1f1c; --muted: #5d655f;
+  --accent: #e8a20c; --accent-fg: #1b1508; --debo: #c2412d; --cobro: #2f7d4a; --line: #d9dcd4;
+  --shadow: rgba(27, 31, 28, .12);
+  --f-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 16px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121614; --surface: #1c221f; --surface-2: #2a312d; --fg: #eef1ec; --muted: #9aa49d;
+  --accent: #f2b229; --accent-fg: #1b1508; --debo: #f07a64; --cobro: #6ccf8e; --line: #2f3833;
+  --shadow: rgba(0, 0, 0, .45); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121614; --surface: #1c221f; --surface-2: #2a312d; --fg: #eef1ec; --muted: #9aa49d;
+  --accent: #f2b229; --accent-fg: #1b1508; --debo: #f07a64; --cobro: #6ccf8e; --line: #2f3833;
+  --shadow: rgba(0, 0, 0, .45); color-scheme: dark }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font: 16px/1.45 var(--f-body); margin: 0;
+  -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 640px; margin: 0 auto; padding-block: 16px calc(170px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 18px; }
+.cabecera { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.fecha { margin: 0; color: var(--muted); font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: 34px; line-height: 1; margin: 4px 0 0; letter-spacing: -.02em; }
+h2 { font-family: var(--f-display); font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.reloj { font-family: var(--f-display); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.btn-dia { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%;
+  background: var(--accent); color: var(--accent-fg); font-family: var(--f-display); font-weight: 800; font-size: 20px;
+  padding: 18px; border-radius: var(--r); box-shadow: 0 6px 18px var(--shadow); }
+.btn-dia svg { width: 22px; height: 22px; }
+
+.banner { background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--debo);
+  border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.banner button { align-self: flex-start; background: var(--accent); color: var(--accent-fg); font-weight: 600; padding: 8px 14px; border-radius: 10px; }
+
+.lista { display: flex; flex-direction: column; gap: 8px; }
+.vacio { color: var(--muted); margin: 0; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.item { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center;
+  background: var(--surface); border-radius: 14px; padding: 12px 14px; min-height: 60px; }
+.hora { font-family: var(--f-display); font-weight: 800; font-size: 19px; font-variant-numeric: tabular-nums; }
+.hora.sin { color: var(--accent); font-size: 14px; letter-spacing: .06em; }
+.cuerpo { min-width: 0; }
+.titulo { font-weight: 600; overflow-wrap: anywhere; }
+.sub { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.item.pasado { opacity: .5; }
+.item.hecho .titulo { text-decoration: line-through; color: var(--muted); }
+.chip { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+.totales { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.total { background: var(--surface); border-radius: 14px; padding: 12px 14px; }
+.total span { display: block; color: var(--muted); font-size: 13px; }
+.total strong { font-family: var(--f-display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.total.debo strong, .monto.debo { color: var(--debo); }
+.total.cobro strong, .monto.cobro { color: var(--cobro); }
+.deuda { grid-template-columns: 1fr auto auto; }
+.monto { font-family: var(--f-display); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vencida { color: var(--debo); font-weight: 600; }
+.ayuda { color: var(--muted); font-size: 14px; margin: 0; }
+
+/* Barra inferior */
+.abajo { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.abajo-in { max-width: 640px; margin: 0 auto; padding-block: 10px 8px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 8px; }
+.texto { display: flex; gap: 8px; }
+.texto input { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 24px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--fg); font: inherit; }
+.texto button { width: 46px; border-radius: 50%; background: var(--surface-2); font-weight: 700; }
+.nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; font-weight: 600; color: var(--muted); padding: 4px; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-pressed="true"] { color: var(--fg); }
+.mic { width: 78px; height: 78px; border-radius: 50%; background: var(--accent); color: var(--accent-fg);
+  display: grid; place-items: center; box-shadow: 0 6px 22px var(--shadow); margin-top: -34px; border: 5px solid var(--surface); }
+.mic svg { width: 34px; height: 34px; }
+.mic:active { transform: scale(.95); }
+
+/* Capas */
+.capa { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: flex; align-items: center; justify-content: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
+.capa-in { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; text-align: center; }
+.capa h2 { font-size: 15px; }
+.grande { font-family: var(--f-display); font-weight: 800; font-size: 30px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.transcripcion { font-size: 22px; min-height: 2.6em; color: var(--fg); margin: 0; }
+.leyendo { text-align: left; color: var(--muted); max-height: 42dvh; overflow: auto; margin: 0; white-space: pre-line; }
+.btn-sec { width: 100%; background: var(--surface-2); padding: 14px; border-radius: 12px; font-weight: 600; }
+.par { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.onda { display: flex; gap: 6px; justify-content: center; height: 56px; align-items: center; }
+.onda span { width: 8px; height: 18px; background: var(--accent); border-radius: 4px; animation: onda 1s ease-in-out infinite; }
+.onda span:nth-child(2) { animation-delay: .1s } .onda span:nth-child(3) { animation-delay: .2s }
+.onda span:nth-child(4) { animation-delay: .3s } .onda span:nth-child(5) { animation-delay: .4s }
+@keyframes onda { 50% { height: 52px } }
+@media (prefers-reduced-motion: reduce) { .onda span { animation: none } }
+
+.aviso { position: fixed; z-index: 30; left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(160px + env(safe-area-inset-bottom, 0px)); max-width: 608px; margin: 0 auto;
+  background: var(--fg); color: var(--bg); border-radius: 12px; padding: 12px 14px;
+  display: flex; gap: 12px; align-items: center; justify-content: space-between; box-shadow: 0 8px 24px var(--shadow); }
+.aviso button { color: var(--accent); font-weight: 700; white-space: nowrap; }
+</style>
+
+<main class="wrap">
+  <header class="cabecera">
+    <div>
+      <p class="fecha" id="fecha"></p>
+      <h1 id="h-vista">Mi día</h1>
+    </div>
+    <div class="reloj" id="reloj"></div>
+  </header>
+
+  <div id="banner" class="banner" hidden>
+    <span id="banner-texto"></span>
+    <button id="banner-btn" type="button" hidden>Permitir</button>
+  </div>
+
+  <section id="vista-hoy" class="lista" style="gap:18px">
+    <button class="btn-dia" id="btn-escuchar" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+      Escuchar mi día
+    </button>
+    <div class="lista">
+      <h2>Hoy</h2>
+      <div id="lista-hoy" class="lista"><p class="vacio">Leyendo tus calendarios…</p></div>
+    </div>
+    <div class="lista">
+      <h2>Mañana</h2>
+      <div id="lista-manana" class="lista"><p class="vacio">—</p></div>
+    </div>
+  </section>
+
+  <section id="vista-deudas" class="lista" style="gap:14px" hidden>
+    <div class="totales">
+      <div class="total debo"><span>Debo</span><strong id="t-debo">$ 0</strong></div>
+      <div class="total cobro"><span>Me deben</span><strong id="t-cobro">$ 0</strong></div>
+    </div>
+    <p class="ayuda">Tocá el micrófono y decí: "le debo 50 mil a Juan para el viernes" o "Gómez me debe 200 mil de la obra".</p>
+    <div id="lista-deudas" class="lista"><p class="vacio">Todavía no anotaste deudas. Tocá el micrófono para cargar la primera.</p></div>
+  </section>
+</main>
+
+<div class="abajo">
+  <div class="abajo-in">
+    <form class="texto" id="form" autocomplete="off">
+      <input id="entrada" type="text" placeholder="Escribí: mañana 10 hs visita obra Gonnet" enterkeyhint="send" aria-label="Escribir algo para agendar">
+      <button type="submit" aria-label="Agendar">➤</button>
+    </form>
+    <nav class="nav">
+      <button class="tab" id="tab-hoy" type="button" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Hoy
+      </button>
+      <button class="mic" id="btn-mic" type="button" aria-label="Agregar por voz">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <button class="tab" id="tab-deudas" type="button" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Deudas
+      </button>
+    </nav>
+  </div>
+</div>
+
+<div id="capa-voz" class="capa" hidden>
+  <div class="capa-in">
+    <div class="onda" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+    <h2 id="voz-estado">Te escucho</h2>
+    <p class="transcripcion" id="voz-texto"></p>
+    <p class="ayuda">Ej: "agregame a las 2 de la tarde una cita con Pérez"</p>
+    <div class="par">
+      <button class="btn-sec" id="voz-cancelar" type="button">Cancelar</button>
+      <button class="btn-dia" id="voz-listo" type="button" style="font-size:17px;padding:14px">Listo</button>
+    </div>
+  </div>
+</div>
+
+<div id="capa-dia" class="capa" hidden>
+  <div class="capa-in">
+    <h2 id="dia-sub">Buen día</h2>
+    <p class="grande" id="dia-grande">Tu día está listo</p>
+    <p class="leyendo" id="dia-texto"></p>
+    <button class="btn-dia" id="dia-play" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
+      <span id="dia-play-txt">Escuchar</span>
+    </button>
+    <div class="par" id="dia-pregunta" hidden>
+      <button class="btn-sec" id="dia-no" type="button">No, listo</button>
+      <button class="btn-dia" id="dia-si" type="button" style="font-size:17px;padding:14px">Sí, agregar</button>
+    </div>
+    <button class="btn-sec" id="dia-cerrar" type="button">Cerrar</button>
+  </div>
+</div>
+
+<div id="aviso" class="aviso" role="status" hidden>
+  <span id="aviso-texto"></span>
+  <button id="aviso-deshacer" type="button" hidden>Deshacer</button>
+</div>
+
+<script>
+/*__PARSER__*/
+</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var CAL = 'Google Calendar';
+  var MARCA = 'Creado por Mi Día';
+  var EXCLUIR = /^(☀️\s*Mi Día|🔔\s*Informe)/;
+  var mcp = null, db = null, tts = null, dict = null;
+  var calendarios = null;        // [{id, nombre}]
+  var eventosHoy = [], eventosManana = [], deudas = [];
+  var ultimo = null;             // para deshacer
+  var pendienteReintento = null; // acción a repetir tras permiso
+
+  /* ---------- utilidades ---------- */
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function isoDia(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function isoLocal(d) { return isoDia(d) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00'; }
+  function deISO(s) { var a = s.split('-'); return new Date(+a[0], +a[1] - 1, +a[2]); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function plata(n, m) { return (m === 'USD' ? 'US$ ' : '$ ') + formatearMiles(n); }
+  function limpiarVoz(s) { return String(s).replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '').replace(/\s+/g, ' ').trim(); }
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sin storage */ } }
+
+  var timerAviso = null;
+  function avisar(t, conDeshacer) {
+    $('aviso-texto').textContent = t;
+    $('aviso-deshacer').hidden = !conDeshacer;
+    $('aviso').hidden = false;
+    clearTimeout(timerAviso);
+    timerAviso = setTimeout(function () { $('aviso').hidden = true; }, conDeshacer ? 10000 : 4500);
+  }
+  function banner(texto, conBoton) {
+    $('banner').hidden = !texto;
+    $('banner-texto').textContent = texto || '';
+    $('banner-btn').hidden = !conBoton;
+  }
+
+  /* ---------- reloj y fecha ---------- */
+  function tic() {
+    var d = new Date();
+    $('reloj').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    var f = d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+    $('fecha').textContent = f;
+  }
+  tic(); setInterval(tic, 20000);
+
+  /* ---------- calendario ---------- */
+  function errorCalendario(e, reintento) {
+    var c = e && e.code;
+    if (c === 'server_not_connected') banner('Falta conectar Google Calendar: claude.ai → Configuración → Conectores → Google Calendar.');
+    else if (c === 'needs_reauth') banner('Google Calendar se desconectó. Reconectalo en claude.ai → Configuración → Conectores.');
+    else if (c === 'approval_required' || c === 'not_in_manifest' || c === 'consent_required') {
+      pendienteReintento = reintento || cargarAgenda;
+      banner('Necesito permiso para leer y escribir tu Google Calendar.', true);
+    } else if (c === 'blocked_by_policy') banner('Tu organización bloquea el acceso al calendario desde esta app.');
+    else banner('No pude hablar con Google Calendar (' + (c || 'error') + '). Probá de nuevo en un rato.');
+  }
+  $('banner-btn').onclick = function () {
+    banner('');
+    var f = pendienteReintento; pendienteReintento = null;
+    if (f) f();
+  };
+  function cal(tool, input) {
+    if (!mcp) return Promise.reject({ code: 'capability_disabled' });
+    return mcp.callTool(CAL, tool, input, { cache: false }).then(function (r) { return r.payload; });
+  }
+  function obtenerCalendarios() {
+    if (calendarios) return Promise.resolve(calendarios);
+    return cal('list_calendars', {}).then(function (p) {
+      calendarios = ((p && p.calendars) || []).map(function (c) { return { id: c.id, nombre: c.summary || c.id }; });
+      if (!calendarios.length) calendarios = [{ id: 'primary', nombre: 'Principal' }];
+      return calendarios;
+    });
+  }
+  function normalizarEvento(ev, c) {
+    var todo = !!(ev.start && ev.start.date && !ev.start.dateTime);
+    var ini = todo ? deISO(ev.start.date) : new Date(ev.start.dateTime);
+    var fin = todo ? deISO(ev.end.date) : new Date(ev.end.dateTime);
+    return { id: ev.id, calId: c.id, cal: c.nombre, titulo: ev.summary || '(sin título)', todo: todo,
+      ini: ini, fin: fin, lugar: ev.location || '' };
+  }
+  function eventosEntre(desde, hasta) {
+    return obtenerCalendarios().then(function (cals) {
+      return Promise.all(cals.map(function (c) {
+        return cal('list_events', { calendarId: c.id, startTime: isoLocal(desde), endTime: isoLocal(hasta), orderBy: 'startTime', pageSize: 100 })
+          .then(function (p) {
+            return ((p && p.events) || []).filter(function (ev) {
+              if (ev.status === 'cancelled') return false;
+              var yo = (ev.attendees || []).find(function (a) { return a.self; });
+              return !(yo && yo.responseStatus === 'declined');
+            }).map(function (ev) { return normalizarEvento(ev, c); });
+          })
+          .catch(function (e) { if (c === cals[0]) throw e; return []; });
+      }));
+    }).then(function (listas) {
+      var vistos = {}, todos = [];
+      listas.forEach(function (l) { l.forEach(function (e) {
+        var k = e.titulo + '|' + e.ini.getTime();
+        if (vistos[k] || EXCLUIR.test(e.titulo)) return;
+        vistos[k] = 1; todos.push(e);
+      }); });
+      todos.sort(function (a, b) { return a.todo !== b.todo ? (a.todo ? 1 : -1) : a.ini - b.ini; });
+      return todos;
+    });
+  }
+  function delDia(lista, d) {
+    var a = new Date(d.getFullYear(), d.getMonth(), d.getDate()), b = new Date(a.getTime() + 86400000);
+    return lista.filter(function (e) { return e.todo ? (e.ini <= a && e.fin > a) : (e.ini >= a && e.ini < b); });
+  }
+  function cargarAgenda() {
+    var hoy = new Date(); var a = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    return eventosEntre(a, new Date(a.getTime() + 2 * 86400000)).then(function (todos) {
+      banner('');
+      eventosHoy = delDia(todos, a);
+      eventosManana = delDia(todos, new Date(a.getTime() + 86400000));
+      pintarEventos($('lista-hoy'), eventosHoy, true);
+      pintarEventos($('lista-manana'), eventosManana, false);
+    }).catch(function (e) {
+      $('lista-hoy').innerHTML = '<p class="vacio">No pude leer el calendario todavía.</p>';
+      errorCalendario(e, cargarAgenda);
+    });
+  }
+  function pintarEventos(cont, lista, esHoy) {
+    if (!lista.length) { cont.innerHTML = '<p class="vacio">' + (esHoy ? 'Nada agendado para hoy. Tocá el micrófono para agregar algo.' : 'Nada agendado.') + '</p>'; return; }
+    var ahora = new Date();
+    cont.innerHTML = lista.map(function (e, i) {
+      var hecho = /^✅/.test(e.titulo);
+      var pasado = esHoy && !e.todo && e.fin < ahora;
+      var sub = [e.lugar ? e.lugar.split(',')[0] : '', e.cal].filter(Boolean).map(esc).join(' · ');
+      return '<div class="item' + (hecho ? ' hecho' : '') + (pasado ? ' pasado' : '') + '">' +
+        (e.todo ? '<div class="hora sin">TAREA</div>' : '<div class="hora">' + pad(e.ini.getHours()) + ':' + pad(e.ini.getMinutes()) + '</div>') +
+        '<div class="cuerpo"><div class="titulo">' + esc(e.titulo.replace(/^📌\s*/, '')) + '</div>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>' +
+        (e.todo && !hecho && esHoy ? '<button class="chip" type="button" data-i="' + i + '">Hecho</button>' : '<span></span>') + '</div>';
+    }).join('');
+    cont.querySelectorAll('[data-i]').forEach(function (b) {
+      b.onclick = function () {
+        var e = lista[+b.dataset.i]; b.disabled = true;
+        cal('update_event', { calendarId: e.calId, eventId: e.id, summary: '✅ ' + e.titulo.replace(/^📌\s*/, '') })
+          .then(function () { avisar('Marcado como hecho.'); cargarAgenda(); })
+          .catch(function (err) { b.disabled = false; errorCalendario(err); });
+      };
+    });
+  }
+
+  /* ---------- deudas (base de datos de la app) ---------- */
+  function cargarDeudas() {
+    if (!db) return;
+    db.collection('deudas').get().then(function (snap) {
+      deudas = snap.docs.map(function (d) { var x = d.data() || {}; x.id = d.id; return x; })
+        .filter(function (x) { return x.estado !== 'PAGADA'; })
+        .sort(function (a, b) { return (a.vence || '9999') < (b.vence || '9999') ? -1 : 1; });
+      pintarDeudas();
+    }).catch(function () { $('lista-deudas').innerHTML = '<p class="vacio">No pude leer las deudas. Revisá la conexión.</p>'; });
+  }
+  function pintarDeudas() {
+    var debo = 0, cobro = 0, hoy = isoDia(new Date());
+    deudas.forEach(function (d) { if (d.moneda === 'USD') return; if (d.tipo === 'DEBO') debo += d.monto || 0; else cobro += d.monto || 0; });
+    $('t-debo').textContent = plata(debo, 'ARS');
+    $('t-cobro').textContent = plata(cobro, 'ARS');
+    var cont = $('lista-deudas');
+    if (!deudas.length) { cont.innerHTML = '<p class="vacio">Sin deudas pendientes. Tocá el micrófono para cargar una.</p>'; return; }
+    cont.innerHTML = deudas.map(function (d, i) {
+      var vence = '';
+      if (d.vence) { var f = d.vence.split('-'); vence = d.vence < hoy ? '<span class="vencida">Vencida ' + f[2] + '/' + f[1] + '</span>' : 'Vence ' + f[2] + '/' + f[1]; }
+      var sub = [d.concepto ? esc(d.concepto) : '', vence].filter(Boolean).join(' · ');
+      var cls = d.tipo === 'DEBO' ? 'debo' : 'cobro';
+      return '<div class="item deuda"><div class="cuerpo"><div class="titulo">' + (d.tipo === 'DEBO' ? 'A ' : 'De ') + esc(d.persona) + '</div>' +
+        (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><div class="monto ' + cls + '">' + plata(d.monto || 0, d.moneda) + '</div>' +
+        '<button class="chip" type="button" data-d="' + i + '">' + (d.tipo === 'DEBO' ? 'Pagué' : 'Cobré') + '</button></div>';
+    }).join('');
+    cont.querySelectorAll('[data-d]').forEach(function (b) {
+      b.onclick = function () {
+        var d = deudas[+b.dataset.d]; b.disabled = true;
+        db.doc('deudas/' + d.id).update({ estado: 'PAGADA', pagada: new Date().toISOString() }).then(function () {
+          avisar(d.tipo === 'DEBO' ? 'Listo, pagada la deuda con ' + d.persona + '.' : 'Listo, cobrado lo de ' + d.persona + '.');
+          if (d.eventoId) cal('update_event', { calendarId: d.calId || 'primary', eventId: d.eventoId, summary: '✅ Pagado: ' + d.persona }).catch(function () {});
+          cargarDeudas();
+        }).catch(function () { b.disabled = false; avisar('No pude guardar. Probá de nuevo.'); });
+      };
+    });
+  }
+
+  /* ---------- agregar desde una frase ---------- */
+  function finDeDia(f) { return new Date(f.getFullYear(), f.getMonth(), f.getDate() + 1); }
+  function agregar(texto) {
+    texto = String(texto || '').trim();
+    if (!texto) return Promise.resolve(null);
+    var ahora = new Date();
+    var r = interpretarFrase(texto, ahora);
+    var desc = MARCA + '\nDictado: "' + texto + '"';
+    avisar('Anotando: "' + texto + '"…');
+
+    function crearEvento(titulo, fecha, hora, minutos, aviso) {
+      var input = { summary: titulo, description: desc };
+      if (hora) {
+        var ini = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate(), hora.h, hora.m);
+        input.startTime = isoLocal(ini); input.endTime = isoLocal(new Date(ini.getTime() + minutos * 60000));
+        input.overrideReminders = [{ method: 'popup', minutes: aviso }];
+      } else {
+        input.allDay = true; input.startTime = isoDia(fecha) + 'T00:00:00'; input.endTime = isoDia(finDeDia(fecha)) + 'T00:00:00';
+        input.overrideReminders = [{ method: 'popup', minutes: aviso }];
+      }
+      return cal('create_event', input).then(function (p) { return (p && (p.id || (p.event && p.event.id))) || null; });
+    }
+
+    var trabajo;
+    if (r.tipo === 'deuda') {
+      var d = r.deuda;
+      var evP = d.vence
+        ? crearEvento((d.direccion === 'DEBO' ? '💸 Pagar ' : '💰 Cobrar ') + montoHablado(d.monto, d.moneda) + ' a ' + d.persona + (d.concepto ? ' (' + d.concepto + ')' : ''),
+            d.vence, r.hora, 30, r.hora ? 60 : 9 * 60)
+        : Promise.resolve(null);
+      trabajo = evP.then(function (eventoId) {
+        if (!db) throw { code: 'sin_db' };
+        return db.collection('deudas').add({
+          tipo: d.direccion, persona: d.persona, monto: d.monto || 0, moneda: d.moneda, concepto: d.concepto || '',
+          vence: d.vence ? isoDia(d.vence) : '', estado: 'PENDIENTE', alta: new Date().toISOString(),
+          eventoId: eventoId || '', calId: 'primary', dictado: texto
+        }).then(function (ref) {
+          ultimo = { deudaId: ref.id, eventoId: eventoId };
+          var msg = d.direccion === 'DEBO'
+            ? 'Anotado: le debés ' + (d.monto ? montoHablado(d.monto, d.moneda) : 'plata') + ' a ' + d.persona
+            : 'Anotado: ' + d.persona + ' te debe ' + (d.monto ? montoHablado(d.monto, d.moneda) : 'plata');
+          if (d.concepto) msg += ', por ' + d.concepto.charAt(0).toLowerCase() + d.concepto.slice(1);
+          if (d.vence) msg += '. Vence ' + fechaHablada(d.vence, ahora);
+          if (!d.monto) msg += '. No entendí el monto: borralo y decilo de nuevo';
+          return msg + '.';
+        });
+      });
+    } else if (r.tipo === 'evento') {
+      trabajo = crearEvento(r.titulo, r.fecha, r.hora, 60, 30).then(function (id) {
+        ultimo = { eventoId: id };
+        return 'Agendado: ' + r.titulo + ', ' + fechaHablada(r.fecha, ahora) + ' ' + horaHablada(r.hora.h, r.hora.m) + '.';
+      });
+    } else {
+      trabajo = crearEvento('📌 ' + r.titulo, r.fecha, null, 0, 0).then(function (id) {
+        ultimo = { eventoId: id };
+        return 'Anotado para ' + fechaHablada(r.fecha, ahora) + ': ' + r.titulo + '.';
+      });
+    }
+    return trabajo.then(function (msg) {
+      avisar(msg, true);
+      cargarAgenda(); cargarDeudas();
+      return msg;
+    }).catch(function (e) {
+      if (e && e.code === 'sin_db') avisar('No pude guardar la deuda: abrí la app desde el link de claude.ai.');
+      else errorCalendario(e, function () { agregar(texto); });
+      return null;
+    });
+  }
+  $('aviso-deshacer').onclick = function () {
+    $('aviso').hidden = true;
+    var u = ultimo; ultimo = null;
+    if (!u) return;
+    var pasos = [];
+    if (u.eventoId) pasos.push(cal('delete_event', { eventId: u.eventoId, notificationLevel: 'NONE' }));
+    if (u.deudaId && db) pasos.push(db.doc('deudas/' + u.deudaId).delete());
+    Promise.all(pasos).then(function () { avisar('Borrado.'); hablar('Listo, lo borré.'); cargarAgenda(); cargarDeudas(); })
+      .catch(function () { avisar('No pude borrarlo. Borralo a mano en el calendario.'); });
+  };
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var t = $('entrada').value; $('entrada').value = ''; $('entrada').blur();
+    agregar(t);
+  });
+
+  /* ---------- hablar ---------- */
+  function hablar(texto) {
+    var frases = (texto.match(/[^.?!]+[.?!]*/g) || [texto]).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (tts) {
+      return tts.speak(frases.map(function (f) { return { text: f, language: 'es' }; })).catch(function (e) {
+        if (e && (e.code === 'not_granted' || e.code === 'unavailable' || e.code === 'invalid_argument')) return hablarNavegador(frases);
+        throw e;
+      });
+    }
+    return hablarNavegador(frases);
+  }
+  function hablarNavegador(frases) {
+    return new Promise(function (ok) {
+      if (!('speechSynthesis' in window)) return ok();
+      speechSynthesis.cancel();
+      var voces = speechSynthesis.getVoices();
+      var voz = ['es-AR', 'es-US', 'es-419', 'es-MX', 'es-ES'].map(function (l) { return voces.find(function (v) { return v.lang.replace('_', '-') === l; }); }).find(Boolean)
+        || voces.find(function (v) { return /^es/i.test(v.lang); });
+      frases.forEach(function (f, i) {
+        var u = new SpeechSynthesisUtterance(f);
+        u.lang = voz ? voz.lang : 'es-AR'; if (voz) u.voice = voz;
+        if (i === frases.length - 1) { u.onend = ok; u.onerror = ok; }
+        speechSynthesis.speak(u);
+      });
+    });
+  }
+  function callar() {
+    if (tts) tts.stop().catch(function () {});
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+  }
+
+  /* ---------- escuchar ---------- */
+  var textoFinal = '', recNav = null, alTerminarVoz = null;
+  function abrirVoz(despues) {
+    alTerminarVoz = despues || null;
+    textoFinal = '';
+    $('voz-texto').textContent = '';
+    $('voz-estado').textContent = 'Te escucho';
+    callar();
+    if (dict) {
+      $('capa-voz').hidden = false;
+      dict.start({ language: 'es-AR' }).catch(function (e) {
+        if (e && e.code === 'invalid_argument') return dict.start().catch(errorDictado);
+        errorDictado(e);
+      });
+      return;
+    }
+    var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!R) { sinMicrofono(); return; }
+    try {
+      recNav = new R(); recNav.lang = 'es-AR'; recNav.interimResults = true; recNav.continuous = false;
+      recNav.onresult = function (ev) {
+        var parcial = '';
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          if (ev.results[i].isFinal) textoFinal += ev.results[i][0].transcript; else parcial += ev.results[i][0].transcript;
+        }
+        $('voz-texto').textContent = textoFinal + parcial;
+      };
+      recNav.onerror = function () { recNav = null; };
+      recNav.onend = function () { recNav = null; terminarVoz(); };
+      $('capa-voz').hidden = false;
+      recNav.start();
+    } catch (e) { $('capa-voz').hidden = true; sinMicrofono(); }
+  }
+  function sinMicrofono() {
+    avisar('Acá no tengo micrófono. Usá el micrófono del teclado y escribí.');
+    $('entrada').focus();
+  }
+  function errorDictado(e) {
+    $('capa-voz').hidden = true;
+    if (e && e.code === 'not_granted') { dict = null; sinMicrofono(); }
+    else if (e && e.code === 'no_gesture') avisar('Tocá el micrófono para hablar.');
+    else if (e && e.code !== 'stopped') avisar('No pude abrir el micrófono (' + (e && e.code || 'error') + ').');
+  }
+  function terminarVoz() {
+    if ($('capa-voz').hidden) return;
+    $('capa-voz').hidden = true;
+    var t = (textoFinal || $('voz-texto').textContent || '').trim();
+    var cb = alTerminarVoz; alTerminarVoz = null;
+    if (!t) { if (cb) cb(null); return; }
+    agregar(t).then(function (msg) {
+      if (msg) hablar(msg + (cb ? ' ¿Algo más?' : '')).catch(function () {});
+      if (cb) cb(msg);
+    });
+  }
+  $('btn-mic').onclick = function () { abrirVoz(null); };
+  $('voz-listo').onclick = function () {
+    if (dict && dict.active()) dict.stop().catch(function () {}).then(terminarVoz);
+    else if (recNav) recNav.stop();
+    else terminarVoz();
+  };
+  $('voz-cancelar').onclick = function () {
+    alTerminarVoz = null; textoFinal = ''; $('voz-texto').textContent = '';
+    $('capa-voz').hidden = true;
+    if (dict && dict.active()) dict.stop().catch(function () {});
+    if (recNav) recNav.abort();
+  };
+
+  /* ---------- resumen del día ---------- */
+  function armarResumen() {
+    var ahora = new Date();
+    var hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    var dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    var saludo = ahora.getHours() < 13 ? 'Buen día' : ahora.getHours() < 20 ? 'Buenas tardes' : 'Buenas noches';
+    var p = [saludo + ' Rafael. Hoy es ' + dias[hoy.getDay()] + ' ' + hoy.getDate() + ' de ' + MESES[hoy.getMonth()] + '.'];
+    var conHora = eventosHoy.filter(function (e) { return !e.todo && !/^✅/.test(e.titulo); });
+    var sinHora = eventosHoy.filter(function (e) { return e.todo && !/^✅/.test(e.titulo); });
+    if (!conHora.length && !sinHora.length) p.push('No tenés nada agendado para hoy.');
+    if (conHora.length) {
+      p.push(conHora.length === 1 ? 'Tenés una cosa con horario.' : 'Tenés ' + conHora.length + ' cosas con horario.');
+      conHora.forEach(function (e) {
+        var l = horaHablada(e.ini.getHours(), e.ini.getMinutes());
+        l = l.charAt(0).toUpperCase() + l.slice(1) + ': ' + limpiarVoz(e.titulo);
+        if (e.lugar) l += ', en ' + limpiarVoz(e.lugar.split(',')[0]);
+        p.push(l + '.');
+      });
+    }
+    if (sinHora.length) p.push('Pendientes del día, sin horario: ' + sinHora.map(function (e) { return limpiarVoz(e.titulo); }).join('; ') + '.');
+
+    var debo = deudas.filter(function (d) { return d.tipo === 'DEBO'; });
+    var cobro = deudas.filter(function (d) { return d.tipo !== 'DEBO'; });
+    var en7 = hoy.getTime() + 7 * 86400000;
+    debo.forEach(function (d) {
+      if (!d.vence) return;
+      var f = deISO(d.vence);
+      if (f < hoy) p.push('Atención: está vencido el pago de ' + montoHablado(d.monto, d.moneda) + ' a ' + d.persona + '.');
+      else if (f.getTime() <= en7) p.push('Tenés que pagarle ' + montoHablado(d.monto, d.moneda) + ' a ' + d.persona + ' ' + fechaHablada(f, ahora) + '.');
+    });
+    cobro.forEach(function (d) {
+      if (d.vence && deISO(d.vence) <= hoy) p.push('Hoy tenés que cobrarle ' + montoHablado(d.monto, d.moneda) + ' a ' + d.persona + '.');
+    });
+    function total(l) {
+      var t = {}; l.forEach(function (d) { t[d.moneda || 'ARS'] = (t[d.moneda || 'ARS'] || 0) + (d.monto || 0); });
+      return Object.keys(t).filter(function (k) { return t[k] > 0; }).map(function (k) { return montoHablado(t[k], k); }).join(' y ');
+    }
+    if (total(debo)) p.push('En total debés ' + total(debo) + '.');
+    if (total(cobro)) p.push('Te deben ' + total(cobro) + '.');
+    var m = eventosManana.filter(function (e) { return !e.todo; });
+    if (m.length) p.push('Mañana arrancás ' + horaHablada(m[0].ini.getHours(), m[0].ini.getMinutes()) + ' con ' + limpiarVoz(m[0].titulo) + '.');
+    p.push('¿Querés agregar algo más?');
+    return p.join(' ');
+  }
+  function abrirDia() {
+    $('capa-dia').hidden = false;
+    $('dia-pregunta').hidden = true;
+    $('dia-play').hidden = false;
+    var h = new Date().getHours();
+    $('dia-sub').textContent = h < 13 ? 'Buen día, Rafael' : h < 20 ? 'Buenas tardes, Rafael' : 'Buenas noches, Rafael';
+    var n = eventosHoy.filter(function (e) { return !/^✅/.test(e.titulo); }).length;
+    $('dia-grande').textContent = n ? 'Hoy tenés ' + n + (n === 1 ? ' cosa' : ' cosas') : 'Hoy no tenés nada agendado';
+    $('dia-texto').textContent = armarResumen().replace(/\. /g, '.\n');
+  }
+  function escucharDia() {
+    var texto = armarResumen();
+    $('dia-texto').textContent = texto.replace(/\. /g, '.\n');
+    $('dia-play-txt').textContent = 'Leyendo…';
+    lsSet('mi_dia_escuchado', isoDia(new Date()));
+    hablar(texto).catch(function () {}).then(function () {
+      $('dia-play-txt').textContent = 'Escuchar de nuevo';
+      $('dia-pregunta').hidden = false;
+    });
+  }
+  $('btn-escuchar').onclick = function () { abrirDia(); escucharDia(); };
+  $('dia-play').onclick = escucharDia;
+  $('dia-cerrar').onclick = function () { callar(); $('capa-dia').hidden = true; };
+  $('dia-no').onclick = function () { $('capa-dia').hidden = true; hablar('Perfecto. A laburar.').catch(function () {}); };
+  $('dia-si').onclick = function () {
+    $('capa-dia').hidden = true;
+    abrirVoz(function seguir(msg) {
+      if (!msg) return;
+      // después de cada cosa, ofrece seguir agregando
+      $('capa-dia').hidden = false; $('dia-play').hidden = true;
+      $('dia-grande').textContent = '¿Algo más?';
+      $('dia-texto').textContent = msg;
+      $('dia-pregunta').hidden = false;
+    });
+  };
+
+  /* ---------- vistas ---------- */
+  function vista(n) {
+    $('vista-hoy').hidden = n !== 'hoy'; $('vista-deudas').hidden = n !== 'deudas';
+    $('tab-hoy').setAttribute('aria-pressed', n === 'hoy'); $('tab-deudas').setAttribute('aria-pressed', n === 'deudas');
+    $('h-vista').textContent = n === 'hoy' ? 'Mi día' : 'Deudas';
+    if (n === 'deudas') cargarDeudas();
+  }
+  $('tab-hoy').onclick = function () { vista('hoy'); };
+  $('tab-deudas').onclick = function () { vista('deudas'); };
+
+  /* ---------- arranque ---------- */
+  var listoAgenda = false, listoDeudas = false;
+  function quizasModoManana() {
+    if (!listoAgenda || !listoDeudas) return;
+    var h = new Date().getHours();
+    if (location.hash === '#dia' || (h >= 5 && h < 11 && lsGet('mi_dia_escuchado') !== isoDia(new Date()))) abrirDia();
+  }
+  var use = window.claude && window.claude.use ? window.claude.use.bind(window.claude) : function () { return Promise.resolve(null); };
+  use('tts').then(function (t) { tts = t; }).catch(function () {});
+  use('dictation').then(function (d) {
+    dict = d;
+    if (!d) return;
+    d.onPartial(function (e) { $('voz-texto').textContent = (textoFinal + ' ' + e.text).trim(); });
+    d.onFinal(function (e) { textoFinal = (textoFinal + ' ' + e.text).trim(); $('voz-texto').textContent = textoFinal; });
+    d.onState(function (e) {
+      if (e.state === 'listening') $('voz-estado').textContent = 'Te escucho';
+      if (e.state === 'idle' && !$('capa-voz').hidden) terminarVoz();
+    });
+  }).catch(function () {});
+  use('db').then(function (d) { db = d; cargarDeudas(); }).catch(function () {}).then(function () {
+    setTimeout(function () { listoDeudas = true; quizasModoManana(); }, 1500);
+  });
+  use('mcp').then(function (m) {
+    mcp = m;
+    if (!m) {
+      $('lista-hoy').innerHTML = '<p class="vacio">Abrí esta app desde claude.ai con tu cuenta para ver tu calendario.</p>';
+      return;
+    }
+    return cargarAgenda();
+  }).catch(function () {}).then(function () { listoAgenda = true; quizasModoManana(); });
+  window.addEventListener('hashchange', function () { if (location.hash === '#dia') abrirDia(); });
+  // refresca la agenda cada 10 minutos si la app queda abierta
+  setInterval(function () { if (mcp && !document.hidden) cargarAgenda(); }, 600000);
+})();
+</script>

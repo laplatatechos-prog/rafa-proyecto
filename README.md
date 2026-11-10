@@ -1,5 +1,19 @@
 # Mi Día — asistente de agenda por voz
 
+## ✅ Versión lista para usar (sin instalar nada)
+
+**Link:** <https://claude.ai/artifact/XebpYLBUXsEM3Kx9ugnj8L>
+
+Abre con tu cuenta de claude.ai, usa tu Google Calendar conectado y guarda las deudas
+en la base privada de la app. Fuente: [`artifact/mi-dia.src.html`](artifact/mi-dia.src.html)
+(`node artifact/build.js` mete el intérprete de `apps-script/Parser.gs` y genera `artifact/mi-dia.html`).
+Todos los días a las 6:00 suena un aviso del calendario "☀️ Mi Día" con el link.
+
+La versión de abajo (Apps Script + GitHub Pages) es la que permite que el celular **hable solo**
+a las 6 AM sin tocar nada (MacroDroid / Atajos), porque expone una URL propia.
+
+---
+
 App personal: todos los días a las 6 AM te lee en voz alta lo que tenés que hacer
 ("a las 8 de la mañana: obra Gonnet; a las 2 de la tarde: cita con Pérez…"), te dice
 qué deudas vencen y te pregunta si querés agregar algo más. Desde el celular apretás
