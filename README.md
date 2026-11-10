@@ -1,5 +1,13 @@
 # Mi Día — asistente de agenda por voz
 
+## 📱 App Android (la principal)
+
+**Instalar:** <https://raw.githubusercontent.com/laplatatechos-prog/rafa-proyecto/refs/heads/claude/calendar-voice-task-assistant-4a3403/android/dist/MiDia.apk>
+
+Despertador que te habla, lee tu calendario y anota por voz. No necesita Claude. Detalles en [android/README.md](android/README.md).
+
+---
+
 ## ✅ Versión lista para usar (sin instalar nada)
 
 **Link:** <https://claude.ai/artifact/XebpYLBUXsEM3Kx9ugnj8L>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="agregar" android:enabled="true" android:icon="@drawable/ic_mic"
+        android:shortcutShortLabel="@string/atajo_agregar" android:shortcutLongLabel="@string/atajo_agregar">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="ar.laplatatechos.midia"
+            android:targetClass="ar.laplatatechos.midia.AgregarActivity" />
+    </shortcut>
+    <shortcut android:shortcutId="escuchar" android:enabled="true" android:icon="@drawable/ic_sol"
+        android:shortcutShortLabel="@string/atajo_escuchar" android:shortcutLongLabel="@string/atajo_escuchar">
+        <intent android:action="ar.laplatatechos.midia.ESCUCHAR" android:targetPackage="ar.laplatatechos.midia"
+            android:targetClass="ar.laplatatechos.midia.MainActivity" />
+    </shortcut>
+</shortcuts>

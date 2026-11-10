@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_desc">Botón para agregar por voz y tu próximo pendiente</string>
+    <string name="atajo_agregar">Agregar por voz</string>
+    <string name="atajo_escuchar">Escuchar mi día</string>
+</resources>
