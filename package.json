@@ -1,0 +1,9 @@
+{
+  "name": "asistente-mi-dia",
+  "private": true,
+  "description": "Asistente de agenda por voz, tareas y deudas para La Plata Techos",
+  "scripts": {
+    "test": "TZ=America/Argentina/Buenos_Aires node tests/parser.test.js && TZ=America/Argentina/Buenos_Aires node tests/backend.test.js",
+    "simulador": "TZ=America/Argentina/Buenos_Aires node tests/simulador-google.js 8787"
+  }
+}

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mi Día</title>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mi Día">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icono.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icono-192.png">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <!-- CONFIGURACIÓN -->
+  <section id="vista-config" class="vista" hidden>
+    <h1>Configurar</h1>
+    <p class="ayuda">Pegá la URL de la aplicación web de Google Apps Script y tu clave secreta (las dos salen al hacer la instalación, ver README).</p>
+    <label>URL del backend
+      <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+    </label>
+    <label>Clave secreta
+      <input id="cfg-clave" type="text" placeholder="clave" autocomplete="off" autocapitalize="off">
+    </label>
+    <button id="cfg-guardar" class="btn-primario">Guardar y probar</button>
+    <p id="cfg-estado" class="ayuda"></p>
+    <hr>
+    <h2>Accesos rápidos</h2>
+    <p class="ayuda">Instalá la app (menú del navegador → "Agregar a pantalla principal"). Después mantené apretado el ícono para arrastrar "Agregar por voz" como botón propio en la pantalla.</p>
+    <p class="ayuda">Link para la automatización de las 6 AM:</p>
+    <code id="cfg-link-dia" class="link-copiable"></code>
+    <button id="cfg-cerrar" class="btn-secundario">Volver</button>
+  </section>
+
+  <!-- HOY -->
+  <section id="vista-hoy" class="vista">
+    <header class="cabecera">
+      <div>
+        <p id="fecha-hoy" class="fecha"></p>
+        <h1>Mi día</h1>
+      </div>
+      <button id="btn-config" class="btn-icono" aria-label="Configurar">⚙️</button>
+    </header>
+
+    <button id="btn-escuchar" class="btn-escuchar">
+      <span class="btn-escuchar-icono">▶</span>
+      <span>Escuchar mi día</span>
+    </button>
+
+    <div id="lista-hoy" class="lista"><p class="vacio">Cargando…</p></div>
+
+    <h2 class="subtitulo">Mañana</h2>
+    <div id="lista-manana" class="lista"><p class="vacio">—</p></div>
+  </section>
+
+  <!-- DEUDAS -->
+  <section id="vista-deudas" class="vista" hidden>
+    <header class="cabecera">
+      <div>
+        <p class="fecha">Plata</p>
+        <h1>Deudas</h1>
+      </div>
+      <button id="btn-config-2" class="btn-icono" aria-label="Configurar">⚙️</button>
+    </header>
+    <div class="totales">
+      <div class="total total-debo"><span>Debo</span><strong id="total-debo">$0</strong></div>
+      <div class="total total-meDeben"><span>Me deben</span><strong id="total-medeben">$0</strong></div>
+    </div>
+    <p class="ayuda">Apretá el micrófono y decí: <em>"le debo 50 mil a Juan para el viernes"</em> o <em>"Gómez me debe 200 mil de la obra"</em>.</p>
+    <div id="lista-deudas" class="lista"><p class="vacio">Cargando…</p></div>
+  </section>
+
+  <!-- BARRA INFERIOR -->
+  <form id="form-texto" class="barra-texto" autocomplete="off">
+    <input id="entrada-texto" type="text" placeholder="Escribí: mañana 10 hs visita obra…" enterkeyhint="send">
+    <button type="submit" class="btn-enviar" aria-label="Enviar">➤</button>
+  </form>
+
+  <nav class="barra-nav">
+    <button data-vista="hoy" class="tab activo">📅<span>Hoy</span></button>
+    <button id="btn-mic" class="btn-mic" aria-label="Agregar por voz">🎙️</button>
+    <button data-vista="deudas" class="tab">💸<span>Deudas</span></button>
+  </nav>
+
+  <!-- ESCUCHANDO -->
+  <div id="capa-voz" class="capa" hidden>
+    <div class="capa-contenido">
+      <div id="onda" class="onda"><span></span><span></span><span></span><span></span><span></span></div>
+      <p id="voz-estado" class="voz-estado">Te escucho…</p>
+      <p id="voz-transcripcion" class="voz-transcripcion"></p>
+      <p class="ayuda">Ej: "agregame a las 2 de la tarde una cita con Pérez"</p>
+      <button id="voz-cancelar" class="btn-secundario">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODO MAÑANA -->
+  <div id="capa-dia" class="capa" hidden>
+    <div class="capa-contenido">
+      <p class="sol">☀️</p>
+      <h2 id="dia-titulo">Buen día</h2>
+      <p id="dia-texto" class="dia-texto"></p>
+      <button id="dia-play" class="btn-escuchar">
+        <span class="btn-escuchar-icono">▶</span><span>Escuchar</span>
+      </button>
+      <button id="dia-cerrar" class="btn-secundario">Cerrar</button>
+    </div>
+  </div>
+
+  <div id="aviso" class="aviso" hidden>
+    <span id="aviso-texto"></span>
+    <button id="aviso-deshacer" class="aviso-btn" hidden>Deshacer</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
