@@ -1,5 +1,5 @@
 # Campaña Meta Ads — Colocación de Canaletas
-**La Plata Techos** · Facebook + Instagram · Presupuesto: $10.000 ARS/mes
+**La Plata Techos** · Facebook + Instagram · Oferta: **mano de obra de colocación $10.000 por metro**
 
 ---
 
@@ -9,7 +9,7 @@
 |---|---|
 | Nombre | `LPT_Canaletas_WhatsApp_Nov26` |
 | Objetivo | **Interacción → Mensajes a WhatsApp** (click-to-WhatsApp) |
-| Presupuesto | **$1.000/día durante 10 días** (no $333/día x 30) |
+| Presupuesto de pauta | A definir. Mínimo recomendado: $1.500–3.000/día durante 7–10 días |
 | Ubicación | La Plata + 15 km (City Bell, Gonnet, Villa Elisa, Berisso, Ensenada, Los Hornos, Melchor Romero) |
 | Edad | 30–65 |
 | Público | Advantage+ abierto (sin intereses). Meta optimiza solo con presupuestos chicos |
@@ -17,7 +17,7 @@
 | Horario | Todo el día (el presupuesto no da para segmentar horas) |
 | Idioma del anuncio | Español rioplatense |
 
-**Por qué 10 días y no 30:** $333/día está en el límite del mínimo de Meta y no sale de la fase de aprendizaje. Concentrado da datos útiles. Si Meta acepta y funciona, el mes siguiente se repite o se escala.
+**Por qué concentrar:** con menos de ~$1.000/día Meta no sale de la fase de aprendizaje. Mejor pocos días con presupuesto fuerte que un mes entero goteando.
 
 ---
 
@@ -29,10 +29,11 @@
 > Canaleta tapada o rota = agua en paredes, humedad y techo dañado. Arreglarlo después cuesta 5 veces más.
 > ✅ Colocación y recambio de canaletas y bajadas
 > ✅ Chapa galvanizada y prepintada
+> 💲 Mano de obra de colocación: $10.000 el metro
 > ✅ Presupuesto sin cargo en La Plata y alrededores
 > 📲 Escribinos por WhatsApp y te pasamos precio.
 
-**Título:** Canaletas nuevas antes de las lluvias
+**Título:** Colocación de canaletas $10.000/m
 **Descripción:** Presupuesto sin cargo · La Plata
 **Botón:** Enviar mensaje de WhatsApp
 
@@ -40,6 +41,7 @@
 **Texto principal:**
 > ¿Te rebalsa la canaleta cuando llueve? ¿Tenés manchas de humedad en la pared de afuera?
 > El problema casi siempre es la zinguería. Medimos, presupuestamos y colocamos en el día.
+> 💲 Colocación: $10.000 el metro de mano de obra.
 > 🏠 Casas, PH y locales · La Plata, City Bell, Gonnet, Berisso, Ensenada.
 > Mandanos una foto por WhatsApp y te decimos qué necesitás.
 
@@ -58,7 +60,7 @@
 **Descripción:** La Plata Techos
 **Botón:** Enviar mensaje de WhatsApp
 
-> Si querés poner precio: agregar en A y B la línea `💲 Desde $[PRECIO] el metro colocado`. Precio visible = menos consultas basura, más consultas calificadas.
+> El precio es **solo mano de obra**; el material se cotiza aparte. Dejarlo explícito para evitar reclamos. Precio visible = menos consultas basura.
 
 ---
 
@@ -108,7 +110,7 @@ Esto filtra curiosos y te llega el lead con la info para cotizar sin ir a ver.
 | Presupuestos enviados | 1 de cada 3 conversaciones | — | — |
 | Trabajos cerrados | ≥ 1 | — | 0 → revisar precio/respuesta, no el anuncio |
 
-**ROI:** con **1 solo trabajo de canaleta cerrado**, los $10.000 están pagados varias veces. Esa es la vara.
+**ROI:** un trabajo típico de 15 m = $150.000 de mano de obra. Con 1 trabajo cerrado la pauta está pagada. Esa es la vara.
 
 Llevar registro mínimo en planilla: fecha · nombre · barrio · metros · presupuesto enviado (sí/no) · monto · cerrado (sí/no).
 
@@ -118,8 +120,23 @@ Llevar registro mínimo en planilla: fecha · nombre · barrio · metros · pres
 
 1. Verificar que la cuenta publicitaria sea la de **La Plata Techos** y que WhatsApp Business esté vinculado a la página.
 2. Crear campaña → objetivo **Interacción** → conversión en **WhatsApp**.
-3. Conjunto de anuncios: presupuesto diario $1.000, fecha fin a 10 días, ubicación y edad de la sección 1.
+3. Conjunto de anuncios: presupuesto diario definido, fecha fin a 7–10 días, ubicación y edad de la sección 1.
 4. Crear 1 anuncio con las 3 variantes de texto (opciones de texto múltiples) + 2–3 imágenes/video.
 5. Cargar plantilla de mensaje de la sección 4.
 6. Publicar. **No tocar nada durante 72 h** (fase de aprendizaje).
 7. Día 3, 7 y 10: revisar tabla de la sección 5.
+
+---
+
+## 7. Prompt para ChatGPT (generar la imagen del anuncio)
+
+Subir a ChatGPT la foto real de la canaleta y pegar:
+
+> Usá esta foto real de una canaleta que colocamos como base. Creá una imagen publicitaria cuadrada 1080x1080 para Facebook e Instagram de "La Plata Techos". Mantené la canaleta y la casa reales, mejorá luz y nitidez sin cambiar la obra. Agregá texto grande y legible:
+> - Título: "COLOCACIÓN DE CANALETAS"
+> - Precio destacado: "$10.000 el metro"
+> - Debajo, más chico: "Mano de obra · Material aparte"
+> - Pie: "La Plata y alrededores · Presupuesto sin cargo · WhatsApp"
+> Estilo profesional, colores sobrios (azul oscuro, blanco y naranja para el precio), sin elementos de stock ni personas inventadas. Que el texto no ocupe más de un 25 % de la imagen.
+
+Pedir después una versión **vertical 1080x1920** para Stories/Reels con el mismo texto.
