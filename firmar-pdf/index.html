@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Firmar PDF</title>
+<style>
+  :root {
+    --bg: #f3f4f6; --panel: #ffffff; --text: #111827; --muted: #6b7280;
+    --accent: #1d4ed8; --accent-text: #ffffff; --border: #d1d5db; --danger: #b91c1c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111827; --panel: #1f2937; --text: #f9fafb; --muted: #9ca3af;
+      --accent: #3b82f6; --accent-text: #ffffff; --border: #374151; --danger: #ef4444;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111827; --panel: #1f2937; --text: #f9fafb; --muted: #9ca3af;
+    --accent: #3b82f6; --accent-text: #ffffff; --border: #374151; --danger: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 20; background: var(--panel);
+           border-bottom: 1px solid var(--border); padding: 10px 16px;
+           display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  header h1 { font-size: 17px; margin: 0 8px 0 0; }
+  button, label.btn { font: inherit; font-size: 14px; padding: 9px 14px; border-radius: 8px;
+           border: 1px solid var(--border); background: var(--panel); color: var(--text);
+           cursor: pointer; white-space: nowrap; }
+  button.primary, label.btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  #status { color: var(--muted); font-size: 13px; width: 100%; }
+  main { padding: 16px; max-width: 980px; margin: 0 auto; }
+  #empty { text-align: center; padding: 60px 16px; color: var(--muted);
+           border: 2px dashed var(--border); border-radius: 12px; }
+  .page { position: relative; margin: 0 auto 18px; background: #fff;
+          box-shadow: 0 1px 4px rgba(0,0,0,.25); touch-action: pan-y; }
+  .page canvas.render { display: block; width: 100%; height: auto; }
+  .page.placing { cursor: crosshair; outline: 3px solid var(--accent); }
+  .pnum { position: absolute; top: -2px; right: 6px; font-size: 11px; color: #6b7280; }
+  .stamp { position: absolute; border: 1px dashed transparent; touch-action: none; cursor: move; }
+  .stamp img { width: 100%; height: 100%; display: block; pointer-events: none; user-select: none; }
+  .stamp.sel { border-color: #1d4ed8; }
+  .stamp .h { display: none; position: absolute; width: 22px; height: 22px; border-radius: 50%;
+              background: #1d4ed8; color: #fff; font-size: 13px; line-height: 22px; text-align: center; }
+  .stamp.sel .h { display: block; }
+  .stamp .rs { right: -11px; bottom: -11px; cursor: nwse-resize; }
+  .stamp .del { right: -11px; top: -11px; background: #b91c1c; cursor: pointer; }
+  dialog { border: none; border-radius: 12px; padding: 16px; background: var(--panel); color: var(--text);
+           width: min(560px, calc(100vw - 32px)); }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tabs button.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  #pad { width: 100%; height: 200px; background: #fff; border: 1px solid var(--border);
+         border-radius: 8px; touch-action: none; display: block; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .row .grow { flex: 1; }
+  input[type=text] { font: inherit; padding: 9px; border-radius: 8px; border: 1px solid var(--border);
+                     background: var(--bg); color: var(--text); width: 100%; }
+  .saved { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .saved .item { position: relative; border: 1px solid var(--border); border-radius: 8px; background: #fff;
+                 padding: 4px; cursor: pointer; }
+  .saved .item img { height: 48px; display: block; }
+  .saved .item span { position: absolute; top: -8px; right: -8px; background: var(--danger); color: #fff;
+                      border-radius: 50%; width: 20px; height: 20px; font-size: 12px; text-align: center; line-height: 20px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .hidden { display: none !important; }
+  .colors button { width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+  .colors button.on { outline: 3px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Firmar PDF</h1>
+  <label class="btn primary">Abrir PDF<input id="file" type="file" accept="application/pdf" hidden></label>
+  <button id="btnSign" disabled>✍️ Firma</button>
+  <button id="btnText" disabled>🔤 Texto / Fecha</button>
+  <button id="btnSave" class="primary" disabled>⬇️ Descargar firmado</button>
+  <div id="status">Abrí un PDF para empezar. Todo se procesa en tu dispositivo: el archivo no se sube a ningún lado.</div>
+</header>
+
+<main>
+  <div id="empty">
+    <p><strong>1.</strong> Abrí el PDF &nbsp; <strong>2.</strong> Dibujá o elegí tu firma &nbsp;
+       <strong>3.</strong> Tocá donde va &nbsp; <strong>4.</strong> Descargá</p>
+    <p class="muted">Podés arrastrar la firma para moverla y usar la esquina azul para agrandarla.</p>
+  </div>
+  <div id="pages"></div>
+</main>
+
+<!-- Diálogo de firma -->
+<dialog id="dlgSign">
+  <div class="tabs">
+    <button id="tabDraw" class="on">Dibujar</button>
+    <button id="tabUpload">Subir imagen</button>
+  </div>
+  <div id="paneDraw">
+    <canvas id="pad"></canvas>
+    <div class="row">
+      <div class="colors">
+        <button data-c="#0b1f6b" class="on" style="background:#0b1f6b" aria-label="Azul"></button>
+        <button data-c="#000000" style="background:#000" aria-label="Negro"></button>
+      </div>
+      <span class="grow"></span>
+      <button id="padClear">Borrar</button>
+    </div>
+  </div>
+  <div id="paneUpload" class="hidden">
+    <p class="muted">Foto o escaneo de tu firma (PNG/JPG). Si es fondo blanco, se vuelve transparente automáticamente.</p>
+    <input id="sigImg" type="file" accept="image/*">
+  </div>
+  <div id="savedWrap" class="hidden">
+    <p class="muted" style="margin:14px 0 0">Firmas guardadas (tocá una para usarla):</p>
+    <div id="saved" class="saved"></div>
+  </div>
+  <div class="row">
+    <label class="muted"><input id="keep" type="checkbox" checked> Guardar en este dispositivo</label>
+    <span class="grow"></span>
+    <button id="signCancel">Cancelar</button>
+    <button id="signOk" class="primary">Usar firma</button>
+  </div>
+</dialog>
+
+<!-- Diálogo de texto -->
+<dialog id="dlgText">
+  <p style="margin-top:0"><strong>Texto a insertar</strong></p>
+  <input id="txt" type="text" placeholder="Ej: Aclaración, DNI, fecha">
+  <div class="row">
+    <button data-q="date">Fecha de hoy</button>
+    <button data-q="name">Rafael Ángel Igoa</button>
+    <button data-q="biz">La Plata Techos</button>
+  </div>
+  <div class="row">
+    <span class="grow"></span>
+    <button id="txtCancel">Cancelar</button>
+    <button id="txtOk" class="primary">Insertar</button>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+(() => {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const $ = s => document.querySelector(s);
+  const pagesEl = $('#pages'), statusEl = $('#status');
+  let pdfBytes = null, fileName = 'documento.pdf';
+  let pageInfo = [];          // [{el, wPt, hPt, rot}]
+  let stamps = [];            // [{id, page, x, y, w, h, src}] (x,y,w,h en fracción 0..1 de la página)
+  let pending = null;         // {src, ratio} esperando que toquen la página
+  let selected = null, nextId = 1;
+  const LS_KEY = 'firmarpdf.firmas';
+
+  const setStatus = t => statusEl.textContent = t;
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; } },
+    set(v) { try { localStorage.setItem(LS_KEY, JSON.stringify(v)); } catch {} }
+  };
+
+  // ---------- Cargar PDF ----------
+  $('#file').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    fileName = f.name;
+    pdfBytes = new Uint8Array(await f.arrayBuffer());
+    stamps = []; selected = null; pending = null;
+    await renderPdf();
+    e.target.value = '';
+  });
+
+  async function renderPdf() {
+    setStatus('Cargando…');
+    pagesEl.innerHTML = ''; pageInfo = [];
+    $('#empty').classList.add('hidden');
+    const doc = await pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const maxW = Math.min(pagesEl.clientWidth || 900, 900);
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const base = page.getViewport({ scale: 1 });
+      const scale = (maxW / base.width) * dpr;
+      const vp = page.getViewport({ scale });
+      const wrap = document.createElement('div');
+      wrap.className = 'page'; wrap.dataset.page = i - 1;
+      wrap.style.maxWidth = base.width * (maxW / base.width) + 'px';
+      const c = document.createElement('canvas'); c.className = 'render';
+      c.width = vp.width; c.height = vp.height;
+      wrap.appendChild(c);
+      const n = document.createElement('div'); n.className = 'pnum'; n.textContent = 'Pág. ' + i;
+      wrap.appendChild(n);
+      pagesEl.appendChild(wrap);
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      pageInfo.push({ el: wrap, rot: page.rotate || 0 });
+      wrap.addEventListener('click', onPageClick);
+    }
+    ['#btnSign', '#btnText', '#btnSave'].forEach(s => $(s).disabled = false);
+    setStatus(`${fileName} · ${doc.numPages} página(s). Tocá "Firma" para agregar tu firma.`);
+  }
+
+  // ---------- Colocar sellos ----------
+  function arm(src, ratio, label) {
+    pending = { src, ratio };
+    pageInfo.forEach(p => p.el.classList.add('placing'));
+    setStatus(`Tocá en la página donde va la ${label}.`);
+  }
+
+  function onPageClick(e) {
+    if (!pending) { if (e.target.classList.contains('page') || e.target.tagName === 'CANVAS') select(null); return; }
+    const wrap = e.currentTarget, r = wrap.getBoundingClientRect();
+    const w = 0.28, h = w * (r.width / r.height) / pending.ratio;
+    let x = (e.clientX - r.left) / r.width - w / 2;
+    let y = (e.clientY - r.top) / r.height - h / 2;
+    x = clamp(x, 0, 1 - w); y = clamp(y, 0, 1 - h);
+    const s = { id: nextId++, page: +wrap.dataset.page, x, y, w, h, src: pending.src };
+    stamps.push(s); drawStamp(s); select(s);
+    pending = null;
+    pageInfo.forEach(p => p.el.classList.remove('placing'));
+    setStatus('Listo. Arrastrá para mover, esquina azul para agrandar, ✕ para borrar. Después "Descargar firmado".');
+  }
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function drawStamp(s) {
+    const el = document.createElement('div'); el.className = 'stamp'; s.el = el;
+    el.innerHTML = `<img src="${s.src}" alt=""><div class="h rs">↘</div><div class="h del">✕</div>`;
+    pageInfo[s.page].el.appendChild(el); place(s);
+
+    el.addEventListener('click', ev => ev.stopPropagation());
+    el.querySelector('.del').addEventListener('pointerdown', ev => {
+      ev.stopPropagation(); el.remove(); stamps = stamps.filter(t => t !== s); selected = null;
+    });
+    const drag = (mode) => ev => {
+      ev.stopPropagation(); ev.preventDefault(); select(s);
+      const r = pageInfo[s.page].el.getBoundingClientRect();
+      const sx = ev.clientX, sy = ev.clientY, o = { ...s }, ar = o.w / o.h;
+      const move = m => {
+        const dx = (m.clientX - sx) / r.width, dy = (m.clientY - sy) / r.height;
+        if (mode === 'move') {
+          s.x = clamp(o.x + dx, 0, 1 - s.w); s.y = clamp(o.y + dy, 0, 1 - s.h);
+        } else {
+          s.w = clamp(o.w + dx, 0.04, 1 - s.x); s.h = s.w / ar;
+          if (s.y + s.h > 1) { s.h = 1 - s.y; s.w = s.h * ar; }
+        }
+        place(s);
+      };
+      const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+      addEventListener('pointermove', move); addEventListener('pointerup', up);
+    };
+    el.addEventListener('pointerdown', drag('move'));
+    el.querySelector('.rs').addEventListener('pointerdown', drag('resize'));
+  }
+
+  function place(s) {
+    Object.assign(s.el.style, { left: s.x * 100 + '%', top: s.y * 100 + '%',
+                                width: s.w * 100 + '%', height: s.h * 100 + '%' });
+  }
+  function select(s) {
+    stamps.forEach(t => t.el.classList.toggle('sel', t === s)); selected = s;
+  }
+
+  // ---------- Pad de firma ----------
+  const pad = $('#pad'), pctx = pad.getContext('2d');
+  let inkColor = '#0b1f6b', drawing = false, dirty = false, last = null, uploadSrc = null;
+
+  function sizePad() {
+    const dpr = window.devicePixelRatio || 1, r = pad.getBoundingClientRect();
+    pad.width = r.width * dpr; pad.height = r.height * dpr;
+    pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pctx.lineCap = 'round'; pctx.lineJoin = 'round';
+    dirty = false;
+  }
+  const pt = e => { const r = pad.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() }; };
+  pad.addEventListener('pointerdown', e => { drawing = true; last = pt(e); pad.setPointerCapture(e.pointerId);
+    pctx.fillStyle = inkColor; pctx.beginPath(); pctx.arc(last.x, last.y, 1.2, 0, 7); pctx.fill(); dirty = true; });
+  pad.addEventListener('pointermove', e => {
+    if (!drawing) return;
+    const p = pt(e), d = Math.hypot(p.x - last.x, p.y - last.y), v = d / Math.max(p.t - last.t, 1);
+    pctx.strokeStyle = inkColor; pctx.lineWidth = clamp(3.2 - v * 1.2, 1.2, 3.2);
+    pctx.beginPath(); pctx.moveTo(last.x, last.y); pctx.lineTo(p.x, p.y); pctx.stroke();
+    last = p; dirty = true;
+  });
+  ['pointerup', 'pointercancel'].forEach(t => pad.addEventListener(t, () => drawing = false));
+  $('#padClear').onclick = sizePad;
+  document.querySelectorAll('.colors button').forEach(b => b.onclick = () => {
+    inkColor = b.dataset.c;
+    document.querySelectorAll('.colors button').forEach(x => x.classList.toggle('on', x === b));
+  });
+
+  // Recorta bordes vacíos para que la firma quede ajustada
+  function trimCanvas(src) {
+    const ctx = src.getContext('2d'), { width: w, height: h } = src;
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++)
+      if (d[(y * w + x) * 4 + 3] > 10) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return null;
+    const m = 6; x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m);
+    const out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+    out.getContext('2d').drawImage(src, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+    return out;
+  }
+
+  // Imagen subida: blanco -> transparente
+  function loadUpload(file) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => {
+        const s = Math.min(1, 1200 / img.width), c = document.createElement('canvas');
+        c.width = img.width * s; c.height = img.height * s;
+        const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, c.width, c.height);
+        const id = ctx.getImageData(0, 0, c.width, c.height), d = id.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const l = (d[i] + d[i + 1] + d[i + 2]) / 3;
+          if (l > 200) d[i + 3] = 0; else if (l > 150) d[i + 3] = Math.round(d[i + 3] * (200 - l) / 50);
+        }
+        ctx.putImageData(id, 0, 0);
+        const t = trimCanvas(c); t ? res(t) : rej(new Error('Imagen vacía'));
+        URL.revokeObjectURL(img.src);
+      };
+      img.onerror = rej; img.src = URL.createObjectURL(file);
+    });
+  }
+
+  const dlgSign = $('#dlgSign');
+  function tab(draw) {
+    $('#tabDraw').classList.toggle('on', draw); $('#tabUpload').classList.toggle('on', !draw);
+    $('#paneDraw').classList.toggle('hidden', !draw); $('#paneUpload').classList.toggle('hidden', draw);
+    if (draw) requestAnimationFrame(sizePad);
+  }
+  $('#tabDraw').onclick = () => tab(true);
+  $('#tabUpload').onclick = () => tab(false);
+  $('#sigImg').onchange = async e => {
+    try { uploadSrc = (await loadUpload(e.target.files[0])).toDataURL('image/png'); }
+    catch { alert('No se pudo leer la imagen.'); uploadSrc = null; }
+  };
+
+  function renderSaved() {
+    const list = store.get(), box = $('#saved'); box.innerHTML = '';
+    $('#savedWrap').classList.toggle('hidden', !list.length);
+    list.forEach((src, i) => {
+      const it = document.createElement('div'); it.className = 'item';
+      it.innerHTML = `<img src="${src}" alt="Firma guardada"><span title="Eliminar">✕</span>`;
+      it.querySelector('span').onclick = ev => { ev.stopPropagation(); const l = store.get(); l.splice(i, 1); store.set(l); renderSaved(); };
+      it.onclick = () => useSig(src, false);
+      box.appendChild(it);
+    });
+  }
+
+  function useSig(src, save) {
+    if (save) { const l = store.get().filter(x => x !== src); l.unshift(src); store.set(l.slice(0, 5)); }
+    const img = new Image();
+    img.onload = () => { dlgSign.close(); arm(src, img.width / img.height, 'firma'); };
+    img.src = src;
+  }
+
+  $('#btnSign').onclick = () => {
+    uploadSrc = null; $('#sigImg').value = '';
+    renderSaved(); dlgSign.showModal(); tab(true);
+  };
+  $('#signCancel').onclick = () => dlgSign.close();
+  $('#signOk').onclick = () => {
+    let src = null;
+    if (!$('#paneDraw').classList.contains('hidden')) {
+      if (!dirty) return alert('Dibujá tu firma primero.');
+      const t = trimCanvas(pad); if (!t) return alert('Dibujá tu firma primero.');
+      src = t.toDataURL('image/png');
+    } else {
+      if (!uploadSrc) return alert('Elegí una imagen.');
+      src = uploadSrc;
+    }
+    useSig(src, $('#keep').checked);
+  };
+
+  // ---------- Texto ----------
+  const dlgText = $('#dlgText');
+  $('#btnText').onclick = () => { $('#txt').value = ''; dlgText.showModal(); $('#txt').focus(); };
+  $('#txtCancel').onclick = () => dlgText.close();
+  dlgText.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
+    const q = b.dataset.q;
+    $('#txt').value = q === 'date' ? new Date().toLocaleDateString('es-AR') : b.textContent;
+  });
+  $('#txtOk').onclick = () => {
+    const t = $('#txt').value.trim(); if (!t) return;
+    const c = document.createElement('canvas'), ctx = c.getContext('2d'), fs = 64;
+    ctx.font = `${fs}px Helvetica, Arial, sans-serif`;
+    c.width = Math.ceil(ctx.measureText(t).width) + 16; c.height = Math.ceil(fs * 1.35);
+    ctx.font = `${fs}px Helvetica, Arial, sans-serif`; ctx.fillStyle = '#000'; ctx.textBaseline = 'middle';
+    ctx.fillText(t, 8, c.height / 2);
+    dlgText.close();
+    arm(c.toDataURL('image/png'), c.width / c.height, 'texto');
+  };
+
+  // ---------- Exportar ----------
+  $('#btnSave').onclick = async () => {
+    if (!stamps.length) return alert('Todavía no agregaste ninguna firma.');
+    setStatus('Generando PDF…'); $('#btnSave').disabled = true;
+    try {
+      const { PDFDocument, degrees } = PDFLib;
+      const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+      const pages = doc.getPages(), cache = {};
+      for (const s of stamps) {
+        const img = cache[s.src] || (cache[s.src] = await doc.embedPng(s.src));
+        const pg = pages[s.page];
+        const { x: bx, y: by, width: W, height: H } = pg.getCropBox();
+        const rot = ((pg.getRotation().angle % 360) + 360) % 360;
+        // Ancho/alto visibles (como se ve en pantalla)
+        const vw = rot % 180 ? H : W, vh = rot % 180 ? W : H;
+        const w = s.w * vw, h = s.h * vh;
+        const vx = s.x * vw, vyTop = s.y * vh; // coords de pantalla (origen arriba-izq)
+        let x, y;
+        if (rot === 0)        { x = bx + vx;              y = by + H - vyTop - h; }
+        else if (rot === 90)  { x = bx + vyTop;           y = by + vx; }
+        else if (rot === 180) { x = bx + W - vx;          y = by + vyTop; }
+        else                  { x = bx + W - vyTop;       y = by + H - vx; }
+        pg.drawImage(img, { x, y, width: w, height: h, rotate: degrees(rot) });
+      }
+      const out = await doc.save();
+      const blob = new Blob([out], { type: 'application/pdf' });
+      const outName = fileName.replace(/\.pdf$/i, '') + ' - firmado.pdf';
+      // Dentro de claude.ai usa el guardado nativo; como archivo suelto, descarga normal.
+      const dl = window.claude && window.claude.use
+        ? await Promise.race([window.claude.use('downloads'), new Promise(r => setTimeout(() => r(null), 1500))])
+        : null;
+      if (dl) {
+        try { await dl.save({ filename: outName, data: blob }); setStatus('PDF firmado guardado.'); }
+        catch (e) { setStatus(e && e.code === 'declined' ? 'Guardado cancelado.' : 'No se pudo guardar: ' + (e && e.message)); }
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = outName;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        setStatus('PDF firmado descargado.');
+      }
+    } catch (err) {
+      console.error(err); alert('Error al generar el PDF: ' + err.message);
+      setStatus('Error al generar el PDF.');
+    } finally { $('#btnSave').disabled = false; }
+  };
+})();
+</script>
+</body>
+</html>
