@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Techo a dos aguas + punto de grabación -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#FFFFB300" android:strokeWidth="6" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:fillColor="#00000000" android:pathData="M30,56 L54,36 L78,56" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M36,58 L72,58 L72,76 L36,76 Z" />
+    <path android:fillColor="#FFE53935" android:pathData="M54,67 m-6,0 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0" />
+</vector>
