@@ -9,10 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: "21" }
-      - uses: android-actions/setup-android@v3
+      # El runner ya trae el Android SDK; solo se agregan las piezas fijadas.
+      # (android-actions/setup-android@v3 falla: pide el paquete obsoleto 'tools'.)
+      - name: Android SDK
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools" > /dev/null
       - name: Build, tests y lint
         run: ./gradlew assembleDebug assembleRelease testDebugUnitTest lintDebug --console=plain
       - name: Auditoría offline
