@@ -15,7 +15,7 @@ jobs:
       # El runner ya trae el Android SDK; solo se agregan las piezas fijadas.
       # (android-actions/setup-android@v3 falla: pide el paquete obsoleto 'tools'.)
       - name: Android SDK
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools" > /dev/null
+        run: set +o pipefail; yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools" > /dev/null
       - name: Build, tests y lint
         run: ./gradlew assembleDebug assembleRelease testDebugUnitTest lintDebug --console=plain
       - name: Auditoría offline
