@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Reel La Plata Techos</title>
+<style>
+  :root{
+    --bg1:#0d1726; --bg2:#14263d;
+    --accent:#ff7a1a;      /* naranja marca [PEND colores reales] */
+    --accent2:#ffc629;     /* amarillo franja */
+    --ink:#ffffff; --muted:#b9c6d6;
+    --wa:#25d366;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg1)}
+  body{font-family:"Inter","Inter Display",sans-serif;color:var(--ink);position:relative}
+  *, *::before, *::after{animation-play-state:paused !important}
+
+  #stage{position:absolute;inset:0;background:
+      radial-gradient(1200px 900px at 50% 38%, #1c3555 0%, transparent 70%),
+      linear-gradient(180deg,var(--bg2),var(--bg1));overflow:hidden}
+  #stage::after{content:"";position:absolute;inset:0;opacity:.06;
+      background:repeating-linear-gradient(135deg,#fff 0 2px,transparent 2px 38px)}
+
+  .scene{position:absolute;inset:0;opacity:0}
+  .abs{position:absolute;left:0;right:0;text-align:center}
+  .h1{font-family:"Inter Display","Inter";font-weight:900;letter-spacing:-2px;line-height:.95;text-transform:uppercase}
+  .sub{font-weight:700;color:var(--muted)}
+
+  /* marca fija arriba */
+  #brand{position:absolute;top:150px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:16px;
+      font-weight:800;font-size:34px;letter-spacing:6px;color:#fff;opacity:.92;z-index:5}
+  #brand svg{width:54px;height:40px}
+
+  /* animaciones genéricas */
+  @keyframes scene{0%{opacity:0}6%{opacity:1}94%{opacity:1}100%{opacity:0}}
+  @keyframes sceneKeep{0%{opacity:0}10%{opacity:1}100%{opacity:1}}
+  @keyframes up{from{opacity:0;transform:translateY(70px)}to{opacity:1;transform:none}}
+  @keyframes pop{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+  @keyframes slideL{from{transform:translateX(-120%) rotate(-4deg)}to{transform:translateX(0) rotate(-4deg)}}
+  @keyframes fall{from{transform:translateY(-200px)}to{transform:translateY(1300px)}}
+  @keyframes sheet{0%{transform:translateY(-560px)}80%{transform:translateY(8px)}100%{transform:translateY(0)}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  @keyframes drip{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(220px);opacity:0}}
+  @keyframes glow{0%,100%{opacity:.0}50%{opacity:.55}}
+
+  .a{animation-fill-mode:both;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+
+  /* casa */
+  #house{position:absolute;left:90px;top:860px;width:900px;height:620px;opacity:0}
+  #rain{position:absolute;inset:0;opacity:0;pointer-events:none}
+  #rain i{position:absolute;top:0;width:5px;height:70px;border-radius:3px;
+      background:linear-gradient(180deg,transparent,#9fd3ff);opacity:.75;animation:fall .75s linear infinite}
+
+  /* precio */
+  .price{font-family:"Inter Display";font-weight:900;font-size:230px;letter-spacing:-8px;line-height:1;color:#fff}
+  .price small{font-size:80px;letter-spacing:-1px;color:var(--accent);margin-left:8px}
+  #stripe{position:absolute;left:-60px;right:-60px;top:1000px;height:180px;background:var(--accent2);
+      color:#111;display:flex;align-items:center;justify-content:center;
+      font-family:"Inter Display";font-weight:900;font-size:90px;letter-spacing:-1px;
+      box-shadow:0 20px 60px rgba(0,0,0,.45)}
+
+  /* checks */
+  .check{display:flex;align-items:center;gap:30px;font-size:60px;font-weight:800;line-height:1.1;text-align:left;
+      background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:28px;padding:34px 38px;margin:0 90px 30px}
+  .check b{flex:0 0 92px;height:92px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center}
+  .check b svg{width:52px;height:52px}
+
+  /* CTA */
+  #wa{display:inline-flex;align-items:center;gap:26px;background:var(--wa);color:#05290f;border-radius:999px;
+      padding:34px 60px;font-weight:900;font-size:66px;box-shadow:0 18px 50px rgba(37,211,102,.35)}
+  #wa svg{width:78px;height:78px}
+  #valid{display:inline-block;border:4px solid var(--accent2);color:var(--accent2);border-radius:20px;
+      padding:22px 36px;font-weight:900;font-size:50px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div id="brand">
+    <svg viewBox="0 0 54 40"><path d="M3 22 27 4l24 18" fill="none" stroke="#ff7a1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="11" y="22" width="32" height="16" rx="2" fill="#fff"/></svg>
+    <span id="brandName"></span>
+  </div>
+
+  <!-- CASA (escenas 1 y 2) -->
+  <svg id="house" viewBox="0 0 900 620" class="a">
+    <defs>
+      <linearGradient id="corr" x1="0" x2="1">
+        <stop offset="0" stop-color="#7f8b99"/><stop offset=".35" stop-color="#e9eef3"/>
+        <stop offset=".6" stop-color="#b3bdc8"/><stop offset="1" stop-color="#7f8b99"/>
+      </linearGradient>
+      <pattern id="chapa" width="26" height="40" patternUnits="userSpaceOnUse">
+        <rect width="26" height="40" fill="url(#corr)"/>
+      </pattern>
+      <clipPath id="roofClip"><polygon points="118,338 214,128 686,128 782,338"/></clipPath>
+    </defs>
+    <ellipse cx="450" cy="606" rx="420" ry="16" fill="#000" opacity=".35"/>
+    <!-- pared -->
+    <rect x="165" y="330" width="570" height="270" fill="#e8e1d3"/>
+    <rect x="165" y="330" width="570" height="22" fill="#000" opacity=".15"/>
+    <rect x="395" y="420" width="110" height="180" rx="6" fill="#7a4b2a"/>
+    <circle cx="490" cy="515" r="7" fill="#e8c27a"/>
+    <rect x="225" y="410" width="120" height="100" rx="6" fill="#9ccff2" stroke="#5b4636" stroke-width="10"/>
+    <rect x="555" y="410" width="120" height="100" rx="6" fill="#9ccff2" stroke="#5b4636" stroke-width="10"/>
+    <!-- techo viejo -->
+    <polygon points="118,338 214,128 686,128 782,338" fill="#5d636b"/>
+    <g clip-path="url(#roofClip)" opacity=".9">
+      <ellipse cx="300" cy="230" rx="90" ry="40" fill="#454a50"/>
+      <ellipse cx="610" cy="280" rx="110" ry="36" fill="#3f4448"/>
+      <path d="M250 150 290 200 270 240 310 300" stroke="#25282c" stroke-width="7" fill="none"/>
+      <path d="M560 140 530 190 575 230 548 290" stroke="#25282c" stroke-width="7" fill="none"/>
+      <path d="M430 200 470 250 445 320" stroke="#25282c" stroke-width="6" fill="none"/>
+    </g>
+    <!-- gota de filtración -->
+    <g id="dripG"><path class="a" id="drip" d="M300 352c0 0-14 20-14 30a14 14 0 0 0 28 0c0-10-14-30-14-30z" fill="#7cc4ff"/></g>
+    <!-- chapas nuevas -->
+    <g clip-path="url(#roofClip)" id="sheets"></g>
+    <!-- cumbrera -->
+    <rect id="ridge" class="a" x="206" y="118" width="488" height="18" rx="6" fill="#ff7a1a"/>
+  </svg>
+  <div id="rain"></div>
+
+  <!-- ESCENA 1: gancho -->
+  <div class="scene a" id="s1">
+    <div class="abs h1 a" id="s1a" style="top:300px;font-size:136px"></div>
+    <div class="abs a" id="s1b" style="top:620px;font-size:62px;font-weight:800;color:var(--accent)"></div>
+  </div>
+
+  <!-- ESCENA 2: servicio -->
+  <div class="scene a" id="s2">
+    <div class="abs h1 a" id="s2a" style="top:330px;font-size:150px;color:var(--accent)"></div>
+    <div class="abs sub a" id="s2b" style="top:520px;font-size:56px;padding:0 70px;line-height:1.15"></div>
+  </div>
+
+  <!-- ESCENA 3: precio -->
+  <div class="scene a" id="s3">
+    <div class="abs h1 a" id="s3label" style="top:330px;font-size:72px;letter-spacing:10px;color:var(--muted)"></div>
+    <div class="abs a" id="s3price" style="top:440px"><div class="price"><span id="num">$0</span><small id="unit"></small></div></div>
+    <div class="abs a" id="s3c" style="top:720px;font-size:62px;font-weight:800"></div>
+    <div class="abs a" id="s3d" style="top:810px;font-size:44px;font-weight:700;color:var(--muted)"></div>
+    <div id="stripe" class="a"></div>
+  </div>
+
+  <!-- ESCENA 4: diferencial -->
+  <div class="scene a" id="s4">
+    <div class="abs h1 a" id="s4t" style="top:300px;font-size:84px;color:var(--accent)"></div>
+    <div class="abs" style="top:520px" id="checks"></div>
+  </div>
+
+  <!-- ESCENA 5: CTA -->
+  <div class="scene a" id="s5">
+    <div class="abs h1 a" id="s5a" style="top:330px;font-size:118px"></div>
+    <div class="abs a" id="s5b" style="top:640px"><span id="wa">
+      <svg viewBox="0 0 64 64"><path d="M32 4C16.5 4 4 16 4 31c0 5.3 1.6 10.2 4.3 14.4L5 60l15-4c3.7 1.9 7.8 3 12 3 15.5 0 28-12 28-27S47.5 4 32 4z" fill="#05290f"/><path d="M24 18c-1-.1-3 .6-3.6 2.6-.9 3 .4 7.3 4.8 12.2 4.5 5 9.4 7.4 12.6 7.2 2.2-.1 3.6-2 3.6-3.1v-2.4c0-.6-.4-1-.9-1.2l-4.6-1.9c-.6-.2-1.2 0-1.5.5l-1.4 2c-2.9-1.3-5.7-4-7.1-7l1.9-1.5c.5-.4.6-1 .4-1.6l-1.9-4.6c-.2-.5-.7-.9-1.3-.9z" fill="#25d366"/></svg>
+      <span id="waNum"></span></span></div>
+    <div class="abs a" id="s5c" style="top:860px;font-size:52px;font-weight:800;color:var(--muted)"></div>
+    <div class="abs a" id="s5d" style="top:960px;font-size:46px;font-weight:700;color:#fff"></div>
+    <div class="abs a" id="s5e" style="top:1330px"><span id="valid"></span></div>
+  </div>
+
+</div>
+
+<script>
+const REELS = {
+  sobretecho: {
+    brand: "LA PLATA TECHOS",
+    hook: ["¿Tu techo<br>se llueve?", "No hace falta demolerlo."],
+    service: ["Sobretecho", "Chapa nueva sobre<br>tu techo actual"],
+    price: { label: "Desde", value: 28000, unit: "/m²", line1: "Solo mano de obra", line2: "La Plata y AMBA" },
+    stripe: "MATERIALES APARTE",
+    diffTitle: "Sin vueltas",
+    diffs: ["Sin demoler ni escombros", "Seguís viviendo en tu casa", "Visita técnica y presupuesto por escrito"],
+    cta: ["Pedí tu<br>presupuesto", "221 XXX-XXXX", "Respondemos por WhatsApp", "La Plata · Gran La Plata · AMBA"],
+    valid: "Precios válidos hasta el 30/11",
+    duration: 14
+  }
+};
+const P = new URLSearchParams(location.search);
+const R = REELS[P.get("reel") || "sobretecho"];
+window.DURATION = R.duration;
+const $ = id => document.getElementById(id);
+
+// textos
+$("brandName").textContent = R.brand;
+$("s1a").innerHTML = R.hook[0]; $("s1b").textContent = R.hook[1];
+$("s2a").textContent = R.service[0]; $("s2b").innerHTML = R.service[1];
+$("s3label").textContent = R.price.label; $("unit").textContent = R.price.unit;
+$("s3c").textContent = R.price.line1; $("s3d").textContent = R.price.line2;
+$("stripe").textContent = R.stripe;
+$("s4t").textContent = R.diffTitle;
+const tick = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="#111" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+$("checks").innerHTML = R.diffs.map((d,i)=>`<div class="check a" id="ck${i}"><b>${tick}</b><span>${d}</span></div>`).join("");
+$("s5a").innerHTML = R.cta[0]; $("waNum").textContent = R.cta[1];
+$("s5c").textContent = R.cta[2]; $("s5d").textContent = R.cta[3];
+$("valid").textContent = R.valid;
+
+// chapas
+const NS="http://www.w3.org/2000/svg", sh=$("sheets");
+for(let i=0;i<7;i++){
+  const r=document.createElementNS(NS,"rect");
+  r.setAttribute("x",110+i*98); r.setAttribute("y",110); r.setAttribute("width",100); r.setAttribute("height",240);
+  r.setAttribute("fill","url(#chapa)"); r.setAttribute("stroke","#5e6873"); r.setAttribute("stroke-width","2");
+  r.classList.add("a"); r.id="sh"+i; sh.appendChild(r);
+}
+// lluvia
+const rain=$("rain");
+for(let i=0;i<46;i++){
+  const d=document.createElement("i");
+  d.style.left=(Math.sin(i*12.9898)*0.5+0.5)*1080+"px";
+  d.style.animationDelay=(-((i*0.137)%0.75))+"s";
+  d.style.height=(50+(i*37)%50)+"px";
+  rain.appendChild(d);
+}
+
+// línea de tiempo: [id, animación, inicio s, duración s, extra]
+const T = [
+  ["s1","scene",0,2.3], ["s1a","up",0.05,0.45], ["s1b","up",0.9,0.4],
+  ["drip","drip",0.4,0.9,"infinite"],
+  ["s2","scene",2.2,3.1], ["s2a","pop",2.15,0.45], ["s2b","up",2.45,0.4],
+  ["ridge","pop",4.15,0.35],
+  ["s3","scene",5.2,3.9], ["s3label","up",5.25,0.35], ["s3price","pop",5.35,0.45],
+  ["s3c","up",6.0,0.4], ["s3d","up",6.2,0.4], ["stripe","slideL",6.5,0.45],
+  ["s4","scene",9.0,2.5], ["s4t","up",9.05,0.35], ["ck0","up",9.25,0.4], ["ck1","up",9.5,0.4], ["ck2","up",9.75,0.4],
+  ["s5","sceneKeep",11.4,0.4], ["s5a","up",11.45,0.4], ["s5b","pop",11.75,0.45],
+  ["s5c","up",12.05,0.4], ["s5d","up",12.2,0.4], ["s5e","pop",12.45,0.45],
+];
+for(let i=0;i<7;i++) T.push(["sh"+i,"sheet",2.6+i*0.13,0.55]);
+
+for(const [id,name,start,dur,iter] of T){
+  const el=$(id);
+  el.style.animationName=name; el.style.animationDuration=dur+"s";
+  el.style.animationDelay=start+"s"; el.style.animationIterationCount=iter||1;
+}
+
+const fmt = n => "$" + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
+const ease = x => 1-Math.pow(1-x,3);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+
+// casa visible solo hasta 5.2 s, lluvia hasta 2.2 s; WhatsApp pulsa al final
+function manual(t){
+  $("house").style.visibility = t<5.25 ? "visible":"hidden";
+  $("house").style.opacity = t<0.3 ? t/0.3 : (t>4.9 ? clamp((5.2-t)/0.3,0,1) : 1);
+  $("rain").style.opacity = t<2.0 ? 1 : clamp((2.4-t)/0.4,0,1);
+  $("dripG").style.opacity = t<2.6 ? 1 : 0;
+  const p = clamp((t-5.45)/0.9,0,1);
+  $("num").textContent = fmt(Math.round(R.price.value*ease(p)/500)*500);
+  const wa=$("wa"); wa.style.transform = t>12.3 ? `scale(${1+0.045*Math.sin((t-12.3)*Math.PI*2/0.9)})` : "none";
+  $("house").style.transform = (t>5.2-0.3 && t<5.2) ? `translateY(${(t-4.9)*200}px)` : "none";
+}
+
+window.setT = function(t){
+  for(const a of document.getAnimations()) a.currentTime = t*1000;
+  manual(t);
+};
+window.READY = document.fonts.ready.then(()=>{ setT(0); return true; });
+</script>
+</body>
+</html>
