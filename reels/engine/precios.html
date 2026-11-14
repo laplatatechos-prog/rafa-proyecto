@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Precios mano de obra</title>
+<style>
+  /* ===== COLORES DE MARCA: cambiar acá cuando tengamos los de Isotech ===== */
+  :root{
+    --azul:#0a3a7a; --azul2:#062451; --azulClaro:#1f6fd1;
+    --naranja:#f57c1f; --naranja2:#ffa04d;
+    --blanco:#ffffff; --gris:#c9d6ea;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1080px;height:1920px;overflow:hidden;background:var(--azul2)}
+  body{font-family:"Inter Display","Inter",sans-serif;color:var(--blanco)}
+  #stage{position:absolute;inset:0;overflow:hidden;
+    background:radial-gradient(1100px 1000px at 50% 42%, var(--azul) 0%, var(--azul2) 75%)}
+  #grid{position:absolute;inset:0;opacity:.08;
+    background:repeating-linear-gradient(0deg,#fff 0 2px,transparent 2px 90px),
+               repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 90px)}
+  .abs{position:absolute;left:0;right:0;text-align:center}
+
+  #brand{top:150px;font-weight:900;font-size:62px;letter-spacing:10px}
+  #brand span{color:var(--naranja)}
+  #tag{top:232px;font-weight:700;font-size:32px;letter-spacing:6px;color:var(--gris)}
+
+  /* intro */
+  #intro .l1{top:600px;font-weight:900;font-size:120px;line-height:.95;letter-spacing:-3px}
+  #intro .l2{top:870px;font-weight:900;font-size:120px;line-height:.95;letter-spacing:-3px;color:var(--naranja)}
+  #intro .l3{top:1040px;font-weight:700;font-size:50px;color:var(--gris)}
+
+  /* tarjeta rubro */
+  .card{position:absolute;left:90px;width:900px;top:520px;height:820px;border-radius:48px;
+    background:var(--blanco);color:var(--azul2);box-shadow:0 40px 90px rgba(0,0,0,.45);overflow:hidden}
+  .card .band{position:absolute;left:0;right:0;top:0;height:22px;background:var(--naranja)}
+  .card .ico{position:absolute;left:50%;top:80px;width:260px;height:260px;margin-left:-130px;border-radius:50%;
+    background:#eaf1fb;display:flex;align-items:center;justify-content:center}
+  .card .ico svg{width:170px;height:170px}
+  .card .name{position:absolute;left:40px;right:40px;top:362px;height:150px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:66px;
+    line-height:1;letter-spacing:-1.5px;text-transform:uppercase}
+  .card .desde{position:absolute;left:0;right:0;top:528px;text-align:center;font-weight:800;font-size:38px;
+    letter-spacing:8px;color:#5a6f8f}
+  .card .price{position:absolute;left:0;right:0;top:570px;text-align:center;font-weight:900;font-size:168px;
+    letter-spacing:-6px;line-height:1;color:var(--azul)}
+  .card .unit{position:absolute;left:0;right:0;top:745px;text-align:center;font-weight:900;font-size:50px;color:var(--naranja)}
+
+  /* franja fija */
+  #stripe{position:absolute;left:0;right:0;top:1390px;height:150px;background:var(--naranja);color:var(--azul2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+  #stripe b{font-weight:900;font-size:76px;letter-spacing:-1px}
+  #stripe i{font-style:normal;font-weight:800;font-size:34px;letter-spacing:5px;margin-top:8px}
+
+  #dots{top:1580px;display:flex;justify-content:center;gap:16px}
+  #dots s{display:block;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.25)}
+  #dots s.on{background:var(--naranja);width:48px;border-radius:9px}
+
+  /* cierre */
+  #outro .l1{top:560px;font-weight:900;font-size:104px;line-height:1;letter-spacing:-2px}
+  #outro .l2{top:800px;font-weight:700;font-size:50px;color:var(--gris)}
+  #outro .valid{top:960px}
+  #outro .valid span{display:inline-block;border:5px solid var(--naranja);color:var(--naranja);border-radius:24px;
+    padding:26px 44px;font-weight:900;font-size:58px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="grid"></div>
+  <div class="abs" id="brand"></div>
+  <div class="abs" id="tag"></div>
+
+  <div id="intro">
+    <div class="abs l1">PRECIOS DE<br>MANO DE OBRA</div>
+    <div class="abs l2">NOVIEMBRE</div>
+    <div class="abs l3">Techos · Impermeabilización · Zinguería</div>
+  </div>
+
+  <div id="cards"></div>
+
+  <div id="stripe"><b>MATERIALES APARTE</b><i>PRECIOS SOLO MANO DE OBRA</i></div>
+  <div class="abs" id="dots"></div>
+
+  <div id="outro">
+    <div class="abs l1">PEDÍ TU<br>PRESUPUESTO</div>
+    <div class="abs l2">La Plata y AMBA</div>
+    <div class="abs valid"><span>Precios válidos hasta el 30/11</span></div>
+  </div>
+</div>
+
+<script>
+const CFG = {
+  brand: 'ISO<span>TECH</span>',          // [PEND] confirmar nombre y logo
+  tag: 'TECHOS · IMPERMEABILIZACIÓN',
+  intro: 2.2, per: 1.9, outro: 3.0,
+  items: [
+    ["Sobretecho",                 28000, "por m²",          "roof"],
+    ["Techo de chapa nuevo",       32000, "por m²",          "sheet"],
+    ["Recambio de chapa",          15000, "por m²",          "swap"],
+    ["Techo de tejas",             18000, "por m²",          "tile"],
+    ["Membrana asfáltica",         14000, "por m²",          "roll"],
+    ["Membrana líquida",           10000, "por m²",          "bucket"],
+    ["Canaletas y zinguería",       8000, "por metro lineal","gutter"],
+    ["Aislación bajo chapa",        7000, "por m²",          "layers"],
+    ["Goteras y filtraciones",     30000, "por trabajo",     "drop"],
+    ["Revisión y mantenimiento",   25000, "por visita",      "search"],
+  ]
+};
+const I = { // íconos línea, trazo azul + acento naranja
+  roof:  '<path d="M10 46 50 16l40 30" stroke="#f57c1f"/><path d="M20 40v42h60V40"/><path d="M42 82V62h16v20"/>',
+  sheet: '<path d="M12 30h76v40H12z"/><path d="M24 30v40M36 30v40M48 30v40M60 30v40M72 30v40" stroke="#f57c1f"/>',
+  swap:  '<path d="M14 58h72v26H14z"/><path d="M26 58v26M38 58v26M50 58v26M62 58v26M74 58v26"/><path d="M30 18h40l-8-8M70 40H30l8 8" stroke="#f57c1f"/>',
+  tile:  '<path d="M12 40q10 14 19 0q10 14 19 0q10 14 19 0q10 14 19 0" stroke="#f57c1f"/><path d="M12 62q10 14 19 0q10 14 19 0q10 14 19 0q10 14 19 0"/>',
+  roll:  '<circle cx="34" cy="50" r="20"/><circle cx="34" cy="50" r="7" stroke="#f57c1f"/><path d="M34 30h52v40H34" stroke="#f57c1f"/>',
+  bucket:'<path d="M24 38h52l-6 46H30z"/><path d="M24 38q26-22 52 0"/><path d="M60 14l18 18-10 4" stroke="#f57c1f"/>',
+  gutter:'<path d="M10 30h80l-6 16H16z"/><path d="M72 46v40" /><path d="M50 58c0 0-6 9-6 13a6 6 0 0 0 12 0c0-4-6-13-6-13z" stroke="#f57c1f"/>',
+  layers:'<path d="M50 14 88 32 50 50 12 32z" stroke="#f57c1f"/><path d="M12 50l38 18 38-18M12 68l38 18 38-18"/>',
+  drop:  '<path d="M50 12S24 46 24 62a26 26 0 0 0 52 0C76 46 50 12 50 12z" stroke="#f57c1f"/><path d="M38 64a12 12 0 0 0 12 12"/>',
+  search:'<circle cx="42" cy="42" r="24"/><path d="M60 60l26 26" stroke="#f57c1f"/>',
+};
+const $=id=>document.getElementById(id);
+$("brand").innerHTML=CFG.brand; $("tag").textContent=CFG.tag;
+const fmt=n=>"$"+n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
+$("cards").innerHTML=CFG.items.map((it,i)=>`
+  <div class="card" id="c${i}"><div class="band"></div>
+    <div class="ico"><svg viewBox="0 0 100 100" fill="none" stroke="#0a3a7a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">${I[it[3]]}</svg></div>
+    <div class="name">${it[0]}</div><div class="desde">DESDE</div>
+    <div class="price" id="p${i}">$0</div><div class="unit">${it[2]}</div></div>`).join("");
+$("dots").innerHTML=CFG.items.map((_,i)=>`<s id="d${i}"></s>`).join("");
+
+const N=CFG.items.length;
+window.DURATION = CFG.intro + N*CFG.per + CFG.outro;
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const eo=x=>1-Math.pow(1-x,3);
+const back=x=>{const c=1.6;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+function css(el,o,tx=0,ty=0,s=1){el.style.opacity=o;el.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
+
+window.setT=function(t){
+  // marca
+  css($("brand"),eo(cl(t/0.4)),0,(1-eo(cl(t/0.4)))*-40);
+  css($("tag"),eo(cl((t-0.2)/0.4)));
+  // intro
+  const ie=CFG.intro;
+  ["l1","l2","l3"].forEach((c,k)=>{
+    const el=document.querySelector("#intro ."+c);
+    const a=eo(cl((t-0.15-k*0.25)/0.45)), o=cl((ie-t)/0.25);
+    css(el,a*o,0,(1-a)*80 - (1-o)*60, c==="l2"? 0.6+0.4*back(cl((t-0.4)/0.5)) : 1);
+  });
+  // franja (entra con la primera tarjeta y queda fija)
+  const sa=eo(cl((t-ie+0.2)/0.4));
+  css($("stripe"),1,(1-sa)*-1100,0);
+  $("stripe").style.transform+=" rotate(0deg)";
+  // tarjetas
+  for(let i=0;i<N;i++){
+    const t0=ie+i*CFG.per, lt=t-t0, el=$("c"+i);
+    if(lt<-0.05||lt>CFG.per+0.05){el.style.opacity=0;continue;}
+    const inP=eo(cl(lt/0.35)), outP=cl((lt-(CFG.per-0.3))/0.3);
+    const tx=(1-inP)*1100 - eo(outP)*1100;
+    css(el,1,tx,0,1-0.06*outP);
+    el.querySelector(".ico").style.transform=`scale(${back(cl((lt-0.15)/0.4))})`;
+    const pp=eo(cl((lt-0.3)/0.65));
+    $("p"+i).textContent=fmt(Math.round(CFG.items[i][1]*pp/100)*100);
+    const u=el.querySelector(".unit"), ua=back(cl((lt-0.85)/0.3));
+    u.style.transform=`scale(${ua})`; u.style.opacity=cl((lt-0.85)/0.15);
+    const nm=el.querySelector(".name"), na=eo(cl((lt-0.1)/0.35));
+    nm.style.opacity=na; nm.style.transform=`translateY(${(1-na)*30}px)`;
+  }
+  // puntos
+  const cur=Math.floor((t-ie)/CFG.per);
+  $("dots").style.opacity = (t>ie-0.2 && t<ie+N*CFG.per) ? 1 : 0;
+  for(let i=0;i<N;i++) $("d"+i).className = i===cur ? "on":"";
+  // cierre
+  const os=ie+N*CFG.per;
+  ["l1","l2","valid"].forEach((c,k)=>{
+    const el=document.querySelector("#outro ."+c), a=cl((t-os-k*0.25)/0.45);
+    css(el,eo(a),0,(1-eo(a))*70, c==="valid"? back(a)*0.2+0.8*eo(a) || 0.001 : 1);
+  });
+  if(t>os) css($("stripe"),1,0,0);
+};
+window.READY=document.fonts.ready.then(()=>{setT(0);return true;});
+</script>
+</body>
+</html>

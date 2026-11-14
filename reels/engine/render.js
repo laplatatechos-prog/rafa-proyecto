@@ -14,7 +14,7 @@ const fs = require('fs');
 
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
-  await page.goto('file://' + path.join(__dirname, 'reel.html') + '?reel=' + reel);
+  await page.goto('file://' + path.join(__dirname, process.env.PAGE || 'reel.html') + '?reel=' + reel);
   await page.evaluate(() => window.READY);
   const dur = await page.evaluate(() => window.DURATION);
   fs.mkdirSync(path.dirname(out), { recursive: true });
