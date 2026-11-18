@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mensajes Familia Igoa</title>
+<meta name="theme-color" content="#2563eb">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root { --azul:#2563eb; --fondo:#eef2f7; --yo:#dbeafe; --otro:#ffffff; --pc:#fef3c7; --texto:#111827; --gris:#6b7280; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo:#0f172a; --yo:#1e3a8a; --otro:#1f2937; --pc:#4a3b10; --texto:#f3f4f6; --gris:#9ca3af; }
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--fondo); color:var(--texto);
+         display:flex; flex-direction:column; }
+  header { background:var(--azul); color:#fff; padding:12px 16px; padding-top:calc(12px + env(safe-area-inset-top));
+           display:flex; align-items:center; gap:10px; }
+  header img { width:34px; height:34px; border-radius:8px; }
+  header h1 { font-size:18px; margin:0; flex:1; }
+  header button { background:rgba(255,255,255,.18); color:#fff; border:0; border-radius:8px; padding:6px 10px; font-size:13px; }
+  #estado { font-size:12px; opacity:.85; }
+  #lista { flex:1; overflow-y:auto; padding:12px 12px 4px; display:flex; flex-direction:column; gap:6px; }
+  .burbuja { max-width:82%; padding:8px 12px; border-radius:14px; background:var(--otro); box-shadow:0 1px 1px rgba(0,0,0,.08);
+             white-space:pre-wrap; word-wrap:break-word; }
+  .burbuja .quien { font-size:12px; font-weight:600; color:var(--azul); margin-bottom:2px; }
+  .burbuja .hora { font-size:11px; color:var(--gris); text-align:right; margin-top:2px; }
+  .yo { align-self:flex-end; background:var(--yo); }
+  .yo .quien { display:none; }
+  .pc { background:var(--pc); }
+  .pc .quien { color:#b45309; }
+  .llamada { align-self:center; background:#fee2e2; color:#991b1b; font-weight:600; text-align:center; }
+  @media (prefers-color-scheme: dark) { .llamada { background:#5b1a1a; color:#fecaca; } }
+  #llamar { margin:6px 12px 0; padding:14px; border:0; border-radius:14px; background:#dc2626; color:#fff;
+            font-size:17px; font-weight:700; }
+  #llamar:active { transform:scale(.98); }
+  form { display:flex; gap:8px; padding:8px 12px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); }
+  #texto { flex:1; font-size:16px; padding:12px 14px; border-radius:22px; border:1px solid #cbd5e1; background:var(--otro); color:var(--texto); }
+  #enviar { width:48px; height:48px; border-radius:50%; border:0; background:var(--azul); color:#fff; font-size:20px; }
+  .pantalla { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; text-align:center; gap:14px; }
+  .pantalla input { font-size:18px; padding:12px; border-radius:12px; border:1px solid #cbd5e1; width:100%; max-width:320px; }
+  .pantalla button { font-size:17px; padding:12px 22px; border:0; border-radius:12px; background:var(--azul); color:#fff; }
+  .oculto { display:none !important; }
+  #aviso { position:fixed; left:50%; bottom:110px; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 16px;
+           border-radius:10px; font-size:14px; opacity:0; transition:opacity .3s; pointer-events:none; }
+  #aviso.ver { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <img src="icon-192.png" alt="">
+  <div style="flex:1">
+    <h1>Mensajes Familia Igoa</h1>
+    <div id="estado">Conectando…</div>
+  </div>
+  <button id="instalar" class="oculto">📲 Instalar</button>
+  <button id="cambiarNombre" class="oculto">Mi nombre</button>
+</header>
+
+<!-- Pantalla 1: sin código (link incompleto) -->
+<div id="sinCodigo" class="pantalla oculto">
+  <h2>Falta el código de la familia</h2>
+  <p>Pedile a Angel el link completo de la app y abrilo de nuevo.</p>
+</div>
+
+<!-- Pantalla 2: elegir nombre -->
+<div id="pedirNombre" class="pantalla oculto">
+  <h2>¿Cómo te llamás?</h2>
+  <p>Así la compu sabe quién manda cada mensaje.</p>
+  <input id="nombre" maxlength="40" placeholder="Tu nombre" autocomplete="name">
+  <button id="guardarNombre">Entrar</button>
+</div>
+
+<!-- Pantalla 3: el chat -->
+<div id="chat" class="oculto" style="flex:1; display:flex; flex-direction:column; min-height:0">
+  <div id="lista"></div>
+  <button id="llamar">🔔 Alarma: hacer sonar la compu</button>
+  <form id="formulario">
+    <input id="texto" maxlength="1000" placeholder="Escribí un mensaje para la compu…" autocomplete="off">
+    <button id="enviar" aria-label="Enviar">➤</button>
+  </form>
+</div>
+<div id="aviso"></div>
+
+<script>
+// ====== CONFIGURACIÓN ======
+// Dirección del "buzón" (Supabase) y su clave pública. La clave pública se puede ver,
+// lo que protege los mensajes es el código de la familia que viene en el link (?c=...).
+const SUPABASE_URL = "https://dowtczgckcuvxwpgqcpq.supabase.co";
+const CLAVE_PUBLICA = "sb_publishable_v6n2zkJXpBEUpR0TlULEVA_UwVMlwoa";
+const CADA_CUANTO_MS = 3000; // cada 3 segundos se fija si hay mensajes nuevos
+
+// ====== DATOS GUARDADOS EN ESTE CELULAR ======
+function leerGuardado(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function guardar(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+const params = new URLSearchParams(location.search);
+let codigo = params.get("c") || leerGuardado("codigo");
+if (params.get("c")) guardar("codigo", params.get("c"));
+let miNombre = leerGuardado("nombre");
+let ultimoId = 0;
+
+const $ = (id) => document.getElementById(id);
+
+// ====== HABLAR CON EL BUZÓN ======
+// Llama a una "función" de la base de datos (RPC) y devuelve la respuesta.
+async function rpc(nombreFuncion, datos) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${nombreFuncion}`, {
+    method: "POST",
+    headers: { "apikey": CLAVE_PUBLICA, "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function hora(iso) {
+  return new Date(iso).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function mostrar(m) {
+  const div = document.createElement("div");
+  div.className = "burbuja";
+  if (m.tipo === "llamar") div.classList.add("llamada");
+  else if (m.desde_pc) div.classList.add("pc");
+  else if (m.autor === miNombre) div.classList.add("yo");
+  const quien = document.createElement("div");
+  quien.className = "quien";
+  quien.textContent = m.desde_pc ? "💻 Compu" : m.autor;
+  const cuerpo = document.createElement("div");
+  cuerpo.textContent = m.tipo === "llamar" ? `🔊 ${m.autor} llamó a la compu: "${m.texto}"` : m.texto;
+  const h = document.createElement("div");
+  h.className = "hora";
+  h.textContent = hora(m.creado);
+  if (m.tipo !== "llamar") div.append(quien);
+  div.append(cuerpo, h);
+  $("lista").append(div);
+}
+
+async function buscarNuevos() {
+  try {
+    const nuevos = await rpc("fam_leer", { p_codigo: codigo, p_desde_id: ultimoId });
+    const abajo = $("lista").scrollHeight - $("lista").scrollTop - $("lista").clientHeight < 80;
+    nuevos.forEach((m) => { mostrar(m); ultimoId = Math.max(ultimoId, m.id); });
+    if (nuevos.length && (abajo || ultimoId === nuevos[nuevos.length - 1].id)) $("lista").scrollTop = $("lista").scrollHeight;
+    $("estado").textContent = "Conectado ✓";
+  } catch (e) {
+    $("estado").textContent = String(e.message).includes("codigo") ? "Código incorrecto: pedí el link de nuevo" : "Sin conexión, reintentando…";
+  }
+}
+
+async function enviar(texto, tipo = "msg") {
+  await rpc("fam_enviar", { p_codigo: codigo, p_autor: miNombre, p_texto: texto, p_desde_pc: false, p_tipo: tipo });
+  await buscarNuevos();
+  $("lista").scrollTop = $("lista").scrollHeight;
+}
+
+function aviso(t) {
+  $("aviso").textContent = t; $("aviso").classList.add("ver");
+  setTimeout(() => $("aviso").classList.remove("ver"), 2500);
+}
+
+// ====== PANTALLAS ======
+function empezar() {
+  ["sinCodigo", "pedirNombre", "chat"].forEach((id) => $(id).classList.add("oculto"));
+  if (!codigo) { $("sinCodigo").classList.remove("oculto"); $("estado").textContent = ""; return; }
+  if (!miNombre) { $("pedirNombre").classList.remove("oculto"); $("nombre").focus(); return; }
+  $("chat").classList.remove("oculto");
+  $("cambiarNombre").classList.remove("oculto");
+  if (!empezar.andando) { empezar.andando = true; buscarNuevos(); setInterval(buscarNuevos, CADA_CUANTO_MS); }
+}
+
+$("guardarNombre").onclick = () => {
+  const n = $("nombre").value.trim();
+  if (!n) return;
+  miNombre = n; guardar("nombre", n); empezar();
+};
+$("nombre").addEventListener("keydown", (e) => { if (e.key === "Enter") $("guardarNombre").click(); });
+$("cambiarNombre").onclick = () => { $("nombre").value = miNombre || ""; miNombre = null; empezar(); };
+
+$("formulario").onsubmit = async (e) => {
+  e.preventDefault();
+  const t = $("texto").value.trim();
+  if (!t) return;
+  $("texto").value = "";
+  try { await enviar(t); } catch (err) { $("texto").value = t; aviso("No se pudo enviar, probá de nuevo"); }
+};
+
+$("llamar").onclick = async () => {
+  if (!confirm("¿Hacer sonar la alarma de la compu? Suena un timbre de teléfono y una voz dice \"Abrí la computadora\".")) return;
+  try { await enviar("Abrí la computadora", "llamar"); aviso("¡Listo! La compu está sonando 🔔"); }
+  catch (err) { aviso("No se pudo llamar, probá de nuevo"); }
+};
+
+// ====== BOTÓN "INSTALAR" (descargar la app al celular o la compu) ======
+let pedidoInstalar = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); pedidoInstalar = e; $("instalar").classList.remove("oculto"); });
+$("instalar").onclick = async () => {
+  if (pedidoInstalar) { pedidoInstalar.prompt(); await pedidoInstalar.userChoice; pedidoInstalar = null; $("instalar").classList.add("oculto"); }
+};
+const esIphone = /iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone;
+if (esIphone) { $("instalar").classList.remove("oculto"); $("instalar").onclick = () => aviso("En iPhone: tocá Compartir ⬆️ y después \"Agregar a inicio\""); }
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+empezar();
+</script>
+</body>
+</html>
