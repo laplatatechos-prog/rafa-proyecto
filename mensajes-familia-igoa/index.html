@@ -56,6 +56,7 @@
     <h1>Mensajes Familia Igoa</h1>
     <div id="estado">Conectando…</div>
   </div>
+  <button id="instalar" class="oculto">📲 Instalar</button>
   <button id="cambiarNombre" class="oculto">Mi nombre</button>
 </header>
 
@@ -76,7 +77,7 @@
 <!-- Pantalla 3: el chat -->
 <div id="chat" class="oculto" style="flex:1; display:flex; flex-direction:column; min-height:0">
   <div id="lista"></div>
-  <button id="llamar">🔊 Llamar a la compu</button>
+  <button id="llamar">🔔 Alarma: hacer sonar la compu</button>
   <form id="formulario">
     <input id="texto" maxlength="1000" placeholder="Escribí un mensaje para la compu…" autocomplete="off">
     <button id="enviar" aria-label="Enviar">➤</button>
@@ -189,10 +190,19 @@ $("formulario").onsubmit = async (e) => {
 };
 
 $("llamar").onclick = async () => {
-  if (!confirm("¿Hacer sonar la compu con la voz que dice \"Abrí la computadora\"?")) return;
-  try { await enviar("Abrí la computadora", "llamar"); aviso("¡Listo! La compu va a sonar 🔊"); }
+  if (!confirm("¿Hacer sonar la alarma de la compu? Suena un timbre de teléfono y una voz dice \"Abrí la computadora\".")) return;
+  try { await enviar("Abrí la computadora", "llamar"); aviso("¡Listo! La compu está sonando 🔔"); }
   catch (err) { aviso("No se pudo llamar, probá de nuevo"); }
 };
+
+// ====== BOTÓN "INSTALAR" (descargar la app al celular o la compu) ======
+let pedidoInstalar = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); pedidoInstalar = e; $("instalar").classList.remove("oculto"); });
+$("instalar").onclick = async () => {
+  if (pedidoInstalar) { pedidoInstalar.prompt(); await pedidoInstalar.userChoice; pedidoInstalar = null; $("instalar").classList.add("oculto"); }
+};
+const esIphone = /iphone|ipad/i.test(navigator.userAgent) && !navigator.standalone;
+if (esIphone) { $("instalar").classList.remove("oculto"); $("instalar").onclick = () => aviso("En iPhone: tocá Compartir ⬆️ y después \"Agregar a inicio\""); }
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 empezar();

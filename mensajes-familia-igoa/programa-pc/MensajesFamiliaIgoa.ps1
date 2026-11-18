@@ -146,15 +146,29 @@ try {
 $voz.Volume = 100
 $voz.Rate = -2   # un poco más lento, suena más serio
 
+$Timbre = Join-Path $Carpeta "timbre.wav"
+$script:fraseLlamada = ""
+$relojVoz = New-Object System.Windows.Forms.Timer
+$relojVoz.Interval = 11500   # lo que dura el timbre
+$relojVoz.add_Tick({
+  $relojVoz.Stop()
+  $voz.SpeakAsyncCancelAll()
+  $voz.SpeakAsync("$($script:fraseLlamada) $($script:fraseLlamada) $($script:fraseLlamada)") | Out-Null
+})
+
+# Alarma: sube el volumen, suena como un telefono viejo y despues la voz seria habla.
 function Llamar-Fuerte($texto) {
   try {
     $wsh = New-Object -ComObject WScript.Shell
     for ($i = 0; $i -lt 30; $i++) { $wsh.SendKeys([char]175) }   # tecla "subir volumen"
   } catch {}
-  [System.Media.SystemSounds]::Exclamation.Play()
-  $frase = "Atención. $texto."
-  $voz.SpeakAsyncCancelAll()
-  $voz.SpeakAsync("$frase $frase $frase") | Out-Null
+  $script:fraseLlamada = "Atención. $texto."
+  if (Test-Path $Timbre) {
+    try { $script:reproductor = New-Object System.Media.SoundPlayer($Timbre); $script:reproductor.Play() } catch {}
+    $relojVoz.Stop(); $relojVoz.Start()
+  } else {
+    $relojVoz.Interval = 100; $relojVoz.Start()
+  }
 }
 
 # --- Revisar mensajes nuevos cada 3 segundos ---
